@@ -11,6 +11,13 @@ const ID_MOD = "DAO-HISTORICO-LECTURA";
 
 const sql_create = `INSERT INTO historico_lectura (sitio_id, tipo_id, valor, etiempo) VALUES (?, ?, ?, ?)`;
 const sql_getById = `SELECT * FROM historico_lectura WHERE id = ?`;
+const sql_existe = `
+  SELECT EXISTS (
+    SELECT 1
+    FROM historico_lectura 
+    WHERE etiempo = ?
+  ) AS existe;
+  `;
 const sql_getAll = `SELECT * FROM historico_lectura`;
 const sql_getMostRecent = `
   SELECT hl.*
@@ -61,6 +68,19 @@ HistoricoLecturaDAO.prototype.getById = function (id, callback) {
     callback(null, row);
   });
 };
+
+HistoricoLecturaDAO.prototype.existe = function (etiempo, callback) {
+
+  if (verLog)
+    console.log(`${ID_MOD} - existe`);
+
+  const db = getDatabase();
+
+  db.get(sql_existe, [etiempo], (_, row) => {    
+    callback(null, row.existe);
+  });
+};
+
 
 HistoricoLecturaDAO.prototype.getAll = function (callback) {
 

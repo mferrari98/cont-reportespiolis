@@ -31,9 +31,13 @@ function lanzarETL(lines, etiempo, cb) {
     getSitiosNombre(lines, (msjSit) => {
       
       console.log(`${ID_MOD} - ${msjTVar} ${msjSit}`);
-      nuevoHistoricoLectura(lines, etiempo, () => {
+
+      historicoLecturaDAO.existe(etiempo, (_, existe) => {
+        if(!existe)
+          nuevoHistoricoLectura(lines, etiempo, () => { });
+
         cb()
-      });
+      })    
     });
   });
 }

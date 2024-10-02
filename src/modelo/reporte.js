@@ -38,8 +38,13 @@ Reporte.prototype.declarar = function (sitios, cb) {
     })
 }
 
-Reporte.prototype.definir = function () {
-    return 
+Reporte.prototype.definir = function (reporte, row, tipoVarRow, sitioRow, historicos) {
+
+    const indice_prop = tipoVarRow.orden
+    const variableKeys = Object.keys(reporte[sitioRow.orden].variable);
+
+    reporte[sitioRow.orden].variable[variableKeys[indice_prop]].valor = row.valor
+    reporte[sitioRow.orden].variable.nivel.historico = historicos
 }
 
 module.exports = Reporte;

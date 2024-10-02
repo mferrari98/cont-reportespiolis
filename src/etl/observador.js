@@ -59,7 +59,7 @@ function readAndProcessFile() {
     });
 
     rl.on("close", () => {
-      lanzarETL(lines, () => {
+      lanzarETL(lines, currentModifiedTime, () => {
         verUltimoCambio(true, () => { } )
       })
     });
@@ -83,9 +83,8 @@ function checkFileModification() {
       const fechaActual = formatoFecha(currentModifiedTime);
       const fechaAnterior = formatoFecha(lastModifiedTime);
       lastModifiedTime = currentModifiedTime;
-
-      if (verLog)
-        console.log(`Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+      
+      console.log(`Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
 
       readAndProcessFile();
     } else {

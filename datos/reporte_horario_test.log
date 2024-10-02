@@ -1,14 +1,14 @@
-                Nivel[m]      Cloro[mlg/l]     Turbiedad[UTN]     VOL/DIA[m3/dia]
-Toma(Rio)           1.75
-Toma(Des.)          1.10                        10.63
-P.Pot               2.37        1.28            0.13                 137291
-L.Maria             2.68        1.20
-KM11                2.70        0.78
-B.SAN MIGUEL        2.23        
-R6000               3.01        0.51
-B.OESTE(1K)         2.05 
-NUEVA CHUBUT        1.20
-B.PUJOL             2.20
+Sitio            Nivel[m]      Cloro[mlg/l]     Turbiedad[UTN]     VOL/DIA[m3/dia]
+Toma(Rio)           1.33
+Toma(Des.)          2.36                            13.13
+P.Pot               2.04          1.25               0.13             13110
+L.Maria             2.80          1.11
+KM11                4.13          0.64
+R6000               3.37          0.51
+B.PUJOL             2.05
+B.OESTE(1K)         3.19 
+B.SAN MIGUEL        2.32
+NUEVA CHUBUT        3.01
 Cota(126)           2.3
 Cota(45)            1.52
 Doradillo           3.2

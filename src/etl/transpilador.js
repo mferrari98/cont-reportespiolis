@@ -56,7 +56,7 @@ function expandirPlantilla(reporte, data) {
 function sustituirMarcas(reporte, estampatiempo, contenido, cb) {
     
     contenido = contenido
-        .replaceAll('<!-- ESTAMPATIEMPO -->', formatoFecha(estampatiempo))
+        .replaceAll('<!-- ESTAMPATIEMPO -->', fechaLegible(estampatiempo))
         .replaceAll('<!-- HEADER_0 -->', reporte[0].variable.nivel.descriptor)
         .replaceAll('<!-- HEADER_1 -->', reporte[0].variable.cloro.descriptor)
         .replaceAll('<!-- HEADER_2 -->', reporte[0].variable.turbiedad.descriptor)
@@ -101,7 +101,10 @@ function prepararGrafLineas(reporte, contenido) {
         if (historicos == undefined)
             continue
 
-        let valx = unpack(historicos, 'etiempo')
+        const valx_millis = unpack(historicos, 'etiempo')
+        const valx_iso = convertirTimestampsAISO(valx_millis);
+        const valx = valx_iso.map(iso => `"${iso}"`);
+
         let valy = unpack(historicos, 'valor')
         
         traces[indice] = `trace${indice}`
@@ -127,14 +130,20 @@ function prepararGrafLineas(reporte, contenido) {
 
 function unpack(rows, key) {
     return rows.map(function (row) {
-        return `"${row[key]}"`
+        return `${row[key]}`
     });
 }
 
-function calcularLlenado(reporte, contenido){
+function convertirTimestampsAISO(timestamps) {
+    return timestamps.map(ts => {
+        const { date, time } = getCurrentDateTime(Number(ts))
+        return `${date} ${time}`
+    });
+}
+
+function calcularLlenado(reporte, contenido) {
+    
     let sitios = reporte.map(objeto => "'" + objeto.sitio + "'");
-    let nuevosArreglos = [];
-    let nivelestotales = parseFloat(reporte.reduce((total, objeto) => total + (objeto.variable.nivel.valor != sindet ? objeto.variable.nivel.valor : 0), 0).toFixed(3))
     let complemento = reporte.map(objeto => (objeto.variable.nivel.valor != sindet) ? (objeto.variable.nivel.rebalse - objeto.variable.nivel.valor).toFixed(3) : 0)
     let niveles = reporte.map(objeto => (objeto.variable.nivel.valor != sindet) ? objeto.variable.nivel.valor : 0)
     let cubicaje = reporte.map(objeto => (objeto.variable.nivel.cubicaje != sindet) ? objeto.variable.nivel.cubicaje : 0)
@@ -143,22 +152,20 @@ function calcularLlenado(reporte, contenido){
     let llenadocomplementototal = []
 
     // Verificar que los arreglos tienen el mismo tamaño
-        if (niveles.length === cubicaje.length) {
-            for (let i = 0; i < niveles.length; i++) {
-                // Multiplicar los valores de los arreglos y agregarlos al arreglo de llenado
-                let resultado = niveles[i] * cubicaje[i];
-                llenado.push(resultado);
+    if (niveles.length === cubicaje.length) {
+        for (let i = 0; i < niveles.length; i++) {
+            // Multiplicar los valores de los arreglos y agregarlos al arreglo de llenado
+            let resultado = niveles[i] * cubicaje[i];
+            llenado.push(resultado);
 
-                // Suma de todos los commplementos
-                llenadocomplementototal =+ complemento[i] * resultado;
+            // Suma de todos los commplementos
+            llenadocomplementototal =+ complemento[i] * resultado;
 
-                // Sumar el resultado a llenadoniveltotal
-                llenadoniveltotal += resultado;
+            // Sumar el resultado a llenadoniveltotal
+            llenadoniveltotal += resultado;
+        }
     }
-}
 
-    
-    let tracePie = 'tracePie';
     const marcaPie = '[tracePie]';
     const posicionMarcaPie = contenido.indexOf(marcaPie);
 
@@ -185,8 +192,6 @@ function calcularLlenado(reporte, contenido){
     return resultadoFinalPie;
 }
 
-
-
 function crearHTMLSalida(contenido, cb) {
     // Escribir en el archivo
     fs.writeFile("./web/public/reporte.html", contenido, (err) => {
@@ -201,17 +206,24 @@ function crearHTMLSalida(contenido, cb) {
     });
 }
 
-function formatoFecha(fechaOriginal) {
-    const fecha = new Date(fechaOriginal);
+function fechaLegible(estampatiempo) {
+    const { date, time } = getCurrentDateTime(estampatiempo)
+    return `${date} a las ${time}`;
+}
 
-    // Obtiene los componentes de la fecha
-    const year = fecha.getFullYear();
-    const month = String(fecha.getMonth() + 1).padStart(2, '0');
-    const day = String(fecha.getDate()).padStart(2, '0');
-    const hours = String(fecha.getHours()).padStart(2, '0');
-    const minutes = String(fecha.getMinutes()).padStart(2, '0');
-
-    return `${day}/${month}/${year} a las ${hours}:${minutes}`;
+function getCurrentDateTime(estampatiempo) {
+    const now = new Date(estampatiempo);
+    const options = {
+        year: '2-digit', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+    };
+    // es necesario compensar 3 horas por GMT-3 (tiempo medio de Greenwich)
+    const formatter = new Intl.DateTimeFormat('es-ES', options);
+    const parts = formatter.formatToParts(now);
+    const date = `${parts[0].value}/${parts[2].value}/${parts[4].value}`; // dd/mm/yy
+    const time = `${parts[6].value}:${parts[8].value}:${parts[10].value}`; // hh:mm:ss
+    return { date, time };
 }
 
 // Exportar la función si es necesario

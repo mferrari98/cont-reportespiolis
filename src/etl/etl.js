@@ -24,14 +24,14 @@ const tipo_variables = ["Nivel[m]", "Cloro[mlg/l]", "Turbiedad[UTN]", "VOL/DIA[m
  * getTipoVariable, getSitiosNombre y nuevoHistoricoLectura, quienes realizan
  * el proceso de extraccion, transformacion y carga por su cuenta.
  */
-function lanzarETL(lines, cb) {
+function lanzarETL(lines, etiempo, cb) {
   getTipoVariable(lines[0], (msjTVar) => {
     
     lines.splice(0, 1);    
     getSitiosNombre(lines, (msjSit) => {
       
       console.log(`${ID_MOD} - ${msjTVar} ${msjSit}`);
-      nuevoHistoricoLectura(lines, () => {
+      nuevoHistoricoLectura(lines, etiempo, () => {
         cb()
       });
     });
@@ -48,11 +48,13 @@ function getTipoVariable(firstLine, cb) {
   let entidades_existentes = 0;
 
   /*
-    es importante este filtro porque evita crear instancias como consecuencia de un objeto mal parseado
+    toma la primer linea, y le aplica sucesivamente:
+    - conversion a array usando como separado todo continuo con 2 o mas blancos
+    - descarta el primer elemento tal que ['a', 'b', 'c'] retorna ['b', 'c']
     */
   let tipo_variable = firstLine
     .split(/\s{2,}/)
-    .filter((word) => word.length > 0);
+    .splice(1);
 
   for (const [index, descriptor] of tipo_variable.entries()) {
     tipoVariableDAO.getByDescriptor(descriptor, (err, row) => {
@@ -133,15 +135,14 @@ function getSitiosNombre(lines, cb) {
   }
 }
 
-function nuevoHistoricoLectura(lines, callback) {
+function nuevoHistoricoLectura(lines, etiempo, callback) {
 
   const lineas_modif = agregarNulos(lines, umbral);
-  const timestamp = new Date().toISOString();
 
-  insertar(lineas_modif, 1, timestamp, () => {        // nivel
-    insertar(lineas_modif, 2, timestamp, () => {      // cloro
-      insertar(lineas_modif, 3, timestamp, () => {    // turbiedad
-        insertar(lineas_modif, 4, timestamp, () => {  // vol/dia
+  insertar(lineas_modif, 1, etiempo, () => {        // nivel
+    insertar(lineas_modif, 2, etiempo, () => {      // cloro
+      insertar(lineas_modif, 3, etiempo, () => {    // turbiedad
+        insertar(lineas_modif, 4, etiempo, () => {  // vol/dia
           callback();
         });
       });

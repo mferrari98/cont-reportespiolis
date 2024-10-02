@@ -19,11 +19,11 @@ let lanzarReporte = function (evSCADA, currentModifiedTime, cb) {
     getNuevosDatos((err, reporte) => {        
         if (!err) {
             transpilar(reporte, currentModifiedTime, () => {
-                cb()
                 if (evSCADA) {
                     emailMensaje.extraerTabla();
                     emailMensaje.renderizar();    
                 }
+                cb()
             });
         }
     });
@@ -49,7 +49,7 @@ function getNuevosDatos(callback) {
                         sitioDAO.getById(row.sitio_id, (err, sitioRow) => {
                             historicoLecturaDAO.getHistorico(sitioRow.id, (_, historico) => {
 
-                                completarReporte(mi_reporte, row, tipoVarRow, sitioRow, historico);
+                                reporte.definir(mi_reporte, row, tipoVarRow, sitioRow, historico);
                                 remaining -= 1;
                                 
                                 if (remaining === 0)
@@ -63,15 +63,6 @@ function getNuevosDatos(callback) {
             });
         })
     });
-}
-
-function completarReporte(reporte, row, tipoVarRow, sitioRow, historicos) {
-
-    const indice_prop = tipoVarRow.orden
-    const variableKeys = Object.keys(reporte[sitioRow.orden].variable);
-
-    reporte[sitioRow.orden].variable[variableKeys[indice_prop]].valor = row.valor
-    reporte[sitioRow.orden].variable.nivel.historico = historicos
 }
 
 module.exports = { lanzarReporte };

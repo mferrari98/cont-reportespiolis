@@ -22,13 +22,13 @@ HistLectControl.prototype.poblar = function (cb) {
 
     let remanente = cant_reportes * cant_sitios
     let acumulado = Array.from({ length: cant_reportes }, () => Array(cant_sitios).fill(undefined));
-    let timestamp = Date.now() - (3 * 60 * 60 * 1000);  // restar 3 horas por GMT-3 (tiempo medio de Greenwich)
+    let timestamp = Date.now()
     
     tipoVariableDAO.getByDescriptor("Nivel[m]", (err1, tipoVariable) => {
         
         for (let i = 0; i < cant_reportes; i++) {      // insertar 20 reportes con datos aleatorios
             
-            // estamapa de tiempo en formato ISO
+            // estampa de tiempo en formato ISO
             const estampa = new Date(timestamp - (fourHours * i)).toISOString()
 
             for (let j = 0; j < cant_sitios; j++) {

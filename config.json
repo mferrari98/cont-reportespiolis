@@ -1,20 +1,20 @@
 {
     "direcciones": {
         "sca_wizcon1_": "//PC0346/datos/reporte_horario_test.log",
-        "sca_wizcon": "//PC0301/datos/reporte_horario_test.log",
-        "sca_wizcon2_": "//pc0043/SERVICOOP/REP002.DAT",
+        "sca_wizcon2_": "//PC0301/datos/reporte_horario_test.log",
+        "sca_wizcon": "//pc0043/SERVICOOP/REP002.DAT",
         "sca_wizcon3_": "//mnt/pc0346.compartido",
         "cota45": "//serv_en_01/compartido/NivelCisSur.txt"
     },
     "email": {
         "credenciales": {
-            "user_": "hdonato@servicoop.com",
-            "pass_": "ddonato",
-            "user": "mferrari@servicoop.com",
-            "pass": "servicoop1"
+            "user": "hdonato@servicoop.com",
+            "pass": "ddonato",
+            "user_": "mferrari@servicoop.com",
+            "pass_": "servicoop1"
         },
         "difusion": [
-            "mferrari@servicoop.com"
+            "hdonato@servicoop.com"
         ],
         "difusionreal": [
             "lbarrera@servicoop.com",

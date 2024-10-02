@@ -41,7 +41,7 @@ const tablaHistoricosLectura = (err_previo, callback) => {
       sitio_id INTEGER NOT NULL,
       tipo_id INTEGER NOT NULL,
       valor REAL NOT NULL,
-      etiempo DATETIME DEFAULT CURRENT_TIMESTAMP,
+      etiempo BIGINT NOT NULL,
       FOREIGN KEY (sitio_id) REFERENCES sitio(id),
       FOREIGN KEY (tipo_id) REFERENCES tipo_variable(id)
   )`,

@@ -95,7 +95,7 @@ function getCurrentDateTime() {
     };
     const formatter = new Intl.DateTimeFormat('es-ES', options);
     const parts = formatter.formatToParts(now);
-    const date = `${parts[4].value}/${parts[2].value}/${parts[0].value}`; // dd/mm/yy
+    const date = `${parts[0].value}/${parts[2].value}/${parts[4].value}`; // dd/mm/yy
     const time = `${parts[6].value}:${parts[8].value}:${parts[10].value}`; // hh:mm:ss
     return { date, time };
 }

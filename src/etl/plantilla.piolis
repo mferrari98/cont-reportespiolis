@@ -63,7 +63,7 @@
     <!-- Div donde se renderizará el gráfico -->
     <div id="grafBarras" style="width: 100%; height: 500px;"></div>
     <div id="grafLineas" style="width: 100%; height: 500px;"></div>
-    <div style="width: 100%; height: 600px; margin: 0 auto;" id="grafPie"></div>
+    <div id="grafPie"  style="width: 100%; height: 500px;"></div>
 
     <button id="guardar">Guardar como imagen</button>
     <button id="copiar">Copiar al Portapapeles</button>
@@ -197,9 +197,6 @@
                 "type": "sunburst",
 
                 [tracePie]
-
-                
-
 
                 outsidetextfont: {size: 20, color: "#377eb8"},
                 "leaf": {opacity: 0.6},

@@ -160,8 +160,7 @@ function calcularLlenado(reporte, contenido) {
         
         // Suma de todos los complementos
         llenadocomplementototal += complemento[i] * cubicaje[i];
-        llenadocomplementototal = parseFloat(llenadocomplementototal.toFixed(2)); // Limitar a 3 decimales
-        console.log(llenadocomplementototal);
+        llenadocomplementototal = parseFloat(llenadocomplementototal.toFixed(2)); // Limitar a 3 decimales        
 
         // Sumar el resultado a llenadoniveltotal
         llenadoniveltotal += resultado;

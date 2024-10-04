@@ -133,11 +133,4 @@ dist
 src/basedatos/database.sqlite
 src/etl/plantilla.expand.html
 src/web/public/reporte.html
-<<<<<<< HEAD
 src/reporte/salida/*
-=======
-src/reporte/salida/*
-
-# archivos que dependen de cada instancia
-./config.json
->>>>>>> 9c61934c24cee369812b49a8f5d62332823a7bb0

@@ -10,18 +10,20 @@ const ID_MOD = "WEBSERV"
 const app = express();
 app.use(express.json());
 
+const MAX_RETRIES = 3; // Límite de intentos para encontrar un puerto
+let currentPort = 3000; // Puerto inicial
+
 /*
 Middleware para configurar Content-Security-Policy
 */
 app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "\
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3000;\
-    style-src 'self' 'unsafe-inline' http://localhost:3000;\
-    img-src 'self' data: blob: http://localhost:3000;\
-    connect-src 'self' http://localhost:3000 https://raw.githubusercontent.com;\
+ res.setHeader("Content-Security-Policy", "\
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:" + currentPort + ";\
+    style-src 'self' 'unsafe-inline' http://localhost:" + currentPort + ";\
+    img-src 'self' data: blob: http://localhost:" + currentPort + ";\
+    connect-src 'self' http://localhost:" + currentPort + " https://raw.githubusercontent.com;\
     "
   );
-
   next();
 });
 

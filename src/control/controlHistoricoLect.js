@@ -1,3 +1,6 @@
+const https = require('https');
+const url = 'https://10.10.4.125:3000/bd/soquete'
+
 const TipoVariableDAO = require("../dao/tipoVariableDAO");
 const SitioDAO = require("../dao/sitioDAO");
 const HistoricoLecturaDAO = require("../dao/historicoLecturaDAO");
@@ -17,6 +20,25 @@ const MAX_RANGO = 4.5
 const MIN_RANGO = 0.1
 
 function HistLectControl() { }
+
+HistLectControl.prototype.sincronizar = function (cb) {
+
+    https.get(url, (res) => {
+        let data = '';
+
+        // A medida que se reciben datos
+        res.on('data', (chunk) => {
+            data += chunk;
+        });
+
+        // Al finalizar la respuesta
+        res.on('end', () => {
+            console.log('Datos recibidos:', JSON.parse(data));
+        });
+    }).on('error', (err) => {
+        console.error('Error en la solicitud:', err.message);
+    });
+}
 
 HistLectControl.prototype.poblar = function (cb) {
 

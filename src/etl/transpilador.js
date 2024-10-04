@@ -149,22 +149,26 @@ function calcularLlenado(reporte, contenido) {
     let cubicaje = reporte.map(objeto => (objeto.variable.nivel.cubicaje != sindet) ? objeto.variable.nivel.cubicaje : 0)
     let llenado = []
     let llenadoniveltotal = 0
-    let llenadocomplementototal = []
+    let llenadocomplementototal = 0
 
-    // Verificar que los arreglos tienen el mismo tamaño
+   // Verificar que los arreglos tienen el mismo tamaño
     if (niveles.length === cubicaje.length) {
-        for (let i = 0; i < niveles.length; i++) {
-            // Multiplicar los valores de los arreglos y agregarlos al arreglo de llenado
-            let resultado = niveles[i] * cubicaje[i];
-            llenado.push(resultado);
+    for (let i = 0; i < niveles.length; i++) {
+        // Multiplicar los valores de los arreglos y agregarlos al arreglo de llenado
+        let resultado = niveles[i] * cubicaje[i];
+        llenado.push(parseFloat(resultado.toFixed(2))); // Limitar a 3 decimales y convertir a número
+        
+        // Suma de todos los complementos
+        llenadocomplementototal += complemento[i] * cubicaje[i];
+        llenadocomplementototal = parseFloat(llenadocomplementototal.toFixed(2)); // Limitar a 3 decimales
+        console.log(llenadocomplementototal);
 
-            // Suma de todos los commplementos
-            llenadocomplementototal =+ complemento[i] * resultado;
-
-            // Sumar el resultado a llenadoniveltotal
-            llenadoniveltotal += resultado;
-        }
+        // Sumar el resultado a llenadoniveltotal
+        llenadoniveltotal += resultado;
     }
+    llenadoniveltotal = parseFloat(llenadoniveltotal.toFixed(2)); // Limitar a 3 decimales
+}
+
 
     const marcaPie = '[tracePie]';
     const posicionMarcaPie = contenido.indexOf(marcaPie);

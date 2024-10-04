@@ -63,7 +63,8 @@
     <!-- Div donde se renderizará el gráfico -->
     <div id="grafBarras" style="width: 100%; height: 500px;"></div>
     <div id="grafLineas" style="width: 100%; height: 500px;"></div>
-    <div id="grafPie"  style="width: 100%; height: 500px;"></div>
+    <div id="grafPie" style="width: 100%; height: 500px; background-color: lightgray; margin: 0 auto; display: block;"></div>
+
 
     <button id="guardar">Guardar como imagen</button>
     <button id="copiar">Copiar al Portapapeles</button>

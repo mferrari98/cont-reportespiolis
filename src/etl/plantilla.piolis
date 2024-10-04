@@ -28,7 +28,7 @@
                 <tr>
                     <th
                         style="color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse; text-align: center; background: #3498db; color: #fff; font-size: 16px;">
-                        Sitio</th>
+                        Sitio <button id="copiar">Copiar al Portapapeles</button></th>
                     <th
                         style="color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse; text-align: center; background: #3498db; color: #fff; font-size: 16px;">
                         <!-- HEADER_0 --></th>
@@ -60,14 +60,15 @@
         </table>
     </div>
 
-    <!-- Div donde se renderizará el gráfico -->
+    <!-- Div donde se renderizará el gráfico -->        
     <div id="grafBarras" style="width: 100%; height: 500px;"></div>
+    <div id="separador" style="width: 100%; height: 20px;"></div>
+    <div id="grafPie" style="width: 100%; height: 500px;"></div>
     <div id="grafLineas" style="width: 100%; height: 500px;"></div>
-    <div id="grafPie" style="width: 100%; height: 500px; background-color: lightgray; margin: 0 auto; display: block;"></div>
 
 
     <button id="guardar">Guardar como imagen</button>
-    <button id="copiar">Copiar al Portapapeles</button>
+    
 
     <script>
         document.getElementById('copiar').addEventListener('click', function () {
@@ -91,8 +92,8 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             barras()
-            lineas()
             pie()
+            lineas()
         })
     </script>
 
@@ -141,20 +142,18 @@
                 title: 'Niveles actuales',
 
                 xaxis: {
-                    title: 'Sitio'
+                    title: ''
                 },
                 yaxis: {
                     title: 'Nivel [m]'
                 },
-                dragmode: false,    // Esto deshabilita el modo de arrastre para el zoom
-                zoom: false,        // Esto deshabilita completamente la funcionalidad de zoom
                 autosize: true,
                 font: {
                     family: 'consolas',
                     size: 12
                 }
             };
-            var configBarras = { responsive: true, displayModeBar: false };
+            var configBarras = { responsive: true};
 
             Plotly.newPlot('grafBarras', datosBarra, layout, configBarras);
         }
@@ -179,10 +178,13 @@
                     autorange: false,
                     range: [0.0, 5.0],
                     type: 'linear'
-                }
+                },
+                autosize: true,
             };
 
-            Plotly.newPlot('grafLineas', datosLinea, layout);
+            var configLineas = { responsive: true};
+
+            Plotly.newPlot('grafLineas', datosLinea, layout, configLineas);
         }
     </script>
 
@@ -196,22 +198,37 @@
             
             var data = [{
                 "type": "sunburst",
-
                 [tracePie]
-
                 outsidetextfont: {size: 20, color: "#377eb8"},
                 "leaf": {opacity: 0.6},
                 "marker": {line: {width: 2}},
-                "branchvalues": 'total'
+                "branchvalues": 'total', 
+                hovertemplate: "<b>%{label}</b><br>%{value:.2f} m3<extra></extra>",
+                marker: {
+                    colors: ['rgba(211, 165, 60, 0.3)', "", getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim()] 
+                }
             }];
 
             var layout = {
-                margin: {l: 0, r: 0, b: 0, t: 0},
-                width: 500,
-                height: 500
+                margin: {l: 0, r: 0, b: 0, t: 25},
+                autosize: true,
+                title: {
+                    text: 'Cubicaje de Agua por Sitio m3',
+                    font: {
+                        family: 'consolas',
+                        size: 17
+                    },   
+                },
+                font: {
+                    family: 'consolas',  // Cambia la fuente para el gráfico en general
+                    size: 12,
+                    color: 'black'  // Cambia el color del texto general
+                }   
             };
 
-            Plotly.newPlot('grafPie', data, layout);
+            var configPie = {responsive: true};
+
+            Plotly.newPlot('grafPie', data, layout, configPie);
         }
     </script>
 </body>

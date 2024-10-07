@@ -11,16 +11,16 @@ const emailControl = new EmailControl();
 
 function EmailMensaje() { }
 
-EmailMensaje.prototype.extraerTabla = function() {
+EmailMensaje.prototype.extraerTabla = function () {
 
     const archivoHTML = fs.readFileSync('./web/public/reporte.html', 'utf8');
     const $ = cheerio.load(archivoHTML);
 
     $('#copiar').remove();
-    
+
     const headContent = $('head').children().not('script').toString();
     const bodyContent = $('body').children().not('script, #grafBarras, #grafLineas, #grafPie').toString();
-    
+
     // armar un nuevo html
     const newHtml = `
     <!DOCTYPE html>
@@ -39,14 +39,21 @@ EmailMensaje.prototype.extraerTabla = function() {
 }
 
 EmailMensaje.prototype.renderizar = function () {
-    plotBarras(() => {
-        plotLineas(() => {
-            plotPie(() => {
-                emailControl.enviar()
+
+    (async () => {
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        await page.goto(`file://${process.cwd()}/web/public/reporte.html`);
+        
+        plotBarras(page, () => {
+            plotPie(page, () => {
+                plotLineas(page, () => {
+                    emailControl.enviar()
+                    browser.close(); 
+                })
             })
-            
-        })
-    })
+        })       
+    })()
 }
 
 /* ===========================================================
@@ -54,42 +61,21 @@ EmailMensaje.prototype.renderizar = function () {
 ==============================================================
 */
 
-async function plotBarras(cb) {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(`file://${process.cwd()}/web/public/reporte.html`);
-   
-    // Captura la imagen del div con id "myDiv"
+async function plotBarras(page, cb) {
     const element = await page.$('#grafBarras');
     await element.screenshot({ path: './reporte/salida/grafBarras.png' });
-
-    await browser.close();
     cb()
 }
 
-async function plotPie(cb) {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(`file://${process.cwd()}/web/public/reporte.html`);
-   
-    // Captura la imagen del div con id "myDiv"
+async function plotPie(page, cb) {
     const element = await page.$('#grafPie');
     await element.screenshot({ path: './reporte/salida/grafPie.png' });
-
-    await browser.close();
     cb()
 }
 
-async function plotLineas(cb) {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(`file://${process.cwd()}/web/public/reporte.html`);
-   
-    // Captura la imagen del div con id "myDiv"
+async function plotLineas(page, cb) {
     const element = await page.$('#grafLineas');
     await element.screenshot({ path: './reporte/salida/grafLineas.png' });
-
-    await browser.close();
     cb()
 }
 

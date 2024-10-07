@@ -63,7 +63,8 @@ const tablaLog = (err_previo, callback) => {
     `CREATE TABLE IF NOT EXISTS log (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       descriptor TEXT NOT NULL,
-      etiempo BIGINT NOT NULL
+      etiempo BIGINT NOT NULL,
+      creado_el TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`,
     (err) => {
       err_previo["err_log"] = err

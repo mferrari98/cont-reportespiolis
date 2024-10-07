@@ -25,13 +25,13 @@ const ID_MOD = "REPORTE";
  * @param {*} currentModifiedTime 
  * @param {*} cb 
  */
-let lanzarReporte = function (enviarEmail, currentModifiedTime, cb) { 
-    getNuevosDatos((err, reporte) => {        
+let lanzarReporte = function (enviarEmail, currentModifiedTime, cb) {
+    getNuevosDatos((err, reporte) => {
         if (!err) {
             transpilar(reporte, currentModifiedTime, () => {
                 if (enviarEmail) {
                     emailMensaje.extraerTabla();
-                    emailMensaje.renderizar();    
+                    emailMensaje.renderizar();
                 }
                 cb()
             });
@@ -56,23 +56,23 @@ let notificarFallo = function (_, mensaje, currentModifiedTime, cb) {
 */
 
 function getNuevosDatos(callback) {
-    
-    sitioDAO.getTodosDescriptores((_, descriptores) => {        
+
+    sitioDAO.getTodosDescriptores((_, descriptores) => {
         // el objeto reporte se crea siempre, aunque no hay datos para agregar
         reporte.declarar(descriptores, (mi_reporte) => {
 
             historicoLecturaDAO.getMostRecent((_, rows) => {
-                
+
                 let remaining = rows.length;
                 rows.forEach((row) => {
-                    
+
                     tipoVariableDAO.getById(row.tipo_id, (err, tipoVarRow) => {
                         sitioDAO.getById(row.sitio_id, (err, sitioRow) => {
                             historicoLecturaDAO.getHistorico(sitioRow.id, (_, historico) => {
 
                                 reporte.definir(mi_reporte, row, tipoVarRow, sitioRow, historico);
                                 remaining -= 1;
-                                
+
                                 if (remaining === 0)
                                     callback(null, mi_reporte);
                             })

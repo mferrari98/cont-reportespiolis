@@ -45,16 +45,16 @@ HistLectControl.prototype.poblar = function (cb) {
     let remanente = cant_reportes * cant_sitios
     let acumulado = Array.from({ length: cant_reportes }, () => Array(cant_sitios).fill(undefined));
     let timestamp = Date.now()
-    
+
     tipoVariableDAO.getByDescriptor("Nivel[m]", (err1, tipoVariable) => {
-        
+
         for (let i = 0; i < cant_reportes; i++) {      // insertar 20 reportes con datos aleatorios
-            
+
             // estampa de tiempo en formato ISO
             const estampa = new Date(timestamp - (fourHours * i)).toISOString()
 
             for (let j = 0; j < cant_sitios; j++) {
-                
+
                 let valor = generarValorAleatorio(desviacion);
 
                 sitioDAO.getByOrden(j, (err2, sitio) => {
@@ -65,7 +65,7 @@ HistLectControl.prototype.poblar = function (cb) {
                         estampa,
                         (err, result) => {
                             acumulado[i][j] = result
-                            
+
                             if (--remanente == 0)
                                 cb(acumulado)
                         }
@@ -77,7 +77,7 @@ HistLectControl.prototype.poblar = function (cb) {
 }
 
 HistLectControl.prototype.truncate = function (cb) {
-    historicoLecturaDAO.truncate(       
+    historicoLecturaDAO.truncate(
         (err, result) => { cb(result) }
     )
 }

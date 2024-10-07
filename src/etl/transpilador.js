@@ -16,11 +16,11 @@ function transpilar(reporte, estampatiempo, cb) {
 
     let contenido = expandirPlantilla(reporte, data);
     contenido = sustituirMarcas(reporte, estampatiempo, contenido);
-    contenido = prepararGrafLineas(reporte, contenido);
     contenido = calcularLlenado(reporte, contenido);
+    contenido = prepararGrafLineas(reporte, contenido);
 
     // solo para debug
-    fs.writeFile("./etl/plantilla.expand.html", contenido, () => {});
+    fs.writeFile("./etl/plantilla.expand.html", contenido, () => { });
 
     crearHTMLSalida(contenido, () => {
       cb();
@@ -123,8 +123,8 @@ function sustituirMarcas(reporte, estampatiempo, contenido, cb) {
       reporte.map((objeto) =>
         objeto.variable.nivel.valor != sindet
           ? (
-              objeto.variable.nivel.rebalse - objeto.variable.nivel.valor
-            ).toFixed(3)
+            objeto.variable.nivel.rebalse - objeto.variable.nivel.valor
+          ).toFixed(3)
           : 0
       )
     )
@@ -136,10 +136,10 @@ function sustituirMarcas(reporte, estampatiempo, contenido, cb) {
             total +
             (objeto.variable.nivel.valor != sindet
               ? parseFloat(
-                  (
-                    objeto.variable.nivel.rebalse - objeto.variable.nivel.valor
-                  ).toFixed(3)
-                )
+                (
+                  objeto.variable.nivel.rebalse - objeto.variable.nivel.valor
+                ).toFixed(3)
+              )
               : 0),
           0
         )
@@ -151,61 +151,6 @@ function sustituirMarcas(reporte, estampatiempo, contenido, cb) {
     );
 
   return contenido;
-}
-
-function prepararGrafLineas(reporte, contenido) {
-  let traces = [];
-  const marca = "[trace]";
-  const posicionMarca = contenido.indexOf(marca);
-
-  // Elimina la marca del texto.
-  let textoModificado = contenido.replace(marca, "");
-
-  // Itera sobre el arreglo `reporte` e inserta la nueva estructura en la posición memorizada.
-  let resultadoFinal = textoModificado.substring(0, posicionMarca); // Texto antes de la marca.
-
-  for (let indice = 0; indice < reporte.length; indice++) {
-    const historicos = reporte[indice].variable.nivel.historico;
-    if (historicos == undefined) continue;
-
-    const valx_millis = unpack(historicos, "etiempo");
-    const valx_iso = convertirTimestampsAISO(valx_millis);
-    const valx = valx_iso.map((iso) => `"${iso}"`);
-
-    let valy = unpack(historicos, "valor");
-
-    traces[indice] = `trace${indice}`;
-
-    let estructura = `
-        var ${traces[indice]} = {
-            name: "${reporte[indice].sitio}",
-            x: [${valx}],
-            y: [${valy}],
-            type: 'scatter'
-        };\n`;
-
-    // Inserta la estructura en la posición original de la marca.
-    resultadoFinal += estructura;
-  }
-
-  resultadoFinal += `\nvar datosLinea = [${traces.join(", ")}];`;
-  // Agrega el contenido restante del texto original después de la marca.
-  resultadoFinal += textoModificado.substring(posicionMarca);
-
-  return resultadoFinal;
-}
-
-function unpack(rows, key) {
-  return rows.map(function (row) {
-    return `${row[key]}`;
-  });
-}
-
-function convertirTimestampsAISO(timestamps) {
-  return timestamps.map((ts) => {
-    const { date, time } = getCurrentDateTime(Number(ts));
-    return `${date} ${time}`;
-  });
 }
 
 function calcularLlenado(reporte, contenido) {
@@ -260,11 +205,65 @@ function calcularLlenado(reporte, contenido) {
 
   // Inserta la estructura en la posición original de la marca.
   resultadoFinalPie += estructuraPie;
-
   // Agrega el contenido restante del texto original después de la marca.
   resultadoFinalPie += textoModificadoPie.substring(posicionMarcaPie);
 
   return resultadoFinalPie;
+}
+
+function prepararGrafLineas(reporte, contenido) {
+
+  let traces = [];
+  const marca = "[trace]";
+  const posicionMarca = contenido.indexOf(marca);
+
+  // Elimina la marca del texto.
+  let textoModificado = contenido.replace(marca, "");
+  // Itera sobre el arreglo `reporte` e inserta la nueva estructura en la posición memorizada.
+  let resultadoFinal = textoModificado.substring(0, posicionMarca); // Texto antes de la marca.
+
+  for (let indice = 0; indice < reporte.length; indice++) {
+    const historicos = reporte[indice].variable.nivel.historico;
+    if (historicos == undefined) continue;
+
+    const valx_millis = unpack(historicos, "etiempo");
+    const valx_iso = convertirTimestampsAISO(valx_millis);
+    const valx = valx_iso.map((iso) => `"${iso}"`);
+
+    let valy = unpack(historicos, "valor");
+
+    traces[indice] = `trace${indice}`;
+
+    let estructura = `
+        var ${traces[indice]} = {
+            name: "${reporte[indice].sitio}",
+            x: [${valx}],
+            y: [${valy}],
+            type: 'scatter'
+        };\n`;
+
+    // Inserta la estructura en la posición original de la marca.
+    resultadoFinal += estructura;
+  }
+
+  resultadoFinal += `\nvar datosLinea = [${traces.join(", ")}];`;
+  // Agrega el contenido restante del texto original después de la marca.
+  resultadoFinal += textoModificado.substring(posicionMarca);
+
+  return resultadoFinal;
+}
+
+function unpack(rows, key) {
+  return rows.map(function (row) {
+    return `${row[key]}`;
+  });
+}
+
+function convertirTimestampsAISO(timestamps) {
+  return timestamps.map((ts) => {
+    const { date, time } = getCurrentDateTime(Number(ts));
+    return `${date} ${time}`;
+  });
 }
 
 function crearHTMLSalida(contenido, cb) {
@@ -306,5 +305,5 @@ function getCurrentDateTime(estampatiempo) {
 
 // Exportar la función si es necesario
 module.exports = {
-  transpilar,
+  transpilar
 };

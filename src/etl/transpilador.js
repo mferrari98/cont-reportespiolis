@@ -282,7 +282,7 @@ function crearHTMLSalida(contenido, cb) {
 
 function fechaLegible(estampatiempo) {
   const { date, time } = getCurrentDateTime(estampatiempo);
-  return `${date} a las ${time}`;
+  return `${date} ${time}`;
 }
 
 function getCurrentDateTime(estampatiempo) {

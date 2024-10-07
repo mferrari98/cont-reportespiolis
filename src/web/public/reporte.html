@@ -1,0 +1,352 @@
+<!DOCTYPE html><html lang="es"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Reportespiolis</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <script src="js/plotly-latest.min.js"></script>
+
+    <style>
+        :root {
+            --color-nivel: #3498db;
+            --color-rebalse: #d3a53c;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align: center; font-family: 'Consolas';">REPORTE HORARIO</h1>
+    <h3 style="text-align: center; font-family: 'Courier New';">07/10/24 08:02:45</h3>
+    <div>
+        <table style="margin: 25px auto; border-collapse: collapse; border: 1px solid #eee; border-bottom: 2px solid #3498db; box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.10), 0px 10px 20px rgba(0, 0, 0, 0.05), 0px 20px 20px rgba(0, 0, 0, 0.05), 0px 30px 20px rgba(0, 0, 0, 0.05); font-family: 'consolas';">
+            <thead>
+                <tr>
+                    <th style="color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse; text-align: center; background: #3498db; color: #fff; font-size: 16px;">
+                        Sitio </th>
+                    <th style="color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse; text-align: center; background: #3498db; color: #fff; font-size: 16px;">
+                        Nivel[m] <button id="copiar">Copiar</button> </th>
+                    <th style="color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse; text-align: center; background: #3498db; color: #fff; font-size: 16px;">
+                        Cloro[mlg/l]</th>
+                    <th style="color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse; text-align: center; background: #3498db; color: #fff; font-size: 16px;">
+                        Turbiedad[UTN]</th>
+                    <th style="color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse; text-align: center; background: #3498db; color: #fff; font-size: 16px;">
+                        VOL/DIA[m3/dia]</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr style="font-family: 'consolas';">
+                    <td style="text-align: left; color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse;">Toma(Rio)</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">1.2</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                </tr><tr style="font-family: 'consolas';">
+                    <td style="text-align: left; color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse;">Toma(Des.)</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">2.2</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">13.13</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                </tr><tr style="font-family: 'consolas';">
+                    <td style="text-align: left; color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse;">P.Pot</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">3.1</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">1.25</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">0.13</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">13110</td>
+                </tr><tr style="font-family: 'consolas';">
+                    <td style="text-align: left; color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse;">L.Maria</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">1.7</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">1.11</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                </tr><tr style="font-family: 'consolas';">
+                    <td style="text-align: left; color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse;">KM11</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">2.9</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">0.64</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                </tr><tr style="font-family: 'consolas';">
+                    <td style="text-align: left; color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse;">R6000</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">3.9</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">0.51</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                </tr><tr style="font-family: 'consolas';">
+                    <td style="text-align: left; color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse;">B.OESTE(1K)</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">0.7</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                </tr><tr style="font-family: 'consolas';">
+                    <td style="text-align: left; color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse;">B.SAN MIGUEL</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">3.3</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                </tr><tr style="font-family: 'consolas';">
+                    <td style="text-align: left; color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse;">NUEVA CHUBUT</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">2.4</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                </tr><tr style="font-family: 'consolas';">
+                    <td style="text-align: left; color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse;">B.PUJOL</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">1.1</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                    <td style="text-align: center; color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse;">-</td>
+                </tr></tbody>
+        </table>
+    </div>
+
+    <!-- Div donde se renderizará el gráfico -->        
+    <div id="grafBarras" style="width: 100%; height: 500px;"></div>
+    <div id="separador" style="width: 100%; height: 20px;"></div>
+    <div id="grafPie" style="width: 100%; height: 500px;"></div>
+    <div id="grafLineas"></div>
+
+    <script>
+        document.getElementById('copiar').addEventListener('click', function () {
+
+            let textToCopy = '';
+            let filas = document.querySelector("tbody").children
+
+            for (let i = 0; i < filas.length; i++) {
+                textToCopy += filas[i].childNodes[1].innerText + "," + filas[i].childNodes[3].innerText + '\n';
+            }
+            textToCopy = textToCopy.trim()
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('Texto copiado al portapapeles');
+            }).catch(err => {
+                console.error('Error al copiar el texto: ', err);
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            barras()
+            pie()
+            lineas()
+        })
+    </script>
+
+    <script>
+        function barras() {
+
+            /* ********************************************
+            *********** GRAFICO BARRAS APILADAS ***********
+            ******************************************** */
+
+            var sitios = ['Toma(Rio)','Toma(Des.)','P.Pot','L.Maria','KM11','R6000','B.OESTE(1K)','B.SAN MIGUEL','NUEVA CHUBUT','B.PUJOL']
+            var niveles = [1.2,2.2,3.1,1.7,2.9,3.9,0.7,3.3,2.4,1.1]
+
+            var trace10 = {
+                x: sitios,
+                y: niveles,
+                name: 'Nivel',
+                type: 'bar',
+                marker: {
+                    color: getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim(),
+                },
+                text: niveles.map(String),
+                textposition: 'auto',
+                hoverinfo: 'none',
+            };
+
+            var trace11 = {
+                x: sitios,
+                y: [2.800,0.800,-0.100,3.300,2.100,0.100,4.300,0.700,1.600,1.900],
+                name: 'Rebalse',
+                type: 'bar',
+                marker: {
+                    color: getComputedStyle(document.documentElement).getPropertyValue('--color-rebalse').trim(),
+                    opacity: 0.2
+                },
+                text: [4.000,3.000,3.000,5.000,5.000,4.000,5.000,4.000,4.000,3.000].map(String),
+                textposition: 'auto',
+                hoverinfo: 'none',
+            };
+
+            var datosBarra = [trace10, trace11];
+
+            // Configurar el diseño del gráfico
+            var layout = {
+                barmode: 'stack',
+                title: 'Niveles actuales',
+
+                xaxis: {
+                    title: ''
+                },
+                yaxis: {
+                    title: 'Nivel [m]'
+                },
+                autosize: true,
+                font: {
+                    family: 'consolas',
+                    size: 12
+                }
+            };
+            var configBarras = { responsive: true};
+
+            Plotly.newPlot('grafBarras', datosBarra, layout, configBarras);
+        }
+    </script>
+
+    <script>
+        function lineas() {
+
+            /* ********************************************
+            *********** GRAFICO LINEAS ***********
+            ******************************************** */
+            
+            
+        var trace0 = {
+            name: "Toma(Rio)",
+            x: ["02/10/24 13:00:01","02/10/24 14:00:01","02/10/24 15:00:00","02/10/24 16:00:00","02/10/24 17:00:00","02/10/24 18:00:01","02/10/24 19:00:00","03/10/24 05:00:01","03/10/24 06:00:00","03/10/24 07:00:00","03/10/24 08:00:00","03/10/24 09:00:00","03/10/24 10:00:21","03/10/24 11:00:10","03/10/24 12:00:01","03/10/24 13:00:01","03/10/24 14:00:01","03/10/24 15:00:00","03/10/24 16:00:00","03/10/24 17:00:01","03/10/24 18:00:00","03/10/24 19:00:00","03/10/24 20:00:00","03/10/24 21:00:00","03/10/24 22:00:01","03/10/24 23:00:01","03/10/24 23:58:00","04/10/24 01:00:00","04/10/24 02:00:00","04/10/24 03:00:01","04/10/24 04:00:00","04/10/24 05:00:00","04/10/24 06:00:00","04/10/24 07:00:00","04/10/24 08:00:44","04/10/24 09:00:01","04/10/24 10:00:01","04/10/24 12:23:03","04/10/24 12:28:07","04/10/24 12:41:56","04/10/24 12:42:08","04/10/24 12:42:49","04/10/24 12:43:48","07/10/24 07:57:23","07/10/24 08:00:11","07/10/24 08:02:45"],
+            y: [1.24,1.24,1.24,1.24,1.27,1.27,1.27,1.15,1.15,1.15,1.15,1.15,1.15,1.08,1.08,1.08,1.13,1.13,1.13,1.13,1.13,1.13,1.1,1.1,1.1,1.1,1.1,1.1,1.05,1.05,1.05,1.05,1.05,1.05,1.02,1.02,1.02,1,1,1,1,1,1,1,1.1,1.2],
+            type: 'scatter'
+        };
+
+        var trace1 = {
+            name: "Toma(Des.)",
+            x: ["02/10/24 13:00:01","02/10/24 14:00:01","02/10/24 15:00:00","02/10/24 16:00:00","02/10/24 17:00:00","02/10/24 18:00:01","02/10/24 19:00:00","03/10/24 05:00:01","03/10/24 06:00:00","03/10/24 07:00:00","03/10/24 08:00:00","03/10/24 09:00:00","03/10/24 10:00:21","03/10/24 11:00:10","03/10/24 12:00:01","03/10/24 13:00:01","03/10/24 14:00:01","03/10/24 15:00:00","03/10/24 16:00:00","03/10/24 17:00:01","03/10/24 18:00:00","03/10/24 19:00:00","03/10/24 20:00:00","03/10/24 21:00:00","03/10/24 22:00:01","03/10/24 23:00:01","03/10/24 23:58:00","04/10/24 01:00:00","04/10/24 02:00:00","04/10/24 03:00:01","04/10/24 04:00:00","04/10/24 05:00:00","04/10/24 06:00:00","04/10/24 07:00:00","04/10/24 08:00:44","04/10/24 09:00:01","04/10/24 10:00:01","04/10/24 12:23:03","04/10/24 12:28:07","04/10/24 12:41:56","04/10/24 12:42:08","04/10/24 12:42:49","04/10/24 12:43:48","07/10/24 07:57:23","07/10/24 08:00:11","07/10/24 08:02:45"],
+            y: [2.39,2.39,2.39,2.39,2.44,2.44,2.44,2.34,2.34,2.34,2.34,2.34,2.34,2.32,2.32,2.41,2.3,2.3,2.3,2.3,2.3,2.3,2.31,2.31,2.31,2.31,2.31,2.31,2.39,2.39,2.39,2.39,2.39,2.39,2.33,2.33,2.33,2.2,2.2,2.2,2.2,2.2,2.2,2.2,2.2,2.2],
+            type: 'scatter'
+        };
+
+        var trace2 = {
+            name: "P.Pot",
+            x: ["02/10/24 13:00:01","02/10/24 14:00:01","02/10/24 15:00:00","02/10/24 16:00:00","02/10/24 17:00:00","02/10/24 18:00:01","02/10/24 19:00:00","03/10/24 05:00:01","03/10/24 06:00:00","03/10/24 07:00:00","03/10/24 08:00:00","03/10/24 09:00:00","03/10/24 10:00:21","03/10/24 11:00:10","03/10/24 12:00:01","03/10/24 13:00:01","03/10/24 14:00:01","03/10/24 15:00:00","03/10/24 16:00:00","03/10/24 17:00:01","03/10/24 18:00:00","03/10/24 19:00:00","03/10/24 20:00:00","03/10/24 21:00:00","03/10/24 22:00:01","03/10/24 23:00:01","03/10/24 23:58:00","04/10/24 01:00:00","04/10/24 02:00:00","04/10/24 03:00:01","04/10/24 04:00:00","04/10/24 05:00:00","04/10/24 06:00:00","04/10/24 07:00:00","04/10/24 08:00:44","04/10/24 09:00:01","04/10/24 10:00:01","04/10/24 12:23:03","04/10/24 12:28:07","04/10/24 12:41:56","04/10/24 12:42:08","04/10/24 12:42:49","04/10/24 12:43:48","07/10/24 07:57:23","07/10/24 08:00:11","07/10/24 08:02:45"],
+            y: [1.74,1.75,1.8,1.85,1.88,1.83,1.78,2.24,2.24,2.24,2.1,1.97,1.78,1.64,1.51,1.41,1.34,1.45,1.57,1.56,1.62,1.69,1.79,1.85,1.94,2,2.1,2.1,1.98,2.04,2.06,2.13,2.2,2.21,2.28,2.35,2.36,3.1,3.1,3.1,3.1,3.1,3.1,3.1,3.1,3.1],
+            type: 'scatter'
+        };
+
+        var trace3 = {
+            name: "L.Maria",
+            x: ["02/10/24 13:00:01","02/10/24 14:00:01","02/10/24 15:00:00","02/10/24 16:00:00","02/10/24 17:00:00","02/10/24 18:00:01","02/10/24 19:00:00","03/10/24 05:00:01","03/10/24 06:00:00","03/10/24 07:00:00","03/10/24 08:00:00","03/10/24 09:00:00","03/10/24 10:00:21","03/10/24 11:00:10","03/10/24 12:00:01","03/10/24 13:00:01","03/10/24 14:00:01","03/10/24 15:00:00","03/10/24 16:00:00","03/10/24 17:00:01","03/10/24 18:00:00","03/10/24 19:00:00","03/10/24 20:00:00","03/10/24 21:00:00","03/10/24 22:00:01","03/10/24 23:00:01","03/10/24 23:58:00","04/10/24 01:00:00","04/10/24 02:00:00","04/10/24 03:00:01","04/10/24 04:00:00","04/10/24 05:00:00","04/10/24 06:00:00","04/10/24 07:00:00","04/10/24 08:00:44","04/10/24 09:00:01","04/10/24 10:00:01","04/10/24 12:23:03","04/10/24 12:28:07","04/10/24 12:41:56","04/10/24 12:42:08","04/10/24 12:42:49","04/10/24 12:43:48","07/10/24 07:57:23","07/10/24 08:00:11","07/10/24 08:02:45"],
+            y: [3.63,3.91,3.43,3.45,3.72,3.71,3.14,3.39,2.83,2.65,2.95,3.28,3.88,3.74,3.41,3.29,3.05,2.88,2.88,3.43,4.01,3.79,3.72,3.49,3.31,3.18,2.98,2.81,2.79,2.92,3.25,3.37,3.3,2.82,2.33,2.48,2.78,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7],
+            type: 'scatter'
+        };
+
+        var trace4 = {
+            name: "KM11",
+            x: ["02/10/24 13:00:01","02/10/24 14:00:01","02/10/24 15:00:00","02/10/24 16:00:00","02/10/24 17:00:00","02/10/24 18:00:01","02/10/24 19:00:00","03/10/24 05:00:01","03/10/24 06:00:00","03/10/24 07:00:00","03/10/24 08:00:00","03/10/24 09:00:00","03/10/24 10:00:21","03/10/24 11:00:10","03/10/24 12:00:01","03/10/24 13:00:01","03/10/24 14:00:01","03/10/24 15:00:00","03/10/24 16:00:00","03/10/24 17:00:01","03/10/24 18:00:00","03/10/24 19:00:00","03/10/24 20:00:00","03/10/24 21:00:00","03/10/24 22:00:01","03/10/24 23:00:01","03/10/24 23:58:00","04/10/24 01:00:00","04/10/24 02:00:00","04/10/24 03:00:01","04/10/24 04:00:00","04/10/24 05:00:00","04/10/24 06:00:00","04/10/24 07:00:00","04/10/24 08:00:44","04/10/24 09:00:01","04/10/24 10:00:01","04/10/24 12:23:03","04/10/24 12:28:07","04/10/24 12:41:56","04/10/24 12:42:08","04/10/24 12:42:49","04/10/24 12:43:48","07/10/24 07:57:23","07/10/24 08:00:11","07/10/24 08:02:45"],
+            y: [3.86,3.67,3.86,3.71,3.51,3.48,3.63,2.88,3.06,3.22,3.26,3.19,3.02,3.2,3.34,3.36,3.34,3.33,3.45,3.19,2.93,2.9,2.9,2.82,2.78,2.92,2.93,2.98,3.23,3.2,3.19,3.15,3.14,3.29,3.46,3.44,3.24,2.4,4.9,0,4.9,0,4.9,2.9,2.9,2.9],
+            type: 'scatter'
+        };
+
+        var trace5 = {
+            name: "R6000",
+            x: ["02/10/24 13:00:01","02/10/24 14:00:01","02/10/24 15:00:00","02/10/24 16:00:00","02/10/24 17:00:00","02/10/24 18:00:01","02/10/24 19:00:00","03/10/24 05:00:01","03/10/24 06:00:00","03/10/24 07:00:00","03/10/24 08:00:00","03/10/24 09:00:00","03/10/24 10:00:21","03/10/24 11:00:10","03/10/24 12:00:01","03/10/24 13:00:01","03/10/24 14:00:01","03/10/24 15:00:00","03/10/24 16:00:00","03/10/24 17:00:01","03/10/24 18:00:00","03/10/24 19:00:00","03/10/24 20:00:00","03/10/24 21:00:00","03/10/24 22:00:01","03/10/24 23:00:01","03/10/24 23:58:00","04/10/24 01:00:00","04/10/24 02:00:00","04/10/24 03:00:01","04/10/24 04:00:00","04/10/24 05:00:00","04/10/24 06:00:00","04/10/24 07:00:00","04/10/24 08:00:44","04/10/24 09:00:01","04/10/24 10:00:01","04/10/24 12:23:03","04/10/24 12:28:07","04/10/24 12:41:56","04/10/24 12:42:08","04/10/24 12:42:49","04/10/24 12:43:48","07/10/24 07:57:23","07/10/24 08:00:11","07/10/24 08:02:45"],
+            y: [3.23,3.07,2.89,2.75,2.65,2.58,2.5,3.3,3.39,3.36,3.28,3.23,3.12,2.99,2.87,2.8,2.79,2.82,2.75,2.65,2.62,2.68,2.74,2.72,2.66,2.56,2.53,2.41,2.33,2.35,2.41,2.51,2.63,2.7,2.68,2.6,2.52,1.1,3.9,0,3.9,0,3.9,3.9,3.9,3.9],
+            type: 'scatter'
+        };
+
+        var trace6 = {
+            name: "B.OESTE(1K)",
+            x: ["02/10/24 13:00:01","02/10/24 14:00:01","02/10/24 15:00:00","02/10/24 16:00:00","02/10/24 17:00:00","02/10/24 18:00:01","02/10/24 19:00:00","03/10/24 05:00:01","03/10/24 06:00:00","03/10/24 07:00:00","03/10/24 08:00:00","03/10/24 09:00:00","03/10/24 10:00:21","03/10/24 11:00:10","03/10/24 12:00:01","03/10/24 13:00:01","03/10/24 14:00:01","03/10/24 15:00:00","03/10/24 16:00:00","03/10/24 17:00:01","03/10/24 18:00:00","03/10/24 19:00:00","03/10/24 20:00:00","03/10/24 21:00:00","03/10/24 22:00:01","03/10/24 23:00:01","03/10/24 23:58:00","04/10/24 01:00:00","04/10/24 02:00:00","04/10/24 03:00:01","04/10/24 04:00:00","04/10/24 05:00:00","04/10/24 06:00:00","04/10/24 07:00:00","04/10/24 08:00:44","04/10/24 09:00:01","04/10/24 10:00:01","04/10/24 12:23:03","04/10/24 12:28:07","04/10/24 12:41:56","04/10/24 12:42:08","04/10/24 12:42:49","04/10/24 12:43:48","07/10/24 07:57:23","07/10/24 08:00:11","07/10/24 08:02:45"],
+            y: [2.87,2.79,1.94,2.09,3.3,2.53,1.77,2.59,3.11,2.64,2.02,1.75,3.04,2.65,1.78,2.03,3.25,2.42,1.5,2.59,2.98,2.05,1.95,2.97,2.7,1.81,2.29,3.2,2.66,2.23,1.87,1.54,3.27,2.87,2.21,1.48,2.71,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7],
+            type: 'scatter'
+        };
+
+        var trace7 = {
+            name: "B.SAN MIGUEL",
+            x: ["02/10/24 13:00:01","02/10/24 14:00:01","02/10/24 15:00:00","02/10/24 16:00:00","02/10/24 17:00:00","02/10/24 18:00:01","02/10/24 19:00:00","03/10/24 05:00:01","03/10/24 06:00:00","03/10/24 07:00:00","03/10/24 08:00:00","03/10/24 09:00:00","03/10/24 10:00:21","03/10/24 11:00:10","03/10/24 12:00:01","03/10/24 13:00:01","03/10/24 14:00:01","03/10/24 15:00:00","03/10/24 16:00:00","03/10/24 17:00:01","03/10/24 18:00:00","03/10/24 19:00:00","03/10/24 20:00:00","03/10/24 21:00:00","03/10/24 22:00:01","03/10/24 23:00:01","03/10/24 23:58:00","04/10/24 01:00:00","04/10/24 02:00:00","04/10/24 03:00:01","04/10/24 04:00:00","04/10/24 05:00:00","04/10/24 06:00:00","04/10/24 07:00:00","04/10/24 08:00:44","04/10/24 09:00:01","04/10/24 10:00:01","04/10/24 12:23:03","04/10/24 12:28:07","04/10/24 12:41:56","04/10/24 12:42:08","04/10/24 12:42:49","04/10/24 12:43:48","07/10/24 07:57:23","07/10/24 08:00:11","07/10/24 08:02:45"],
+            y: [2.21,2.77,2.11,2.98,2.4,2.43,2.66,2.28,2.02,2.9,2.44,2.1,2.83,2.24,2.82,2.41,2.47,2.63,2.06,2.88,2.21,2.89,2.35,2.57,2.6,2.05,2.88,2.4,2.05,2.95,2.68,2.42,2.14,2.88,2.6,2.12,3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3],
+            type: 'scatter'
+        };
+
+        var trace8 = {
+            name: "NUEVA CHUBUT",
+            x: ["02/10/24 13:00:01","02/10/24 14:00:01","02/10/24 15:00:00","02/10/24 16:00:00","02/10/24 17:00:00","02/10/24 18:00:01","02/10/24 19:00:00","03/10/24 05:00:01","03/10/24 06:00:00","03/10/24 07:00:00","03/10/24 08:00:00","03/10/24 09:00:00","03/10/24 10:00:21","03/10/24 11:00:10","03/10/24 12:00:01","03/10/24 13:00:01","03/10/24 14:00:01","03/10/24 15:00:00","03/10/24 16:00:00","03/10/24 17:00:01","03/10/24 18:00:00","03/10/24 19:00:00","03/10/24 20:00:00","03/10/24 21:00:00","03/10/24 22:00:01","03/10/24 23:00:01","03/10/24 23:58:00","04/10/24 01:00:00","04/10/24 02:00:00","04/10/24 03:00:01","04/10/24 04:00:00","04/10/24 05:00:00","04/10/24 06:00:00","04/10/24 07:00:00","04/10/24 08:00:44","04/10/24 09:00:01","04/10/24 10:00:01","04/10/24 12:23:03","04/10/24 12:28:07","04/10/24 12:41:56","04/10/24 12:42:08","04/10/24 12:42:49","04/10/24 12:43:48","07/10/24 07:57:23","07/10/24 08:00:11","07/10/24 08:02:45"],
+            y: [2.52,2.39,2.27,2.15,2.04,1.95,1.82,3.33,3.29,3.23,3.11,2.97,2.81,2.65,2.47,2.28,2.08,1.89,1.83,1.96,2.08,2.27,2.45,2.62,2.81,2.99,3.19,3.4,3.36,3.28,3.22,3.17,3.13,3.07,2.98,2.86,2.71,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4,2.4],
+            type: 'scatter'
+        };
+
+        var trace9 = {
+            name: "B.PUJOL",
+            x: ["02/10/24 13:00:01","02/10/24 14:00:01","02/10/24 15:00:00","02/10/24 16:00:00","02/10/24 17:00:00","02/10/24 18:00:01","02/10/24 19:00:00","03/10/24 05:00:01","03/10/24 06:00:00","03/10/24 07:00:00","03/10/24 08:00:00","03/10/24 09:00:00","03/10/24 10:00:21","03/10/24 11:00:10","03/10/24 12:00:01","03/10/24 13:00:01","03/10/24 14:00:01","03/10/24 15:00:00","03/10/24 16:00:00","03/10/24 17:00:01","03/10/24 18:00:00","03/10/24 19:00:00","03/10/24 20:00:00","03/10/24 21:00:00","03/10/24 22:00:01","03/10/24 23:00:01","03/10/24 23:58:00","04/10/24 01:00:00","04/10/24 02:00:00","04/10/24 03:00:01","04/10/24 04:00:00","04/10/24 05:00:00","04/10/24 06:00:00","04/10/24 07:00:00","04/10/24 08:00:44","04/10/24 09:00:01","04/10/24 10:00:01","04/10/24 12:23:03","04/10/24 12:28:07","04/10/24 12:41:56","04/10/24 12:42:08","04/10/24 12:42:49","04/10/24 12:43:48","07/10/24 07:57:23","07/10/24 08:00:11","07/10/24 08:02:45"],
+            y: [2.05,2.05,2.04,2.04,2.05,2.04,2.04,2.04,2.06,2.04,2.04,2.05,2.04,2.04,2.04,2.03,2.04,2.03,2.04,2.05,2.03,2.03,2.03,2.05,2.03,2.03,2.04,2.04,2.04,2.03,2.04,2.04,2.04,2.05,2.04,2.04,2.03,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1],
+            type: 'scatter'
+        };
+
+var datosLinea = [trace0, trace1, trace2, trace3, trace4, trace5, trace6, trace7, trace8, trace9];
+
+            var layout = {
+                title: 'Niveles historicos',
+                font: {
+                    family: 'consolas',
+                    size: 12
+                },
+                yaxis: {
+                    autorange: false,
+                    range: [0.0, 5.0],
+                    type: 'linear'
+                },
+                autosize: true,
+                margin: {
+            l: 50,  // margen izquierdo
+            r: 50,  // margen derecho
+            t: 25, // margen superior
+            b: 68   // margen inferior
+        }
+            };
+
+            var configLineas = { responsive: true};
+
+            Plotly.newPlot('grafLineas', datosLinea, layout, configLineas);
+        }
+    </script>
+
+    <script>
+
+        function pie(){
+
+            /* ********************************************
+            *********** GRAFICO TORTA ***********
+            ******************************************** */
+            
+            var data = [{
+                "type": "sunburst",
+                
+            labels: ["VACIO", "RESERV", "AGUA", 'Toma(Rio)','Toma(Des.)','P.Pot','L.Maria','KM11','R6000','B.OESTE(1K)','B.SAN MIGUEL','NUEVA CHUBUT','B.PUJOL'],
+            parents: ["RESERV", "", "RESERV", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA"],
+            values: [12837.668999999998, (19817.951+12837.668999999998), 19817.951, 0,0,0,1847.815,9456.494,6685.692,239.995,868.3949999999999,631.56,88],
+            
+                outsidetextfont: {size: 20, color: "#377eb8"},
+                "leaf": {opacity: 0.6},
+                "marker": {line: {width: 2}},
+                "branchvalues": 'total', 
+                hovertemplate: "<b>%{label}</b><br>%{value:.2f} m3<extra></extra>",
+                marker: {
+                    colors: ['rgba(211, 165, 60, 0.3)', "", getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim()] 
+                }
+            }];
+
+            var layout = {
+                margin: {l: 0, r: 0, b: 0, t: 25},
+                autosize: true,
+                title: {
+                    text: 'Volúmenes de las reservas en m3',
+                    font: {
+                        family: 'consolas',
+                        size: 17
+                    },   
+                },
+                font: {
+                    family: 'consolas',  // Cambia la fuente para el gráfico en general
+                    size: 12,
+                    color: 'black'  // Cambia el color del texto general
+                }   
+            };
+
+            var configPie = {responsive: true};
+
+            Plotly.newPlot('grafPie', data, layout, configPie);
+        }
+    </script>
+
+</body></html>

@@ -20,7 +20,7 @@
 
 <body>
     <h1 style="text-align: center; font-family: 'Consolas';">REPORTE HORARIO</h1>
-    <h4 style="text-align: center; font-family: 'Consolas';"><!-- ESTAMPATIEMPO --></h4>
+    <h3 style="text-align: center; font-family: 'Courier New';"><!-- ESTAMPATIEMPO --></h3>
     <div>
         <table
             style="margin: 25px auto; border-collapse: collapse; border: 1px solid #eee; border-bottom: 2px solid #3498db; box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.10), 0px 10px 20px rgba(0, 0, 0, 0.05), 0px 20px 20px rgba(0, 0, 0, 0.05), 0px 30px 20px rgba(0, 0, 0, 0.05); font-family: 'consolas';">
@@ -28,10 +28,10 @@
                 <tr>
                     <th
                         style="color: #000000; border: 1px solid #bebebe; padding: 12px 36px; border-collapse: collapse; text-align: center; background: #3498db; color: #fff; font-size: 16px;">
-                        Sitio <button id="copiar">Copiar al Portapapeles</button></th>
+                        Sitio </th>
                     <th
                         style="color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse; text-align: center; background: #3498db; color: #fff; font-size: 16px;">
-                        <!-- HEADER_0 --></th>
+                        <!-- HEADER_0 --> <button id="copiar">Copiar</button> </th>
                     <th
                         style="color: #000000; border: 1px solid #bebebe; padding: 12px 12px; border-collapse: collapse; text-align: center; background: #3498db; color: #fff; font-size: 16px;">
                         <!-- HEADER_1 --></th>
@@ -64,11 +64,7 @@
     <div id="grafBarras" style="width: 100%; height: 500px;"></div>
     <div id="separador" style="width: 100%; height: 20px;"></div>
     <div id="grafPie" style="width: 100%; height: 500px;"></div>
-    <div id="grafLineas" style="width: 100%; height: 500px;"></div>
-
-
-    <button id="guardar">Guardar como imagen</button>
-    
+    <div id="grafLineas"></div>
 
     <script>
         document.getElementById('copiar').addEventListener('click', function () {
@@ -180,6 +176,12 @@
                     type: 'linear'
                 },
                 autosize: true,
+                margin: {
+            l: 50,  // margen izquierdo
+            r: 50,  // margen derecho
+            t: 25, // margen superior
+            b: 68   // margen inferior
+        }
             };
 
             var configLineas = { responsive: true};
@@ -213,7 +215,7 @@
                 margin: {l: 0, r: 0, b: 0, t: 25},
                 autosize: true,
                 title: {
-                    text: 'Cubicaje de Agua por Sitio m3',
+                    text: 'Volúmenes de las reservas en m3',
                     font: {
                         family: 'consolas',
                         size: 17

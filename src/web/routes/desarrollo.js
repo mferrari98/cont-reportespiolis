@@ -97,16 +97,22 @@ router.get('/soquete', (req, res) => {
 
 router.get('/poblar', (req, res) => {
 
-  histLectControl.poblar((resultado) => {
-    res.json({ message: 'poblando base de datos', resultado });
-  })
+  if (true)
+    res.json({ message: 'por seguridad esta funcion esta anulada' });
+  else
+    histLectControl.poblar((resultado) => {
+      res.json({ message: 'poblando base de datos', resultado });
+    })
 });
 
 router.get('/truncar', (req, res) => {
 
-  histLectControl.truncate((resultado) => {
-    res.json({ message: 'vaciando bd', resultado });
-  })
+  if(true)
+    res.json({ message: 'por seguridad esta funcion esta anulada' });
+  else
+    histLectControl.truncate((resultado) => {
+      res.json({ message: 'vaciando bd', resultado });
+    })
 });
 
 module.exports = router

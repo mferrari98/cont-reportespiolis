@@ -3,7 +3,7 @@ const readline = require("readline");
 
 const config = require("../../config.json")
 const { lanzarETL } = require("./etl");
-const { lanzarReporte } = require("../control/controlReporte")
+const { lanzarReporte, notificarFallo } = require("../control/controlReporte")
 
 const ID_MOD = "OBSERV";
 
@@ -14,6 +14,8 @@ let filePath = process.argv[2];
 let currentModifiedTime;
 let lastModifiedTime = null;
 const checkInterval = 4 * 1000 * 10; // tiempo verificacion de cambios en milisegundos
+
+let antes_hubo_error = false
 
 function iniciar() {
   // Verifica que se haya proporcionado el archivo como argumento
@@ -27,8 +29,13 @@ function iniciar() {
   }
 }
 
-function verUltimoCambio(evSCADA, cb) {
-  lanzarReporte(evSCADA, currentModifiedTime, () => { cb() })
+/**
+ * 
+ * @param {*} enviarEmail 
+ * @param {*} cb 
+ */
+function verUltimoCambio(enviarEmail, cb) {
+  lanzarReporte(enviarEmail, currentModifiedTime, () => { cb() })
 }
 
 function parar() {
@@ -72,22 +79,31 @@ function readAndProcessFile() {
 // Función para verificar la fecha de modificación del archivo
 function checkFileModification() {
   fs.stat(filePath, (err, stats) => {
-    if (err) {
-      console.error(`Error al acceder al archivo: ${err.message}`);
+    
+    if (err) 
+      currentModifiedTime = new Date();
+    else
+      currentModifiedTime = stats.mtime;
+    
+    const fechaActual = formatoFecha(currentModifiedTime);
+    const fechaAnterior = formatoFecha(lastModifiedTime);
+
+    if (err && !antes_hubo_error) {
+      antes_hubo_error = true
+      console.log(`FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+      notificarFallo(false, err.message, currentModifiedTime, () => { })
       return;
     }
 
-    currentModifiedTime = stats.mtime;
+    antes_hubo_error = false
 
     if (!lastModifiedTime || currentModifiedTime > lastModifiedTime) {
-      const fechaActual = formatoFecha(currentModifiedTime);
-      const fechaAnterior = formatoFecha(lastModifiedTime);
-      lastModifiedTime = currentModifiedTime;
       
-      console.log(`Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+      lastModifiedTime = currentModifiedTime;      
+      console.log(`EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
 
       readAndProcessFile();
-    } else {
+    } else {      
       if (verLog)
         console.log(`${ID_MOD} - El archivo no ha sido modificado desde la última lectura`);
     }

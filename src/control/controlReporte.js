@@ -3,6 +3,8 @@ const { verLog } = require("../../config.json").desarrollo
 const SitioDAO = require("../dao/sitioDAO");
 const TipoVariableDAO = require("../dao/tipoVariableDAO");
 const HistoricoLecturaDAO = require("../dao/historicoLecturaDAO");
+const LogDAO = require("../dao/logDAO");
+
 const EmailMensaje = require("../reporte/emailMensaje");
 const Reporte = require("../modelo/reporte")
 const { transpilar } = require("../etl/transpilador");
@@ -10,16 +12,24 @@ const { transpilar } = require("../etl/transpilador");
 const tipoVariableDAO = new TipoVariableDAO();
 const sitioDAO = new SitioDAO();
 const historicoLecturaDAO = new HistoricoLecturaDAO();
+const logDAO = new LogDAO();
+
 const emailMensaje = new EmailMensaje();
 const reporte = new Reporte()
 
 const ID_MOD = "REPORTE";
 
-let lanzarReporte = function (evSCADA, currentModifiedTime, cb) { 
+/**
+ * 
+ * @param {*} enviarEmail 
+ * @param {*} currentModifiedTime 
+ * @param {*} cb 
+ */
+let lanzarReporte = function (enviarEmail, currentModifiedTime, cb) { 
     getNuevosDatos((err, reporte) => {        
         if (!err) {
             transpilar(reporte, currentModifiedTime, () => {
-                if (evSCADA) {
+                if (enviarEmail) {
                     emailMensaje.extraerTabla();
                     emailMensaje.renderizar();    
                 }
@@ -27,6 +37,17 @@ let lanzarReporte = function (evSCADA, currentModifiedTime, cb) {
             });
         }
     });
+}
+
+/**
+ * 
+ * @param {*} enviarEmail 
+ * @param {*} mensaje 
+ * @param {*} currentModifiedTime 
+ * @param {*} cb 
+ */
+let notificarFallo = function (_, mensaje, currentModifiedTime, cb) {
+    logDAO.create(mensaje, currentModifiedTime, () => cb())
 }
 
 /* ===========================================================
@@ -65,7 +86,7 @@ function getNuevosDatos(callback) {
     });
 }
 
-module.exports = { lanzarReporte };
+module.exports = { lanzarReporte, notificarFallo };
 
 if (verLog) {
     console.log(`${ID_MOD} - Directorio trabajo:`, process.cwd());

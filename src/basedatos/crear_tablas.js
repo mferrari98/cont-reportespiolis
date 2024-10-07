@@ -3,7 +3,12 @@ const { getDatabase } = require('./db');
 const db = getDatabase();
 
 function crearTablas(callback) {
-  // tabla sitio
+  let err_tablas = []
+  tablaSitio(err_tablas, (err_compilados) => { callback(err_compilados) })
+}
+
+// tabla sitio
+const tablaSitio = (err_previo, callback) => {
   db.run(
     `CREATE TABLE IF NOT EXISTS sitio (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,7 +18,8 @@ function crearTablas(callback) {
         cubicaje FLOAT NOT NULL
     )`,
     (err) => {
-      tablaTipoVariable({err_sitio:err}, callback)
+      err_previo["err_sitio"] = err
+      tablaTipoVariable(err_previo, callback)
     }
   );
 }
@@ -47,6 +53,20 @@ const tablaHistoricosLectura = (err_previo, callback) => {
   )`,
     (err) => {
       err_previo["err_histlect"] = err
+      tablaLog(err_previo, callback)
+    }
+  );
+}
+
+const tablaLog = (err_previo, callback) => {
+  db.run(
+    `CREATE TABLE IF NOT EXISTS log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      descriptor TEXT NOT NULL,
+      etiempo BIGINT NOT NULL
+  )`,
+    (err) => {
+      err_previo["err_log"] = err
       callback(err_previo);
     }
   );

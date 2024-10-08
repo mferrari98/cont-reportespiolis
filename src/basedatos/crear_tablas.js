@@ -64,7 +64,7 @@ const tablaLog = (err_previo, callback) => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       descriptor TEXT NOT NULL,
       etiempo BIGINT NOT NULL,
-      creado_el TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      creado_el DATETIME DEFAULT (DATETIME('now', '-3 hours'))
   )`,
     (err) => {
       err_previo["err_log"] = err

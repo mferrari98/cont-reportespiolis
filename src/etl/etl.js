@@ -12,7 +12,7 @@ const ID_MOD = "ETL";
 const SIN_DETERMINAR = "s/d";
 
 const verLog = config.desarrollo.verLog
-const umbral = config.umbral_parser_columnas
+const umbral = config.observador.umbral_parser_columnas
 
 const tipo_variables = ["Nivel[m]", "Cloro[mlg/l]", "Turbiedad[UTN]", "VOL/DIA[m3/dia]"]
 /**
@@ -196,7 +196,7 @@ function insertar(lineas_modif, columna, timestamp, callback) {
 
             if (verLog)
               console.log(
-                `${ID_MOD} - Insertado historico_lectura {${sitio.descriptor}:${tipoVariable.descriptor}:${valor}}`
+                `${ID_MOD} - Insertando historico_lectura {${sitio.descriptor}:${tipoVariable.descriptor}:${valor}}`
               );
 
             remaining--

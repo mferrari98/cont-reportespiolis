@@ -13,7 +13,7 @@ const dir_reporte = config.direcciones.sca_wizcon
 let filePath = process.argv[2];
 let currentModifiedTime;
 let lastModifiedTime = null;
-const checkInterval = 4 * 1000 * 10; // tiempo verificacion de cambios en milisegundos
+const checkInterval = config.observador.tiempo_milis
 
 let antes_hubo_error = false
 

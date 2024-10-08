@@ -1,9 +1,16 @@
+const { activo } = require("../../config.json").desarrollo
+
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 const ID_MOD = "DB"
 
-const dbPath = path.resolve(__dirname, 'database.sqlite');
+let dbPath
+
+if(activo)
+  dbPath = path.resolve(__dirname, 'desarrollo.sqlite');
+else
+  dbPath = path.resolve(__dirname, 'database.sqlite');
 
 let db;
 

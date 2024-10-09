@@ -171,7 +171,8 @@
                 hovertemplate: "<b>%{label}</b><br>%{value:.2f} m3<extra></extra>",
                 marker: {
                     colors: ['rgba(211, 165, 60, 0.3)', "", getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim()] 
-                }
+                },
+                textinfo: "label+percent entry",
             }];
 
             var layout = {
@@ -206,43 +207,19 @@
             
             [trace]
 
-            var layout = {
-                title: 'Niveles historicos',
-                font: {
-                    family: 'consolas',
-                    size: 12
-                },
-
-                /*
-                xaxis: {
-                    autorange: true,
-                    range: ['1728194400276', '1728306000497'],
-                    rangeselector: {buttons: [
-                        {
-                        count: 1,
-                        label: '1m',
-                        step: 'month',
-                        stepmode: 'backward'
-                        },
-                        {
-                        count: 6,
-                        label: '6m',
-                        step: 'month',
-                        stepmode: 'backward'
-                        },
-                        {step: 'all'}
-                    ]},
-                    rangeslider: {range: ['1728194400276', '1728306000497']},
-                    type: 'date'
-                },
-                */
-
-                yaxis: {
-                    autorange: false,
-                    range: [0.0, 5.0],
-                    type: 'linear'
-                }
-            };
+           var layout = {
+        title: 'Gráfica de Serie Temporal',
+        xaxis: {
+            title: 'Fecha',
+            range: ['24-10-05 13:00:01', '24-10-07 13:24:48'],
+            type: 'date'
+        },
+        yaxis: {
+            title: 'Valor',
+            range: [0, 5],  // Rango definido
+            type: 'linear'
+        }
+    };
 
             var configLineas = { responsive: true};
 

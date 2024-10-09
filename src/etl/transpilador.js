@@ -198,8 +198,8 @@ function calcularLlenado(reporte, contenido) {
 
   // Estructura para el gráfico tipo "pie".
   let estructuraPie = `
-            labels: ["VACIO", "RESERV", "AGUA", ${sitios}],
-            parents: ["RESERV", "", "RESERV", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA"],
+            labels: ["VACIO", "TOTAL", "AGUA", ${sitios}],
+            parents: ["TOTAL", "", "TOTAL", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA"],
             values: [${llenadocomplementototal}, (${llenadoniveltotal}+${llenadocomplementototal}), ${llenadoniveltotal}, ${llenado}],
             `;
 
@@ -298,7 +298,7 @@ function getCurrentDateTime(estampatiempo) {
   // es necesario compensar 3 horas por GMT-3 (tiempo medio de Greenwich)
   const formatter = new Intl.DateTimeFormat("es-ES", options);
   const parts = formatter.formatToParts(now);
-  const date = `${parts[0].value}/${parts[2].value}/${parts[4].value}`; // dd/mm/yy
+  const date = `${parts[4].value}-${parts[2].value}-${parts[0].value}`; // dd/mm/yy
   const time = `${parts[6].value}:${parts[8].value}:${parts[10].value}`; // hh:mm:ss
   return { date, time };
 }

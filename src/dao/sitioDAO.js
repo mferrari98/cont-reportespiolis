@@ -23,8 +23,8 @@ const rebalseMap = new Map([
   ['B.OESTE(1K)', 5.0],
   ['NUEVA CHUBUT', 4.0],
   ['B.PUJOL', 3.0],
-  ['Cota(45)', 4.4],
-  ['Cota(126)', 4.0],
+  ['Cota45', 4.4],
+  ['Cota126', 4.0],
   ['Doradillo', 4.0]
 ]);
 
@@ -36,7 +36,7 @@ const cubicajeMap = new Map([
   ['B.OESTE(1K)', 342.85],
   ['NUEVA CHUBUT', 263.15],
   ['B.PUJOL', 80],
-  ['Cota(45)', 277.77],
+  ['Cota45', 277.77],
   ['Cota(126)', 54.54],
   ['Doradillo', 71.83]
 ]); 

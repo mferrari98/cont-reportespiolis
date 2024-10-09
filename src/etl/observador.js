@@ -121,8 +121,8 @@ function datosCitec(lines, cb) {
 
     // Llamar al callback con la fila más cercana encontrada
     if (filaMasCercana) {
-      console.log(`${ID_MOD} - se leyeron datos desde desde citec. %s fila %s`, filaMasCercana, posfila)
-      lines.push(`Cota45              ${filaMasCercana.split(' - ')[1]}`);
+      console.log(`${ID_MOD} - se leyeron datos desde citec. %s fila %s`, filaMasCercana, posfila)
+      lines.push(`Cota45              ${filaMasCercana.split(' - ')[1].replace(',', '.')}`);
       cb(lines)      
     }
   });

@@ -199,7 +199,7 @@ function calcularLlenado(reporte, contenido) {
   // Estructura para el gráfico tipo "pie".
   let estructuraPie = `
             labels: ["VACIO", "TOTAL", "AGUA", ${sitios}],
-            parents: ["TOTAL", "", "TOTAL", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA"],
+            parents: ["TOTAL", "", "TOTAL", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA", "AGUA"],
             values: [${llenadocomplementototal}, (${llenadoniveltotal}+${llenadocomplementototal}), ${llenadoniveltotal}, ${llenado}],
             `;
 

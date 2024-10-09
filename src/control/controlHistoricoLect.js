@@ -10,7 +10,7 @@ const tipoVariableDAO = new TipoVariableDAO();
 const sitioDAO = new SitioDAO();
 const historicoLecturaDAO = new HistoricoLecturaDAO();
 
-const ID_MOD = "CtrlHLect"
+const ID_MOD = "CTRL-HLECT"
 
 const fourHours = 4 * 60 * 60 * 1000; // 4 horas * 60 minutos * 60 segundos * 1000 ms
 const cant_reportes = 20

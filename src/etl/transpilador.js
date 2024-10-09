@@ -242,6 +242,8 @@ function prepararGrafLineas(reporte, contenido) {
             type: 'scatter'
         };\n`;
 
+
+        
     // Inserta la estructura en la posición original de la marca.
     resultadoFinal += estructura;
   }

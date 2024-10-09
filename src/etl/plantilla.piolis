@@ -63,7 +63,7 @@
     <!-- Div donde se renderizará el gráfico -->        
     <div id="grafBarras" style="width: 100%; margin: 50px 0px 0px 0px;"></div>
     <div id="grafPie" style="width: 100%; margin: 50px 0px 0px 0px;"></div>
-    <div id="grafLineas" style="margin: 50px 0px 0px 0px;"></div>
+    <div id="grafLineas" style="width: 100%; margin: 50px 0px 0px 0px;"></div>
 
     <script>
         document.getElementById('copiar').addEventListener('click', function () {

@@ -5,13 +5,14 @@ lo podes probar con
 const express = require('express');
 const path = require('path');
 
+const { activo } = require("../../config.json").desarrollo
+
 const ID_MOD = "WEBSERV"
 
 const app = express();
 app.use(express.json());
 
-const MAX_RETRIES = 3; // Límite de intentos para encontrar un puerto
-let currentPort = 3000; // Puerto inicial
+let currentPort = (activo)? 3001 : 3000;        // Puerto inicial
 
 /*
 Middleware para configurar Content-Security-Policy
@@ -40,8 +41,8 @@ const desarrolloRoutes = require('./routes/desarrollo');
 /*
 levantar server
 */
-const server = app.listen(3000, () => {
-  console.log(`${ID_MOD} - Escuchando p=3000`);
+const server = app.listen(currentPort, () => {
+  console.log(`${ID_MOD} - Escuchando en p=${currentPort}`);
 });
 
 /*
@@ -56,6 +57,12 @@ server.on('connection', (conn) => {
     connections.delete(conn);
   });
 });
+
+server.on('error', (conn) => {
+  server = app.listen(3001, () => {
+    console.log(`\n${ID_MOD} - Escuchando en puerto de desarrollo\n`);
+  });
+})
 
 function closeServer(cb) {
 

@@ -8,7 +8,8 @@ const { lanzarReporte, notificarFallo } = require("../control/controlReporte")
 const ID_MOD = "OBSERV";
 
 const verLog = config.desarrollo.verLog
-const dir_reporte = config.direcciones.sca_wizcon
+const dir_wizcon = config.direcciones.sca_wizcon
+const dir_citec = config.direcciones.cota45
 
 let filePath = process.argv[2];
 let currentModifiedTime;
@@ -24,7 +25,7 @@ function iniciar() {
       `${ID_MOD} - No hay direccion en linea de comandos, se utilizara definicion de config.json`
     );
 
-    filePath = dir_reporte
+    filePath = dir_wizcon
     checkFileModification();    
   }
 }
@@ -52,7 +53,21 @@ function parar() {
 
 // Función para leer y procesar el archivo
 function readAndProcessFile() {
+ 
   let lines = [];
+
+  datosWizcon(lines, (lin_wiz) => {
+    datosCitec(lin_wiz, (lin_wiztec) => {
+
+      lanzarETL(lin_wiztec, currentModifiedTime, () => {
+        verUltimoCambio(true, () => { })
+      })
+    })
+  })
+}
+
+function datosWizcon(lines, cb) {
+  
   try {
     const rl = readline.createInterface({
       input: fs.createReadStream(filePath),
@@ -66,14 +81,51 @@ function readAndProcessFile() {
     });
 
     rl.on("close", () => {
-      lanzarETL(lines, currentModifiedTime, () => {
-        verUltimoCambio(true, () => { } )
-      })
+      console.log(`${ID_MOD} - se leyeron datos desde wizcon`)
+      cb(lines)
     });
 
   } catch (error) {
-    console.error(`Error al leer el archivo: ${error.message}`);
+    console.error(`${ ID_MOD } - Error al leer el archivo: ${error.message}`);
   }
+}
+
+function datosCitec(lines, cb) {
+  fs.readFile(dir_citec, 'utf8', (err, data) => {    
+
+    // Dividir el contenido del archivo en líneas
+    const lineas = data.trim().split('\n');
+
+    let posfila = 0
+    let filaMasCercana = null;
+    let diferenciaMinima = currentModifiedTime;
+
+    // Iterar desde el final del archivo hacia el principio
+    for (let i = lineas.length - 1; i >= 0; i--) {
+      const linea = lineas[i];
+
+      // Separar la fecha de valor y convertir a milisegundos
+      const fecha = linea.split(' - ')[0].trim()
+      const fechaMs = new Date(fecha).getTime();
+
+      // Calcular la diferencia con la fecha de referencia
+      const diferencia = Math.abs(currentModifiedTime - fechaMs);
+
+      // Si la diferencia es menor que la mínima encontrada, actualizamos
+      if (diferencia < diferenciaMinima) {
+        diferenciaMinima = diferencia;
+        filaMasCercana = linea;
+        posfila = i
+      }
+    }
+
+    // Llamar al callback con la fila más cercana encontrada
+    if (filaMasCercana) {
+      console.log(`${ID_MOD} - se leyeron datos desde desde citec. %s fila %s`, filaMasCercana, posfila)
+      lines.push(`Cota45              ${filaMasCercana.split(' - ')[1]}`);
+      cb(lines)      
+    }
+  });
 }
 
 // Función para verificar la fecha de modificación del archivo

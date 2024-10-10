@@ -54,7 +54,7 @@ router.get('/', (req, res) => {
       </head>
       <body>
         <h2>Bienvenido entusiasta</h1>
-        <p>Estás en el endponit de desarrollo</p>
+        <p>Estás en el entrypoint de desarrollo</p>
         <p class="warning">Ojota con /truncar y /poblar</p>
         <img src="/git-pull.webp">
       </body>
@@ -72,18 +72,17 @@ router.get('/sinc', (req, res) => {
 router.get('/soquete', (req, res) => {
 
   const puertoWS = 8081;
+
+  console.log("antes")
   const wss = new WebSocket.Server({ port: puertoWS });
+  console.log("desp")
 
   wss.on('connection', (ws) => {
     console.log(`${ID_MOD} - Cliente conectado para sincronización`);
-    
+
     ws.on('message', (message) => {
       console.log(`${ID_MOD} - Recibido comando SQL: ${message}`);
-
-      // Aquí puedes ejecutar el SQL que envía el cliente
-      // db.run(message, [], (err, result) => {
-      //    ws.send(JSON.stringify(result)); // Enviar el resultado de vuelta
-      // });
+      ws.send(JSON.stringify("querias cumbia? toma!"));
     });
 
     ws.on('close', () => {
@@ -92,7 +91,7 @@ router.get('/soquete', (req, res) => {
   });
 
   // Responder al cliente con el puerto en el que está esperando el WebSocket
-  res.json({ message: 'El servidor está listo para sincronización', puerto: puertoWS });
+  res.json({ message: 'El servidor está listo para sincronización', puerto: puertoWS })
 });
 
 router.get('/poblar', (req, res) => {

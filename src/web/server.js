@@ -22,7 +22,7 @@ app.use((req, res, next) => {
     script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:" + currentPort + ";\
     style-src 'self' 'unsafe-inline' http://localhost:" + currentPort + ";\
     img-src 'self' data: blob: http://localhost:" + currentPort + ";\
-    connect-src 'self' http://localhost:" + currentPort + " https://raw.githubusercontent.com;\
+    connect-src 'self' http://localhost:" + currentPort + ";\
     "
   );
   next();
@@ -58,10 +58,8 @@ server.on('connection', (conn) => {
   });
 });
 
-server.on('error', (conn) => {
-  server = app.listen(3001, () => {
-    console.log(`\n${ID_MOD} - Escuchando en puerto de desarrollo\n`);
-  });
+server.on('error', (conn) => {  
+    console.log(`${ID_MOD} - Error abriendo puerto`);  
 })
 
 function closeServer(cb) {
@@ -82,7 +80,7 @@ module.exports = function (observador) {
   app.use('/sitio', sitioRoutes);
   app.use('/tipovar', tipoVarRoutes);
   app.use('/reporte', generalRoutes(observador));
-  app.use('/bd', desarrolloRoutes);
+  app.use('/desa', desarrolloRoutes);
 
   // Retornar lo que quieras, por ejemplo, iniciar un servidor o cualquier lógica
   return {

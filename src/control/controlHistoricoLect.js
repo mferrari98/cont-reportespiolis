@@ -1,5 +1,5 @@
-const https = require('https');
-const url = 'https://10.10.4.125:3000/bd/soquete'
+const http = require('http');
+const url = 'http://10.10.4.125:3001/desa/soquete'
 
 const TipoVariableDAO = require("../dao/tipoVariableDAO");
 const SitioDAO = require("../dao/sitioDAO");
@@ -23,7 +23,7 @@ function HistLectControl() { }
 
 HistLectControl.prototype.sincronizar = function (cb) {
 
-    https.get(url, (res) => {
+    http.get(url, (res) => {
         let data = '';
 
         // A medida que se reciben datos
@@ -33,7 +33,31 @@ HistLectControl.prototype.sincronizar = function (cb) {
 
         // Al finalizar la respuesta
         res.on('end', () => {
-            console.log(`${ID_MOD} - Datos recibidos:`, JSON.parse(data));
+            const respuesta = JSON.parse(data);
+            console.log(`${ID_MOD} - Datos recibidos:`, respuesta);
+
+            // Abrir WebSocket con el puerto recibido
+            const ws = new WebSocket(`ws://10.10.4.125:${respuesta.puerto}`);
+
+            ws.on('open', () => {
+                console.log(`${ID_MOD} - WebSocket abierto en puerto ${respuesta.puerto}`);
+
+                // Enviar comando SQL por WebSocket
+                const comandoSQL = "SELECT * FROM log WHERE id > 100"; // Ejemplo de comando SQL
+                ws.send(comandoSQL);
+            });
+
+            ws.on('message', (message) => {
+                console.log(`${ID_MOD} - Resultado del servidor:`, message);
+            });
+
+            ws.on('close', () => {
+                console.log(`${ID_MOD} - Conexión WebSocket cerrada`);
+            });
+
+            ws.on('error', (err) => {
+                console.error(`${ID_MOD} - Error en WebSocket:`, err.message);
+            });
         });
     }).on('error', (err) => {
         console.error(`${ID_MOD} - Error en la solicitud:`, err.message);

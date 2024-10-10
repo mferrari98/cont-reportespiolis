@@ -33,10 +33,11 @@ function lanzarETL(lines, etiempo, cb) {
       console.log(`${ID_MOD} - ${msjTVar} ${msjSit}`);
 
       historicoLecturaDAO.existe(etiempo, (_, existe) => {
-        if(!existe)
-          nuevoHistoricoLectura(lines, etiempo, () => { });
-
-        cb()
+        
+        if (existe)
+          cb()  
+        else
+          nuevoHistoricoLectura(lines, etiempo, () => { cb() });
       })    
     });
   });

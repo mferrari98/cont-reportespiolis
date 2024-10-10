@@ -75,10 +75,10 @@ router.get('/soquete', (req, res) => {
   const wss = new WebSocket.Server({ port: puertoWS });
 
   wss.on('connection', (ws) => {
-    console.log('Cliente conectado para sincronización');
+    console.log(`${ID_MOD} - Cliente conectado para sincronización`);
     
     ws.on('message', (message) => {
-      console.log(`Recibido comando SQL: ${message}`);
+      console.log(`${ID_MOD} - Recibido comando SQL: ${message}`);
 
       // Aquí puedes ejecutar el SQL que envía el cliente
       // db.run(message, [], (err, result) => {
@@ -87,7 +87,7 @@ router.get('/soquete', (req, res) => {
     });
 
     ws.on('close', () => {
-      console.log('Cliente desconectado');
+      console.log(`${ID_MOD} - Cliente desconectado`);
     });
   });
 

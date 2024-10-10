@@ -66,13 +66,13 @@ server.on('error', (conn) => {
 
 function closeServer(cb) {
 
-  console.log(`WEBSERV - destruyendo ${connections.size} conexion`);
+  console.log(`${ID_MOD} - destruyendo ${connections.size} conexion`);
   for (const conn of connections) {
     conn.destroy();
   }
 
   server.close(() => {
-    console.log('WEBSERV - Server closed');
+    console.log(`${ID_MOD} - Server closed`);
     cb();
   });
 }

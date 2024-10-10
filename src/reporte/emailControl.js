@@ -80,9 +80,9 @@ EmailControl.prototype.enviar = function () {
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            return console.log(error);
+            return console.log(`${ID_MOD} - %s`, error);
         }
-        console.log('Mensaje enviado: %s, Destinatarios: %s', info.envelope.from, JSON.stringify(info.envelope.to));
+        console.log(`${ID_MOD} - Mensaje enviado: %s, Destinatarios: %s`, info.envelope.from, JSON.stringify(info.envelope.to));
     });   
 }
 

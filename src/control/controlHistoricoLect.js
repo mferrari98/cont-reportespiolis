@@ -33,10 +33,10 @@ HistLectControl.prototype.sincronizar = function (cb) {
 
         // Al finalizar la respuesta
         res.on('end', () => {
-            console.log('Datos recibidos:', JSON.parse(data));
+            console.log(`${ID_MOD} - Datos recibidos:`, JSON.parse(data));
         });
     }).on('error', (err) => {
-        console.error('Error en la solicitud:', err.message);
+        console.error(`${ID_MOD} - Error en la solicitud:`, err.message);
     });
 }
 

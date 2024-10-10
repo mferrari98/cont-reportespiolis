@@ -142,7 +142,7 @@ function checkFileModification() {
 
     if (err && !antes_hubo_error) {
       antes_hubo_error = true
-      console.log(`FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+      console.log(`${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
       notificarFallo(false, err.message, currentModifiedTime, () => { })
       return;
     }
@@ -152,7 +152,7 @@ function checkFileModification() {
     if (!lastModifiedTime || currentModifiedTime > lastModifiedTime) {
       
       lastModifiedTime = currentModifiedTime;      
-      console.log(`EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+      console.log(`${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
 
       readAndProcessFile();
     } else {      

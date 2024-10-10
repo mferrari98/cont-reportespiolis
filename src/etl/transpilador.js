@@ -235,20 +235,18 @@ function prepararGrafLineas(reporte, contenido) {
     traces[indice] = `trace${indice}`;
 
     let estructura = `
-        var ${traces[indice]} = {
-            name: "${reporte[indice].sitio}",
-            x: [${valx}],
-            y: [${valy}],
-            type: 'scatter'
-        };\n`;
-
-
+        \tvar ${traces[indice]} = {
+        \t    name: "${reporte[indice].sitio}",
+        \t    x: [${valx}],
+        \t    y: [${valy}],
+        \t    type: 'scatter'
+        \t};`;
         
     // Inserta la estructura en la posición original de la marca.
     resultadoFinal += estructura;
   }
 
-  resultadoFinal += `\nvar datosLinea = [${traces.join(", ")}];`;
+  resultadoFinal += `\n\t\t\tvar datosLinea = [${traces.join(", ")}];`;
   // Agrega el contenido restante del texto original después de la marca.
   resultadoFinal += textoModificado.substring(posicionMarca);
 

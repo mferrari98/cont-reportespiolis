@@ -217,6 +217,8 @@ function prepararGrafLineas(reporte, contenido) {
   const marca = "[trace]";
   const posicionMarca = contenido.indexOf(marca);
 
+  let primerafecha, ultimafecha, primerdia;
+
   // Elimina la marca del texto.
   let textoModificado = contenido.replace(marca, "");
   // Itera sobre el arreglo `reporte` e inserta la nueva estructura en la posición memorizada.
@@ -230,6 +232,12 @@ function prepararGrafLineas(reporte, contenido) {
     const valx_iso = convertirTimestampsAISO(valx_millis);
     const valx = valx_iso.map((iso) => `"${iso}"`);
 
+    if (indice == 0){
+      primerafecha = valx[valx.length-24]
+      ultimafecha = valx[valx.length-1]
+      primerdia = valx[0]
+    }
+    
     let valy = unpack(historicos, "valor");
 
     traces[indice] = `trace${indice}`;
@@ -247,6 +255,35 @@ function prepararGrafLineas(reporte, contenido) {
   }
 
   resultadoFinal += `\n\t\t\tvar datosLinea = [${traces.join(", ")}];`;
+
+  resultadoFinal +=  `
+    var layout = {
+      title: 'Historico',
+      height: 600,
+      xaxis: {
+        title: 'Fecha',
+        range: [${primerafecha}, ${ultimafecha}],
+        rangeselector: {buttons: [
+        {
+          count: 7,
+          label: 'semana',
+          step: 'day',
+          stepmode: 'backward'
+        },
+        {
+          count: 1,
+          label: 'mes',
+          step: 'month',
+          stepmode: 'backward'
+        },
+        {
+          label: 'total',
+          step: 'all'
+        }
+      ]},
+    rangeslider: {range: [${primerdia}, ${ultimafecha}]},
+    type: 'date'
+},`
   // Agrega el contenido restante del texto original después de la marca.
   resultadoFinal += textoModificado.substring(posicionMarca);
 

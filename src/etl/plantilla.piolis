@@ -204,14 +204,6 @@
             ******************************************** */
             
             [trace]
-
-            var layout = {
-                title: 'Serie de tiempo',
-                xaxis: {
-                    title: 'Fecha',
-                    range: ['24-10-05 13:00:01', '24-10-07 13:24:48'],
-                    type: 'date'
-                },
                 yaxis: {
                     title: 'Valor',
                     range: [0, 5],  // Rango definido

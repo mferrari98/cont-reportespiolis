@@ -265,6 +265,12 @@ function prepararGrafLineas(reporte, contenido) {
         range: [${primerafecha}, ${ultimafecha}],
         rangeselector: {buttons: [
         {
+          count: 1,
+          label: 'dia',
+          step: 'day',
+          stepmode: 'backward'
+        },
+        {
           count: 7,
           label: 'semana',
           step: 'day',
@@ -277,7 +283,7 @@ function prepararGrafLineas(reporte, contenido) {
           stepmode: 'backward'
         },
         {
-          label: 'total',
+          label: 'desde el inicio de los tiempos',
           step: 'all'
         }
       ]},

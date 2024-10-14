@@ -21,21 +21,6 @@ const ID_MOD = "REPORTE";
 
 /**
  * 
- * @param {*} reporte 
- * @returns 
- */
-let reportesMadryn = function (reporte) {
-
-    let listaMadryn = []
-
-    if(esMadryn(elem)) // agrego a una lista que estoy creando
-        listaMadryn.push(elem)
-    
-    return listaMadryn
-}
-
-/**
- * 
  * @param {*} enviarEmail 
  * @param {*} currentModifiedTime 
  * @param {*} cb 
@@ -74,19 +59,6 @@ let notificarFallo = function (_, mensaje, currentModifiedTime, cb) {
 ==============================================================
 */
 
-/**
- * esta funcion recibe un objeto reporte y sabe responder si ese objeto es del dominio de trelew 
- * o de madryn. para ello compara el descriptor del objeto entregado con una lista conocida por el
- * de la que sabe su correspondencia
- * 
- * @param {*} reporte 
- * @param {*} cb 
- */
-let esMadryn = function (reporte) {
-    if(true) true
-    else false
-}
-
 function getNuevosDatos(callback) {
 
     sitioDAO.getTodosDescriptores((_, descriptores) => {
@@ -118,7 +90,7 @@ function getNuevosDatos(callback) {
     });
 }
 
-module.exports = { lanzarReporte, notificarFallo, esMadryn };
+module.exports = { lanzarReporte, notificarFallo };
 
 if (verLog) {
     console.log(`${ID_MOD} - Directorio trabajo:`, process.cwd());

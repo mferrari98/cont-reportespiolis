@@ -1,9 +1,16 @@
 const TipoVariableDAO = require("../dao/tipoVariableDAO");
+const SitioDAO = require("../dao/sitioDAO");
+
 const tipoVariableDAO = new TipoVariableDAO();
+const sitioDAO = new SitioDAO();
+
+let sitiosMadryn;
 
 function Reporte() { }
 
 Reporte.prototype.declarar = function (sitios, cb) {
+    
+    sitioDAO.getSitiosMadryn((_, sitios) => { sitiosMadryn = sitios});
     
     let reporte = new Array(sitios.length);
 
@@ -31,7 +38,8 @@ Reporte.prototype.declarar = function (sitios, cb) {
                         descriptor: descriptores[3].descriptor,
                         valor: undefined
                     }
-                }
+                },
+                esMadryn: esMadryn(sitios[index]) 
             };            
         };
         cb(reporte)
@@ -45,6 +53,10 @@ Reporte.prototype.definir = function (reporte, row, tipoVarRow, sitioRow, histor
 
     reporte[sitioRow.orden].variable[variableKeys[indice_prop]].valor = row.valor
     reporte[sitioRow.orden].variable.nivel.historico = historicos
+}
+
+let esMadryn = function (sitio) {
+    return sitiosMadryn.includes(sitio.descriptor)
 }
 
 module.exports = Reporte;

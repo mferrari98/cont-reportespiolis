@@ -215,7 +215,7 @@ function prepararGrafLineas(reporte, contenido) {
 
   let traces = [];
   const marca = "[trace]";
-  const posicionMarca = contenido.indexOf(marca);
+  const posicionMarca = contenido.indexOf(marca) - 13;
 
   let primerafecha, ultimafecha, primerdia;
 
@@ -254,44 +254,50 @@ function prepararGrafLineas(reporte, contenido) {
     resultadoFinal += estructura;
   }
 
-  resultadoFinal += `\n\t\t\tvar datosLinea = [${traces.join(", ")}];`;
+  resultadoFinal += `\n\n\t\t\tvar datosLinea = [${traces.join(", ")}];`;
 
-  resultadoFinal +=  `
-    var layout = {
-      title: 'Historico',
-      height: 600,
-      xaxis: {
-        title: 'Fecha',
-        range: [${primerafecha}, ${ultimafecha}],
-        rangeselector: {buttons: [
-        {
-          count: 1,
-          label: 'dia',
-          step: 'day',
-          stepmode: 'backward'
-        },
-        {
-          count: 7,
-          label: 'semana',
-          step: 'day',
-          stepmode: 'backward'
-        },
-        {
-          count: 1,
-          label: 'mes',
-          step: 'month',
-          stepmode: 'backward'
-        },
-        {
-          label: 'desde el inicio de los tiempos',
-          step: 'all'
-        }
-      ]},
-    rangeslider: {range: [${primerdia}, ${ultimafecha}]},
-    type: 'date'
-},`
+  resultadoFinal +=  `\n\t
+  \t\t\tvar layout = {
+  \t\t\t  title: 'Historico',
+  \t\t\t  height: 600,
+  \t\t\t  xaxis: {
+  \t\t\t    title: 'Fecha',
+  \t\t\t    range: [${primerafecha}, ${ultimafecha}],
+  \t\t\t    rangeselector: {buttons: [
+  \t\t\t      {
+  \t\t\t        count: 1,
+  \t\t\t        label: 'dia',
+  \t\t\t        step: 'day',
+  \t\t\t        stepmode: 'backward'
+  \t\t\t      },
+  \t\t\t      {
+  \t\t\t        count: 7,
+  \t\t\t        label: 'semana',
+  \t\t\t        step: 'day',
+  \t\t\t        stepmode: 'backward'
+  \t\t\t      },
+  \t\t\t      {
+  \t\t\t        count: 1,
+  \t\t\t        label: 'mes',
+  \t\t\t        step: 'month',
+  \t\t\t        stepmode: 'backward'
+  \t\t\t      },
+  \t\t\t      {
+  \t\t\t        label: 'desde el inicio de los tiempos',
+  \t\t\t        step: 'all'
+  \t\t\t      }
+  \t\t\t    ]},
+  \t\t\t    rangeslider: {range: [${primerdia}, ${ultimafecha}]},
+  \t\t\t    type: 'date'
+  \t\t\t  },
+  \t\t\t  yaxis: {
+  \t\t\t    title: 'Valor',
+  \t\t\t    range: [0, 5],  // Rango definido
+  \t\t\t    type: 'linear'
+  \t\t\t  }
+  \t\t\t}`
   // Agrega el contenido restante del texto original después de la marca.
-  resultadoFinal += textoModificado.substring(posicionMarca);
+  resultadoFinal += textoModificado.substring(posicionMarca + 1);
 
   return resultadoFinal;
 }

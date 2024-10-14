@@ -203,13 +203,7 @@
             *********** GRAFICO LINEAS ***********
             ******************************************** */
             
-            [trace]
-                yaxis: {
-                    title: 'Valor',
-                    range: [0, 5],  // Rango definido
-                    type: 'linear'
-                }
-            };
+            [trace]                
 
             var configLineas = { responsive: true};
             Plotly.newPlot('grafLineas', datosLinea, layout, configLineas);

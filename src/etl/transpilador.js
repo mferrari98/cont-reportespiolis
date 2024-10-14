@@ -4,6 +4,7 @@ const fs = require("fs");
 const cheerio = require("cheerio");
 const { sindet } = require("./etl");
 
+const { esMadryn } = require("../control/controlReporte")
 const ID_MOD = "TRANS";
 
 function transpilar(reporte, estampatiempo, cb) {

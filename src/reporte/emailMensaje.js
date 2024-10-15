@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 
@@ -35,8 +36,15 @@ EmailMensaje.prototype.extraerTabla = function (cb) {
     </html>
     `;
 
-    fs.writeFile('./src/reporte/salida/tabla.html', newHtml, 'utf8', (err) => {
-        cb()
+    const filePath = './src/reporte/salida/tabla.html';
+    const dir = path.dirname(filePath);
+
+    // Crear la carpeta si no existe
+    fs.mkdir(dir, { recursive: true }, (err) => {
+        // Escribir el archivo
+        fs.writeFile(filePath, newHtml, 'utf8', (err) => {
+            cb();
+        });
     });
 }
 

@@ -1,47 +1,47 @@
 {
-    "direcciones": {
-        "sca_wizcon": "//10.10.3.2/SERVICOOP/REP002.DAT",
-        "sca_wizcon1_": "//pc0043/SERVICOOP/REP002.DAT",
-        "sca_wizcon2_": "//PC0346/datos/reporte_horario_test.log",
-        "sca_wizcon3_": "//PC0301/datos/reporte_horario_test.log",
-        "sca_wizcon4_": "//mnt/pc0346.compartido",
-        "cota45": "//serv_en_01/compartido/NivelCisSur.txt",
-        "cota45_": "//PC0301/datos/NivelCisSur.txt"
+  "direcciones": {
+    "sca_wizcon3": "//10.10.3.2/SERVICOOP/REP002.DAT",
+    "sca_wizcon1": "//pc0043/SERVICOOP/REP002.DAT",
+    "sca_wizcon2": "//PC0346/datos/reporte_horario_test.log",
+    "sca_wizcon": "//PC0301/datos/reporte_horario_test.log",
+    "sca_wizcon4": "//mnt/pc0346.compartido",
+    "cota45_": "//serv_en_01/compartido/NivelCisSur.txt",
+    "cota45": "//PC0301/datos/NivelCisSur.txt"
+  },
+  "email": {
+    "credenciales": {
+      "user_": "hdonato@servicoop.com",
+      "pass_": "ddonato",
+      "user": "mferrari@servicoop.com",
+      "pass": "servicoop1"
     },
-    "email": {
-        "credenciales": {
-            "user": "hdonato@servicoop.com",
-            "pass": "ddonato",
-            "user_": "mferrari@servicoop.com",
-            "pass_": "servicoop1"
-        },
-        "difusion": [
-            "hdonato@servicoop.com"
-        ],
-        "difusionreal": [
-            "lbarrera@servicoop.com",
-            "okruse@servicoop.com",
-            "mdigioia@servicoop.com",
-            "fmeoniz@servicoop.com",
-            "jmanchot@servicoop.com",
-            "mcaro@servicoop.com",
-            "scadapm@gmail.com",
-            "vschanz@servicoop.com",
-            "laboratorio@servicoop.com",
-            "mjunyent@servicoop.com",
-            "manchotjosed@gmail.com",
-            "acueducto.pm@gmail.com",
-            "fabiomartin68@gmail.com",
-            "divisionoperacionessanitarias@gmail.com"
-        ]
-    },
-    "observador": {
-        "umbral_parser_columnas": 20,
-        "tiempo_milis": 40000
-    },
-    "desarrollo": {
-        "activo": false,
-        "nivLog": 2,
-        "desviacion_poblarbd": 1
-    }
+    "difusion": [
+      "mferrari@servicoop.com"
+    ],
+    "difusionreal": [
+      "lbarrera@servicoop.com",
+      "okruse@servicoop.com",
+      "mdigioia@servicoop.com",
+      "fmeoniz@servicoop.com",
+      "jmanchot@servicoop.com",
+      "mcaro@servicoop.com",
+      "scadapm@gmail.com",
+      "vschanz@servicoop.com",
+      "laboratorio@servicoop.com",
+      "mjunyent@servicoop.com",
+      "manchotjosed@gmail.com",
+      "acueducto.pm@gmail.com",
+      "fabiomartin68@gmail.com",
+      "divisionoperacionessanitarias@gmail.com"
+    ]
+  },
+  "observador": {
+    "umbral_parser_columnas": 20,
+    "tiempo_milis": 4000
+  },
+  "desarrollo": {
+    "activo": false,
+    "nivLog": 2,
+    "desviacion_poblarbd": 1
+  }
 }

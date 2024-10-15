@@ -55,7 +55,7 @@ EmailControl.prototype.enviar = function () {
             ${htmlContent}
             <div style="text-align: center;">
                 <img src="cid:grafBarras" alt="Grafico de Barras"/>
-                <img src="cid:grafPie" alt="Grafico Pie"/>
+                <img src="cid:grafPieMdy" alt="Grafico Pie"/>
                 <img src="cid:grafLineas" alt="Grafico de Lineas"/>
             </div>
             `,
@@ -67,7 +67,7 @@ EmailControl.prototype.enviar = function () {
             },
             {
                 filename: 'imagen2.jpg',
-                path: './src/reporte/salida/grafPie.png', // Ruta de la imagen
+                path: './src/reporte/salida/grafPieMdy.png', // Ruta de la imagen
                 cid: 'grafPie' // CID para referenciar la imagen en el cuerpo del mensaje
             },
             {

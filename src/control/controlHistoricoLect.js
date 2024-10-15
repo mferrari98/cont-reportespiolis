@@ -40,37 +40,39 @@ HistLectControl.prototype.sincronizar = function (puerto, cb) {
         // Al finalizar la respuesta
         res.on('end', () => {
             const respuesta = JSON.parse(data);
-            logamarillo(3, `${ID_MOD} - Datos recibidos:`, respuesta);
+            logamarillo(3, `${ID_MOD} - (WS-CLI) Datos recibidos:`, respuesta);
 
             // Abrir WebSocket con el puerto recibido
             const ws = new WebSocket(`ws://10.10.4.125:${respuesta.puerto}`);
 
             ws.on('open', () => {
-                logamarillo(3, `${ID_MOD} - WebSocket abierto en puerto ${respuesta.puerto}`);
+                logamarillo(3, `${ID_MOD} - (WS-CLI) WebSocket abierto en puerto ${respuesta.puerto}`);
 
                 // Enviar comando SQL por WebSocket
                 const comandoSQL = "SELECT * FROM log WHERE id > 100"; // Ejemplo de comando SQL
-                logamarillo(3, `${ID_MOD} - enviando cmd "${comandoSQL}"`);
+                logamarillo(3, `${ID_MOD} - (WS-CLI) enviando cmd "${comandoSQL}"`);
 
                 ws.send(comandoSQL);
             });
 
             ws.on('message', (message) => {
                 const respuesta = JSON.parse(message)
-                logamarillo(3, `${ID_MOD} - Resultado del servidor:`, respuesta);
+                logamarillo(3, `${ID_MOD} - (WS-CLI) Resultado del servidor:`, respuesta);
+                
                 ws.close()
+                cb(respuesta)
             });
 
             ws.on('close', () => {
-                logamarillo(3, `${ID_MOD} - Conexión WebSocket cerrada`);
+                logamarillo(3, `${ID_MOD} - (WS-CLI) Conexión WebSocket cerrada`);
             });
 
             ws.on('error', (err) => {
-                logamarillo(3, `${ID_MOD} - Error en WebSocket:`, err.message);
+                logamarillo(3, `${ID_MOD} - (WS-CLI) Error en WebSocket:`, err.message);
             });
         });
     }).on('error', (err) => {
-        logamarillo(3, `${ID_MOD} - Error en la solicitud:`, err.message);
+        logamarillo(3, `${ID_MOD} - (WS-CLI) Error en la solicitud:`, err.message);
     });
 }
 

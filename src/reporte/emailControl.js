@@ -1,12 +1,12 @@
 const config = require("../../config.json")
+const { logamarillo } = require("../control/controlLog")
 
 const fs = require('fs');
 const nodemailer = require('nodemailer');
 const dns = require('dns');
 
-const ID_MOD = "CtrlEmail"
+const ID_MOD = "CTRL-EMAIL"
 
-const verLog = config.desarrollo.verLog
 let destinos = config.email.difusion
 let user = config.email.credenciales.user
 let pass = config.email.credenciales.pass
@@ -44,7 +44,7 @@ EmailControl.prototype.enviar = function () {
     // Enviar el correo
     let resumen = "Generacion automatica de reportes mejorada"
     let htmlContent = fs.readFileSync('./reporte/salida/tabla.html', 'utf8');
-    
+
     let mailOptions = {
         from: "<fachada.correo@servicoop.com>",
         to: destinos,
@@ -59,7 +59,7 @@ EmailControl.prototype.enviar = function () {
                 <img src="cid:grafLineas" alt="Grafico de Lineas"/>
             </div>
             `,
-        attachments: [            
+        attachments: [
             {
                 filename: 'imagen.jpg',
                 path: './reporte/salida/grafBarras.png', // Ruta de la imagen
@@ -82,8 +82,8 @@ EmailControl.prototype.enviar = function () {
         if (error) {
             return logamarillo(1, `${ID_MOD} - %s`, error);
         }
-        logamarillo(1, `${ID_MOD} - Mensaje enviado: %s, Destinatarios: %s`, info.envelope.from, JSON.stringify(info.envelope.to));
-    });   
+        logamarillo(2, `${ID_MOD} - Mensaje enviado: %s, Destinatarios: %s`, info.envelope.from, JSON.stringify(info.envelope.to));
+    });
 }
 
 function getCurrentDateTime() {
@@ -109,13 +109,11 @@ function getCurrentDateTime() {
         } else {
             logamarillo(1, `${ID_MOD} - ${smtpHost} resuelto correctamente.`);
             transporter = createTransporter(smtpHost);
-        }        
+        }
     });
 })();
 
 module.exports = EmailControl;
 
-if (verLog) {
-    logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
-    logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);
-}
+logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
+logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

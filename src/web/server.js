@@ -6,19 +6,20 @@ const express = require('express');
 const path = require('path');
 
 const { activo } = require("../../config.json").desarrollo
+const { logamarillo } = require("../control/controlLog")
 
 const ID_MOD = "WEBSERV"
 
 const app = express();
 app.use(express.json());
 
-let currentPort = (activo)? 3001 : 3000;        // Puerto inicial
+let currentPort = (activo) ? 3001 : 3000;        // Puerto inicial
 
 /*
 Middleware para configurar Content-Security-Policy
 */
 app.use((req, res, next) => {
- res.setHeader("Content-Security-Policy", "\
+  res.setHeader("Content-Security-Policy", "\
     script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:" + currentPort + ";\
     style-src 'self' 'unsafe-inline' http://localhost:" + currentPort + ";\
     img-src 'self' data: blob: http://localhost:" + currentPort + ";\
@@ -58,8 +59,8 @@ server.on('connection', (conn) => {
   });
 });
 
-server.on('error', (conn) => {  
-    logamarillo(1, `${ID_MOD} - Error abriendo puerto`);  
+server.on('error', (conn) => {
+  logamarillo(1, `${ID_MOD} - Error abriendo puerto`);
 })
 
 function closeServer(cb) {

@@ -5,7 +5,7 @@ const ID_MOD = "LOG";
 let logamarillo = function (nivel, ...contenido) {
 
     if (nivel >= nivLog)
-        console.log(1, ...contenido)
+        console.log(...contenido)
 }
 
 /* ===========================================================

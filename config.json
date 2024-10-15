@@ -37,11 +37,11 @@
     },
     "observador": {
         "umbral_parser_columnas": 20,
-        "tiempo_milis": 4000
-    },    
+        "tiempo_milis": 40000
+    },
     "desarrollo": {
-        "activo": true,
-        "nivLog": 0,
+        "activo": false,
+        "nivLog": 2,
         "desviacion_poblarbd": 1
     }
 }

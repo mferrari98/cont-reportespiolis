@@ -32,7 +32,7 @@ const tablaTipoVariable = (err_previo, callback) => {
         descriptor TEXT NOT NULL,
         orden INTEGER NOT NULL
     )`,
-    (err) => {      
+    (err) => {
       err_previo["err_tvar"] = err
       tablaHistoricosLectura(err_previo, callback)
     }

@@ -70,7 +70,7 @@ HistoricoLecturaDAO.prototype.existe = function (etiempo, callback) {
   logamarillo(1, `${ID_MOD} - existe`);
   const db = getDatabase();
 
-  db.get(sql_existe, [etiempo], (_, row) => {    
+  db.get(sql_existe, [etiempo], (_, row) => {
     callback(null, row.existe);
   });
 };
@@ -117,7 +117,7 @@ HistoricoLecturaDAO.prototype.delete = function (id, callback) {
 };
 
 HistoricoLecturaDAO.prototype.truncate = function (callback) {
- 
+
   logamarillo(1, `${ID_MOD} - truncate`);
   const db = getDatabase();
 

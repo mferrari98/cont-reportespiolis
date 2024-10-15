@@ -29,7 +29,7 @@ let lanzarReporte = function (enviarEmail, currentModifiedTime, cb) {
     getNuevosDatos((err, reporte) => {
         if (!err) {
             transpilar(reporte, currentModifiedTime, () => {
-                
+
                 if (enviarEmail) {
                     emailMensaje.extraerTabla(() => {
                         emailMensaje.renderizar();

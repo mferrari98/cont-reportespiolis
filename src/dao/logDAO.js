@@ -1,4 +1,4 @@
-const { verLog } = require("../../config.json").desarrollo
+const { logamarillo } = require("../control/controlLog")
 const { getDatabase } = require('../basedatos/db');
 
 const ID_MOD = "DAO-LOG";
@@ -21,9 +21,7 @@ function LogDAO() { }
 
 LogDAO.prototype.create = function (mensaje, etiempo, callback) {
 
-  if (verLog)
-    logamarillo(1, `${ID_MOD} - create`);
-
+  logamarillo(1, `${ID_MOD} - create`);
   const db = getDatabase();
 
   db.run(sql_create, [mensaje, etiempo], function (_) {

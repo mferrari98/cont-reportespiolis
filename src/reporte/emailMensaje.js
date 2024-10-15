@@ -1,13 +1,13 @@
-const { verLog } = require("../../config.json").desarrollo
-
 const fs = require('fs');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
+
+const { logamarillo } = require("../control/controlLog")
+
 const EmailControl = require('./emailControl');
+const emailControl = new EmailControl();
 
 const ID_MOD = "CTRL-HTML"
-
-const emailControl = new EmailControl();
 
 function EmailMensaje() { }
 
@@ -44,15 +44,15 @@ EmailMensaje.prototype.renderizar = function () {
 
     (async () => {
         const browser = await puppeteer.launch();
-        const page = await browser.newPage();        
+        const page = await browser.newPage();
         await page.goto(`file:///${process.cwd()}/web/public/reporte.html`);
 
         await plotBarras(page)
         await plotPie(page)
         await plotLineas(page)
-        
+
         emailControl.enviar()
-        browser.close();                 
+        browser.close();
     })()
 }
 
@@ -61,9 +61,9 @@ EmailMensaje.prototype.renderizar = function () {
 ==============================================================
 */
 
-async function plotBarras(page) {        
+async function plotBarras(page) {
     const element = await page.$('#grafBarras');
-    await element.screenshot({ path: './reporte/salida/grafBarras.png' });    
+    await element.screenshot({ path: './reporte/salida/grafBarras.png' });
 }
 
 async function plotPie(page) {
@@ -74,7 +74,7 @@ async function plotPie(page) {
 async function plotLineas(page) {
     const element = await page.$('#grafLineas');
     try {
-        await element.screenshot({ path: './reporte/salida/grafLineas.png' });        
+        await element.screenshot({ path: './reporte/salida/grafLineas.png' });
     } catch (e) {
         logamarillo(1, `${ID_MOD} - error escrinyoteando serie de tiempo`);
     }
@@ -82,7 +82,5 @@ async function plotLineas(page) {
 
 module.exports = EmailMensaje;
 
-if (verLog) {
-    logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
-    logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);
-}
+logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
+logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

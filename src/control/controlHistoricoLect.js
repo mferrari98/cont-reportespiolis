@@ -1,11 +1,11 @@
 const http = require('http');
-const url = 'http://10.10.4.125:3001/desa/soquete'
+
+const desviacion = require("../../config.json").desarrollo.desviacion_poblarbd
+const { logamarillo } = require("../control/controlLog")
 
 const TipoVariableDAO = require("../dao/tipoVariableDAO");
 const SitioDAO = require("../dao/sitioDAO");
 const HistoricoLecturaDAO = require("../dao/historicoLecturaDAO");
-const desviacion = require("../../config.json").desarrollo.desviacion_poblarbd
-const { logamarillo } = require("../control/controlLog")
 
 const tipoVariableDAO = new TipoVariableDAO();
 const sitioDAO = new SitioDAO();
@@ -19,6 +19,8 @@ const cant_sitios = 11
 
 const MAX_RANGO = 4.5
 const MIN_RANGO = 0.1
+
+const url = 'http://10.10.4.125:3001/desa/soquete'
 
 function HistLectControl() { }
 

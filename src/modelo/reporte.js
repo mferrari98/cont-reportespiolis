@@ -9,9 +9,9 @@ let sitiosMadryn;
 function Reporte() { }
 
 Reporte.prototype.declarar = function (sitios, cb) {
-    
-    sitioDAO.getSitiosMadryn((_, sitios) => { sitiosMadryn = sitios});
-    
+
+    sitioDAO.getSitiosMadryn((_, sitios) => { sitiosMadryn = sitios });
+
     let reporte = new Array(sitios.length);
 
     tipoVariableDAO.getTodosDescriptores((_, descriptores) => {
@@ -23,7 +23,7 @@ Reporte.prototype.declarar = function (sitios, cb) {
                         descriptor: descriptores[0].descriptor,
                         valor: undefined,
                         rebalse: sitios[index].rebalse,
-                        cubicaje: sitios[index].cubicaje, 
+                        cubicaje: sitios[index].cubicaje,
                         historico: undefined
                     },
                     cloro: {
@@ -39,8 +39,8 @@ Reporte.prototype.declarar = function (sitios, cb) {
                         valor: undefined
                     }
                 },
-                esMadryn: esMadryn(sitios[index]) 
-            };            
+                esMadryn: esMadryn(sitios[index])
+            };
         };
         cb(reporte)
     })

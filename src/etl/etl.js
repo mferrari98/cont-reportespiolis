@@ -1,4 +1,5 @@
 const config = require("../../config.json")
+const { logamarillo } = require("../control/controlLog")
 
 const TipoVariableDAO = require("../dao/tipoVariableDAO");
 const SitioDAO = require("../dao/sitioDAO");
@@ -11,7 +12,6 @@ const historicoLecturaDAO = new HistoricoLecturaDAO();
 const ID_MOD = "ETL";
 const SIN_DETERMINAR = "s/d";
 
-const verLog = config.desarrollo.verLog
 const umbral = config.observador.umbral_parser_columnas
 
 const tipo_variables = ["Nivel[m]", "Cloro[mlg/l]", "Turbiedad[UTN]", "VOL/DIA[m3/dia]"]
@@ -26,19 +26,19 @@ const tipo_variables = ["Nivel[m]", "Cloro[mlg/l]", "Turbiedad[UTN]", "VOL/DIA[m
  */
 function lanzarETL(lines, etiempo, cb) {
   getTipoVariable(lines[0], (msjTVar) => {
-    
-    lines.splice(0, 1);    
+
+    lines.splice(0, 1);
     getSitiosNombre(lines, (msjSit) => {
-      
-      logamarillo(1, `${ID_MOD} - ${msjTVar} ${msjSit}`);
+
+      logamarillo(2, `${ID_MOD} - ${msjTVar} ${msjSit}`);
 
       historicoLecturaDAO.existe(etiempo, (_, existe) => {
-        
+
         if (existe)
-          cb()  
+          cb()
         else
           nuevoHistoricoLectura(lines, etiempo, () => { cb() });
-      })    
+      })
     });
   });
 }
@@ -64,16 +64,13 @@ function getTipoVariable(firstLine, cb) {
   for (const [index, descriptor] of tipo_variable.entries()) {
     tipoVariableDAO.getByDescriptor(descriptor, (err, row) => {
       if (err) {
-        console.error(`${ID_MOD} - Error al buscar por descriptor:`, err);
+        logamarillo(2, `${ID_MOD} - Error al buscar por descriptor:`, err);
       } else {
         if (!row) {
           // Si no se encuentra el descriptor, se crea un nuevo registro
           tipoVariableDAO.create(descriptor, index, (err, result) => {
             if (err) {
-              console.error(
-                `${ID_MOD} - Error al insertar tipo_variable:`,
-                err
-              );
+              logamarillo(2, `${ID_MOD} - Error al insertar tipo_variable:`, err);
             } else {
               entidades_creadas++;
               if (
@@ -115,13 +112,13 @@ function getSitiosNombre(lines, cb) {
   for (const [index, descriptor] of sitios.entries()) {
     sitioDAO.getByDescriptor(descriptor, (err, row) => {
       if (err) {
-        console.error(`${ID_MOD} - Error al buscar por descriptor:`, err);
+        logamarillo(2, `${ID_MOD} - Error al buscar por descriptor:`, err);
       } else {
         if (!row) {
           // Si no se encuentra el descriptor, se crea un nuevo registro
           sitioDAO.create(descriptor, index, (err, result) => {
             if (err) {
-              console.error(`${ID_MOD} - Error al insertar sitio:`, err);
+              logamarillo(2, `${ID_MOD} - Error al insertar sitio:`, err);
             } else {
               entidades_creadas++;
               if (
@@ -159,7 +156,7 @@ function insertar(lineas_modif, columna, timestamp, callback) {
 
   const tipoVar = getColumna(lineas_modif, columna);
 
-  tipoVariableDAO.getByDescriptor(tipo_variables[columna-1], (err, tipoVariable) => {
+  tipoVariableDAO.getByDescriptor(tipo_variables[columna - 1], (err, tipoVariable) => {
     if (err) {
       callback(err);
       return;
@@ -177,8 +174,8 @@ function insertar(lineas_modif, columna, timestamp, callback) {
       if (valor == SIN_DETERMINAR) {  // no insertar en bd
         remaining--
         continue
-      } 
-        
+      }
+
       sitioDAO.getByOrden(i, (err, sitio) => {
         if (err) {
           callback(err);
@@ -194,11 +191,7 @@ function insertar(lineas_modif, columna, timestamp, callback) {
               callback(err);
               return;
             }
-
-            if (verLog)
-              logamarillo(1, 
-                `${ID_MOD} - Insertando historico_lectura {${sitio.descriptor}:${tipoVariable.descriptor}:${valor}}`
-              );
+            logamarillo(1, `${ID_MOD} - Insertando historico_lectura {${sitio.descriptor}:${tipoVariable.descriptor}:${valor}}`);
 
             remaining--
             if (remaining === 0) {
@@ -281,7 +274,7 @@ function getColumna(modifiedLines, numCol) {
   const regex = /\s(?=\d|\bs\/d)|(?<=\d|\bs\/d)\s/g;
 
   for (let line of modifiedLines) {
-    
+
     /*
     dividir linea solo cuando hay un número a los lados del espacio
     este patron resuelve falsos positivo como se daria en "B.SAN MIGUEL 1.2" -> [B.SAN, MIGUEL, 1.2, ...]
@@ -301,9 +294,7 @@ function getColumna(modifiedLines, numCol) {
   return columnValues;
 }
 
-module.exports = { lanzarETL, sindet:SIN_DETERMINAR };
+module.exports = { lanzarETL, sindet: SIN_DETERMINAR };
 
-if (verLog) {
-  logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
-  logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);
-}
+logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
+logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

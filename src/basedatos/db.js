@@ -8,7 +8,7 @@ const ID_MOD = "DB"
 
 let dbPath
 
-if(activo)
+if (activo)
   dbPath = path.resolve(__dirname, 'desarrollo.sqlite');
 else
   dbPath = path.resolve(__dirname, 'database.sqlite');

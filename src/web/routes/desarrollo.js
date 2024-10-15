@@ -10,8 +10,8 @@ const whitelist = ['localhost', "127.0.0.1", "10.10.4.125", "10.10.3.22"]
 
 // Middleware para validar el host
 function validateHost(req, res, next) {
-  
-  const host = req.ip.split(":")[3]  
+
+  const host = req.ip.split(":")[3]
 
   if (whitelist.includes(host)) {
     // Si el host está en la lista blanca, permite la solicitud
@@ -65,7 +65,7 @@ router.get('/', (req, res) => {
 router.get('/sinc', (req, res) => {
 
   histLectControl.sincronizar((cantidad) => {
-    res.json({ message: `tu servidor trajo ${cantidad} de datos a revisar desde servidor de referencia`});
+    res.json({ message: `tu servidor trajo ${cantidad} de datos a revisar desde servidor de referencia` });
   })
 });
 
@@ -106,7 +106,7 @@ router.get('/poblar', (req, res) => {
 
 router.get('/truncar', (req, res) => {
 
-  if(true)
+  if (true)
     res.json({ message: 'por seguridad esta funcion esta anulada' });
   else
     histLectControl.truncate((resultado) => {

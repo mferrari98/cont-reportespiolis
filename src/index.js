@@ -1,3 +1,5 @@
+const { logamarillo } = require("./control/controlLog")
+
 const { closeDatabase } = require('./basedatos/db');
 /*
 observar cambios en el archivo de referencia
@@ -13,7 +15,7 @@ armar esquema de base de datos
 const { crearTablas } = require('./basedatos/crear_tablas');
 
 crearTablas((err) => {
-    console.error("ESQUEMA - resumen errores ->", err)
+    logamarillo(2, "ESQUEMA - resumen errores ->", err)
     observador.iniciar()
 });
 

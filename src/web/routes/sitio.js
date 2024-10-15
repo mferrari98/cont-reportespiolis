@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
 
   sitioDAO.getAll((err, rows) => {
     if (err) {
-      console.error('Error fetching sitio:', err);
+      logamarillo(2, 'Error fetching sitio:', err);
       res.status(500).send('Error interno del servidor');
     } else {
       res.json(rows); // Envía la respuesta como JSON con los registros obtenidos

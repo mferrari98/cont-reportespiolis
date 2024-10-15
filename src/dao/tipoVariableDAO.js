@@ -1,4 +1,4 @@
-const { verLog } = require("../../config.json").desarrollo
+const { logamarillo } = require("../control/controlLog")
 const { getDatabase } = require('../basedatos/db');
 
 const ID_MOD = "DAO-TPOVAR"
@@ -15,9 +15,7 @@ function TipoVariableDAO() { }
 
 TipoVariableDAO.prototype.create = function (descriptor, orden, callback) {
 
-  if (verLog)
-    logamarillo(1, `${ID_MOD} - create`);
-
+  logamarillo(1, `${ID_MOD} - create`);
   const db = getDatabase();
 
   db.run(sql_create, [descriptor, orden], function (_) {
@@ -27,9 +25,7 @@ TipoVariableDAO.prototype.create = function (descriptor, orden, callback) {
 
 TipoVariableDAO.prototype.getById = function (id, callback) {
 
-  if (verLog)
-    logamarillo(1, `${ID_MOD} - getById`);
-
+  logamarillo(1, `${ID_MOD} - getById`);
   const db = getDatabase();
 
   db.get(sql_getById, [id], (_, row) => {
@@ -39,9 +35,7 @@ TipoVariableDAO.prototype.getById = function (id, callback) {
 
 TipoVariableDAO.prototype.getByDescriptor = function (descriptor, callback) {
 
-  if (verLog)
-    logamarillo(1, `${ID_MOD} - getByDescriptor`);
-
+  logamarillo(1, `${ID_MOD} - getByDescriptor`);
   const db = getDatabase();
 
   db.get(sql_getByDescriptor, [descriptor], (_, row) => {
@@ -51,9 +45,7 @@ TipoVariableDAO.prototype.getByDescriptor = function (descriptor, callback) {
 
 TipoVariableDAO.prototype.getByOrden = function (orden, callback) {
 
-  if (verLog)
-    logamarillo(1, `${ID_MOD} - getByOrden`);
-
+  logamarillo(1, `${ID_MOD} - getByOrden`);
   const db = getDatabase();
 
   db.get(sql_getByOrden, [orden], (_, row) => {
@@ -63,9 +55,7 @@ TipoVariableDAO.prototype.getByOrden = function (orden, callback) {
 
 TipoVariableDAO.prototype.getAll = function (callback) {
 
-  if (verLog)
-    logamarillo(1, `${ID_MOD} - getAll`);
-
+  logamarillo(1, `${ID_MOD} - getAll`);
   const db = getDatabase();
 
   db.all(sql_getAll, [], (_, rows) => {
@@ -75,9 +65,7 @@ TipoVariableDAO.prototype.getAll = function (callback) {
 
 TipoVariableDAO.prototype.getTodosDescriptores = function (callback) {
 
-  if (verLog)
-    logamarillo(1, `${ID_MOD} - getTodosDescriptores`);
-
+  logamarillo(1, `${ID_MOD} - getTodosDescriptores`);
   const db = getDatabase();
 
   db.all(sql_getTodosDescriptores, [], (_, rows) => {
@@ -87,9 +75,7 @@ TipoVariableDAO.prototype.getTodosDescriptores = function (callback) {
 
 TipoVariableDAO.prototype.delete = function (id, callback) {
 
-  if (verLog)
-    logamarillo(1, `${ID_MOD} - delete`);
-
+  logamarillo(1, `${ID_MOD} - delete`);
   const db = getDatabase();
 
   db.run(sql_delete, [id], function (_) {

@@ -2,12 +2,12 @@ const fs = require("fs");
 const readline = require("readline");
 
 const config = require("../../config.json")
+const { logamarillo } = require("../control/controlLog")
 const { lanzarETL } = require("./etl");
 const { lanzarReporte, notificarFallo } = require("../control/controlReporte")
 
 const ID_MOD = "OBSERV";
 
-const verLog = config.desarrollo.verLog
 const dir_wizcon = config.direcciones.sca_wizcon
 const dir_citec = config.direcciones.cota45
 
@@ -21,12 +21,10 @@ let antes_hubo_error = false
 function iniciar() {
   // Verifica que se haya proporcionado el archivo como argumento
   if (process.argv.length < 3) {
-    console.error(
-      `${ID_MOD} - No hay direccion en linea de comandos, se utilizara definicion de config.json`
-    );
+    logamarillo(1, `${ID_MOD} - No hay direccion en linea de comandos, se utilizara definicion de config.json`);
 
     filePath = dir_wizcon
-    checkFileModification();    
+    checkFileModification();
   }
 }
 
@@ -41,9 +39,7 @@ function verUltimoCambio(enviarEmail, cb) {
 
 function parar() {
   clearInterval(intervalId);
-
-  if (verLog)
-    logamarillo(1, `${ID_MOD} - deteniendo observador`);
+  logamarillo(1, `${ID_MOD} - deteniendo observador`);
 }
 
 /* ===========================================================
@@ -53,7 +49,7 @@ function parar() {
 
 // Función para leer y procesar el archivo
 function readAndProcessFile() {
- 
+
   let lines = [];
 
   datosWizcon(lines, (lin_wiz) => {
@@ -67,7 +63,7 @@ function readAndProcessFile() {
 }
 
 function datosWizcon(lines, cb) {
-  
+
   try {
     const rl = readline.createInterface({
       input: fs.createReadStream(filePath),
@@ -81,17 +77,17 @@ function datosWizcon(lines, cb) {
     });
 
     rl.on("close", () => {
-      logamarillo(1, `${ID_MOD} - se leyeron datos desde wizcon`)
+      logamarillo(2, `${ID_MOD} - se leyeron datos desde wizcon`)
       cb(lines)
     });
 
   } catch (error) {
-    console.error(`${ ID_MOD } - Error al leer el archivo: ${error.message}`);
+    logamarillo(2, `${ID_MOD} - Error al leer el archivo: ${error.message}`);
   }
 }
 
 function datosCitec(lines, cb) {
-  fs.readFile(dir_citec, 'utf8', (err, data) => {    
+  fs.readFile(dir_citec, 'utf8', (err, data) => {
 
     // Dividir el contenido del archivo en líneas
     const lineas = data.trim().split('\n');
@@ -121,9 +117,9 @@ function datosCitec(lines, cb) {
 
     // Llamar al callback con la fila más cercana encontrada
     if (filaMasCercana) {
-      logamarillo(1, `${ID_MOD} - se leyeron datos desde citec. %s fila %s`, filaMasCercana, posfila)
+      logamarillo(2, `${ID_MOD} - se leyeron datos desde citec. %s fila %s`, filaMasCercana, posfila)
       lines.push(`Cota45              ${filaMasCercana.split(' - ')[1].replace(',', '.')}`);
-      cb(lines)      
+      cb(lines)
     }
   });
 }
@@ -131,18 +127,18 @@ function datosCitec(lines, cb) {
 // Función para verificar la fecha de modificación del archivo
 function checkFileModification() {
   fs.stat(filePath, (err, stats) => {
-    
-    if (err) 
+
+    if (err)
       currentModifiedTime = new Date();
     else
       currentModifiedTime = stats.mtime;
-    
+
     const fechaActual = formatoFecha(currentModifiedTime);
     const fechaAnterior = formatoFecha(lastModifiedTime);
 
     if (err && !antes_hubo_error) {
       antes_hubo_error = true
-      logamarillo(1, `${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+      logamarillo(2, `${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
       notificarFallo(err.message, currentModifiedTime, () => { })
       return;
     }
@@ -150,14 +146,13 @@ function checkFileModification() {
     antes_hubo_error = false
 
     if (!lastModifiedTime || currentModifiedTime > lastModifiedTime) {
-      
-      lastModifiedTime = currentModifiedTime;      
-      logamarillo(1, `${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+
+      lastModifiedTime = currentModifiedTime;
+      logamarillo(2, `${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
 
       readAndProcessFile();
-    } else {      
-      if (verLog)
-        logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la última lectura`);
+    } else {
+      logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la última lectura`);
     }
   });
 }
@@ -181,7 +176,5 @@ const intervalId = setInterval(checkFileModification, checkInterval);
 
 module.exports = { iniciar, verUltimoCambio, parar };
 
-if (verLog) {
-  logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
-  logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);
-}
+logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
+logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

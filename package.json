@@ -1,10 +1,13 @@
 {
   "name": "reportespiolis",
   "version": "1.0.0",
-  "description": "scripting que consume un reporte en texto plano y genera un html. el texto de entrada tiene un formato determinado, no se trata de algo adaptable basado en plantillas sino todo lo cantrario, solo es capaz de interpretar el formato impuesto por el servicio que genera esos textos.",
-  "main": "index.js",
+  "description": "scripting que consume un reporte en texto plano y genera un html. el texto de entrada tiene un formato determinado, no se trata de algo adaptable basado en plantillas sino todo lo cantrario, solo es capaz de interpretar el formato impuesto por el servicio que genera esos textos",
+  "main": "./index.js",
+  "directories": {
+    "doc": "doc"
+  },
   "scripts": {
-    "clean": "del /Q etl\\plantilla.expand.html reporte\\salida\\*.* basedatos\\database.sqlite"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -13,7 +16,12 @@
   "keywords": [
     "scripting",
     "wizcon",
-    "etl"
+    "citec",
+    "etl",
+    "transpilador",
+    "html",
+    "plotly",
+    "reporte"
   ],
   "author": "servicoop.comunicaciones",
   "license": "ISC",

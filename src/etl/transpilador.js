@@ -7,7 +7,7 @@ const { sindet } = require("./etl");
 const ID_MOD = "TRANS";
 
 function transpilar(reporte, estampatiempo, cb) {
-	fs.readFile("./etl/plantilla.piolis", "utf8", (err, data) => {
+	fs.readFile("./src/etl/plantilla.piolis", "utf8", (err, data) => {
 		if (err) {
 			logamarillo(2, "Error al leer el archivo:", err);
 			res.status(500).send("Error interno del servidor");
@@ -314,7 +314,7 @@ function convertirTimestampsAISO(timestamps) {
 
 function crearHTMLSalida(contenido, cb) {
 	// Escribir en el archivo
-	fs.writeFile("./web/public/reporte.html", contenido, (err) => {
+	fs.writeFile("./src/web/public/reporte.html", contenido, (err) => {
 		if (err) {
 			logamarillo(2, "Error al escribir archivo:", err);
 			return;

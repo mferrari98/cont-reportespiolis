@@ -1,18 +1,18 @@
-const { logamarillo } = require("./control/controlLog")
+const { logamarillo } = require("./src/control/controlLog")
 
-const { closeDatabase } = require('./basedatos/db');
+const { closeDatabase } = require('./src/basedatos/db');
 /*
 observar cambios en el archivo de referencia
 */
-const observador = require('./etl/observador')
+const observador = require('./src/etl/observador')
 /*
 desplegar servidor web el reporte generado
 */
-const { closeServer } = require("./web/server")(observador)
+const { closeServer } = require("./src/web/server")(observador)
 /*
 armar esquema de base de datos
 */
-const { crearTablas } = require('./basedatos/crear_tablas');
+const { crearTablas } = require('./src/basedatos/crear_tablas');
 
 crearTablas((err) => {
     logamarillo(2, "ESQUEMA - resumen errores ->", err)

@@ -2,8 +2,10 @@ const express = require('express');
 const WebSocket = require('ws');
 
 const router = express.Router();
-const HistLectControl = require("../../control/controlHistoricoLect");
 
+const { logamarillo } = require("../../control/controlLog")
+
+const HistLectControl = require("../../control/controlHistoricoLect");
 const histLectControl = new HistLectControl();
 
 const whitelist = ['localhost', "127.0.0.1", "10.10.4.125", "10.10.3.22"]
@@ -11,7 +13,13 @@ const whitelist = ['localhost', "127.0.0.1", "10.10.4.125", "10.10.3.22"]
 // Middleware para validar el host
 function validateHost(req, res, next) {
 
+  /*
+  antes funcionaba con esto 
   const host = req.ip.split(":")[3]
+  no me explico que paso
+  */
+  const host = req.socket.remoteAddress.split(":")[3]
+  logamarillo(3, host)
 
   if (whitelist.includes(host)) {
     // Si el host está en la lista blanca, permite la solicitud
@@ -64,7 +72,7 @@ router.get('/', (req, res) => {
 
 router.get('/sinc', (req, res) => {
 
-  histLectControl.sincronizar((cantidad) => {
+  histLectControl.sincronizar(req.socket.localPort, (cantidad) => {
     res.json({ message: `tu servidor trajo ${cantidad} de datos a revisar desde servidor de referencia` });
   })
 });
@@ -73,20 +81,20 @@ router.get('/soquete', (req, res) => {
 
   const puertoWS = 8081;
 
-  logamarillo(1, "antes")
+  logamarillo(3, "antes")
   const wss = new WebSocket.Server({ port: puertoWS });
-  logamarillo(1, "desp")
+  logamarillo(3, "desp")
 
   wss.on('connection', (ws) => {
-    logamarillo(1, `${ID_MOD} - Cliente conectado para sincronización`);
+    logamarillo(3, `${ID_MOD} - Cliente conectado para sincronización`);
 
     ws.on('message', (message) => {
-      logamarillo(1, `${ID_MOD} - Recibido comando SQL: ${message}`);
+      logamarillo(3, `${ID_MOD} - Recibido comando SQL: ${message}`);
       ws.send(JSON.stringify("querias cumbia? toma!"));
     });
 
     ws.on('close', () => {
-      logamarillo(1, `${ID_MOD} - Cliente desconectado`);
+      logamarillo(3, `${ID_MOD} - Cliente desconectado`);
     });
   });
 

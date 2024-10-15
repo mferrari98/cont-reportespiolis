@@ -43,7 +43,7 @@ EmailControl.prototype.enviar = function () {
 
     // Enviar el correo
     let resumen = "Generacion automatica de reportes mejorada"
-    let htmlContent = fs.readFileSync('./reporte/salida/tabla.html', 'utf8');
+    let htmlContent = fs.readFileSync('./src/reporte/salida/tabla.html', 'utf8');
 
     let mailOptions = {
         from: "<fachada.correo@servicoop.com>",
@@ -62,17 +62,17 @@ EmailControl.prototype.enviar = function () {
         attachments: [
             {
                 filename: 'imagen.jpg',
-                path: './reporte/salida/grafBarras.png', // Ruta de la imagen
+                path: './src/reporte/salida/grafBarras.png', // Ruta de la imagen
                 cid: 'grafBarras' // CID para referenciar la imagen en el cuerpo del mensaje
             },
             {
                 filename: 'imagen2.jpg',
-                path: './reporte/salida/grafPie.png', // Ruta de la imagen
+                path: './src/reporte/salida/grafPie.png', // Ruta de la imagen
                 cid: 'grafPie' // CID para referenciar la imagen en el cuerpo del mensaje
             },
             {
                 filename: 'imagen3.jpg',
-                path: './reporte/salida/grafLineas.png', // Ruta de la imagen
+                path: './src/reporte/salida/grafLineas.png', // Ruta de la imagen
                 cid: 'grafLineas' // CID para referenciar la imagen en el cuerpo del mensaje
             }
         ]

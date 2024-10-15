@@ -1,4 +1,5 @@
 const http = require('http');
+const WebSocket = require('ws');
 
 const desviacion = require("../../config.json").desarrollo.desviacion_poblarbd
 const { logamarillo } = require("../control/controlLog")
@@ -20,13 +21,15 @@ const cant_sitios = 11
 const MAX_RANGO = 4.5
 const MIN_RANGO = 0.1
 
-const url = 'http://10.10.4.125:3001/desa/soquete'
+const url_soquete = 'http://localhost:^puerto^/desa/soquete'
 
 function HistLectControl() { }
 
-HistLectControl.prototype.sincronizar = function (cb) {
+HistLectControl.prototype.sincronizar = function (puerto, cb) {
+    
+    let nuevaUrl = url_soquete.replace("^puerto^", puerto);    
 
-    http.get(url, (res) => {
+    http.get(nuevaUrl, (res) => {
         let data = '';
 
         // A medida que se reciben datos
@@ -37,13 +40,13 @@ HistLectControl.prototype.sincronizar = function (cb) {
         // Al finalizar la respuesta
         res.on('end', () => {
             const respuesta = JSON.parse(data);
-            logamarillo(1, `${ID_MOD} - Datos recibidos:`, respuesta);
+            logamarillo(3, `${ID_MOD} - Datos recibidos:`, respuesta);
 
             // Abrir WebSocket con el puerto recibido
             const ws = new WebSocket(`ws://10.10.4.125:${respuesta.puerto}`);
 
             ws.on('open', () => {
-                logamarillo(1, `${ID_MOD} - WebSocket abierto en puerto ${respuesta.puerto}`);
+                logamarillo(3, `${ID_MOD} - WebSocket abierto en puerto ${respuesta.puerto}`);
 
                 // Enviar comando SQL por WebSocket
                 const comandoSQL = "SELECT * FROM log WHERE id > 100"; // Ejemplo de comando SQL
@@ -51,19 +54,19 @@ HistLectControl.prototype.sincronizar = function (cb) {
             });
 
             ws.on('message', (message) => {
-                logamarillo(1, `${ID_MOD} - Resultado del servidor:`, message);
+                logamarillo(3, `${ID_MOD} - Resultado del servidor:`, message);
             });
 
             ws.on('close', () => {
-                logamarillo(1, `${ID_MOD} - Conexión WebSocket cerrada`);
+                logamarillo(3, `${ID_MOD} - Conexión WebSocket cerrada`);
             });
 
             ws.on('error', (err) => {
-                logamarillo(1, `${ID_MOD} - Error en WebSocket:`, err.message);
+                logamarillo(3, `${ID_MOD} - Error en WebSocket:`, err.message);
             });
         });
     }).on('error', (err) => {
-        logamarillo(1, `${ID_MOD} - Error en la solicitud:`, err.message);
+        logamarillo(3, `${ID_MOD} - Error en la solicitud:`, err.message);
     });
 }
 

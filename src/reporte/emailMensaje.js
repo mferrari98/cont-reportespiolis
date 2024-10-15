@@ -20,7 +20,7 @@ EmailMensaje.prototype.extraerTabla = function (cb) {
     $('#copiar').remove();
 
     const headContent = $('head').children().not('script').toString();
-    const bodyContent = $('body').children().not('script, #grafBarras, #grafLineas, #grafPie').toString();
+    const bodyContent = $('body').children().not('script, #grafBarras, #grafLineas, #grafPieMdy, #grafPieTw').toString();
 
     // armar un nuevo html
     const newHtml = `
@@ -56,7 +56,7 @@ EmailMensaje.prototype.renderizar = function () {
         await page.goto(`file:///${process.cwd()}/src/web/public/reporte.html`);
 
         await plotBarras(page)
-        await plotPie(page)
+        await plotPieMdy(page)
         await plotLineas(page)
 
         emailControl.enviar()
@@ -74,9 +74,9 @@ async function plotBarras(page) {
     await element.screenshot({ path: './src/reporte/salida/grafBarras.png' });
 }
 
-async function plotPie(page) {
-    const element = await page.$('#grafPie');
-    await element.screenshot({ path: './src/reporte/salida/grafPie.png' });
+async function plotPieMdy(page) {
+    const element = await page.$('#grafPieMdy');
+    await element.screenshot({ path: './src/reporte/salida/grafPieMdy.png' });
 }
 
 async function plotLineas(page) {

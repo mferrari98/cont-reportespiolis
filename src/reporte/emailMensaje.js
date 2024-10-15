@@ -76,13 +76,13 @@ async function plotLineas(page) {
     try {
         await element.screenshot({ path: './reporte/salida/grafLineas.png' });        
     } catch (e) {
-        console.log(`${ID_MOD} - error escrinyoteando serie de tiempo`);
+        logamarillo(1, `${ID_MOD} - error escrinyoteando serie de tiempo`);
     }
 }
 
 module.exports = EmailMensaje;
 
 if (verLog) {
-    console.log(`${ID_MOD} - Directorio trabajo:`, process.cwd());
-    console.log(`${ID_MOD} - Directorio del archivo:`, __dirname);
+    logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
+    logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);
 }

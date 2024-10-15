@@ -1,4 +1,4 @@
-const { verLog } = require("../../config.json").desarrollo
+const { logamarillo } = require("../control/controlLog")
 const { getDatabase } = require('../basedatos/db');
 
 const ID_MOD = "DAO-HISTORICO-LECTURA";
@@ -47,9 +47,7 @@ function HistoricoLecturaDAO() { }
 
 HistoricoLecturaDAO.prototype.create = function (sitio_id, tipo_id, valor, etiempo, callback) {
 
-  if (verLog)
-    console.log(`${ID_MOD} - create`);
-
+  logamarillo(1, `${ID_MOD} - create`);
   const db = getDatabase();
 
   db.run(sql_create, [sitio_id, tipo_id, valor, etiempo], function (_) {
@@ -59,9 +57,7 @@ HistoricoLecturaDAO.prototype.create = function (sitio_id, tipo_id, valor, etiem
 
 HistoricoLecturaDAO.prototype.getById = function (id, callback) {
 
-  if (verLog)
-    console.log(`${ID_MOD} - getById`);
-
+  logamarillo(1, `${ID_MOD} - getById`);
   const db = getDatabase();
 
   db.get(sql_getById, [id], (_, row) => {
@@ -71,9 +67,7 @@ HistoricoLecturaDAO.prototype.getById = function (id, callback) {
 
 HistoricoLecturaDAO.prototype.existe = function (etiempo, callback) {
 
-  if (verLog)
-    console.log(`${ID_MOD} - existe`);
-
+  logamarillo(1, `${ID_MOD} - existe`);
   const db = getDatabase();
 
   db.get(sql_existe, [etiempo], (_, row) => {    
@@ -84,9 +78,7 @@ HistoricoLecturaDAO.prototype.existe = function (etiempo, callback) {
 
 HistoricoLecturaDAO.prototype.getAll = function (callback) {
 
-  if (verLog)
-    console.log(`${ID_MOD} - getAll`);
-
+  logamarillo(1, `${ID_MOD} - getAll`);
   const db = getDatabase();
 
   db.all(sql_getAll, [], (_, rows) => {
@@ -96,9 +88,7 @@ HistoricoLecturaDAO.prototype.getAll = function (callback) {
 
 HistoricoLecturaDAO.prototype.getMostRecent = function (callback) {
 
-  if (verLog)
-    console.log(`${ID_MOD} - getMostRecent`);
-
+  logamarillo(1, `${ID_MOD} - getMostRecent`);
   const db = getDatabase();
 
   db.all(sql_getMostRecent, (_, rows) => {
@@ -108,9 +98,7 @@ HistoricoLecturaDAO.prototype.getMostRecent = function (callback) {
 
 HistoricoLecturaDAO.prototype.getHistorico = function (sitio_id, callback) {
 
-  if (verLog)
-    console.log(`${ID_MOD} - getHistorico`);
-
+  logamarillo(1, `${ID_MOD} - getHistorico`);
   const db = getDatabase();
 
   db.all(sql_getHistorico, [sitio_id], (_, rows) => {
@@ -120,9 +108,7 @@ HistoricoLecturaDAO.prototype.getHistorico = function (sitio_id, callback) {
 
 HistoricoLecturaDAO.prototype.delete = function (id, callback) {
 
-  if (verLog)
-    console.log(`${ID_MOD} - delete`);
-
+  logamarillo(1, `${ID_MOD} - delete`);
   const db = getDatabase();
 
   db.run(sql_delete, [id], function (err) {
@@ -131,10 +117,8 @@ HistoricoLecturaDAO.prototype.delete = function (id, callback) {
 };
 
 HistoricoLecturaDAO.prototype.truncate = function (callback) {
-
-  if (verLog)
-    console.log(`${ID_MOD} - truncate`);
-
+ 
+  logamarillo(1, `${ID_MOD} - truncate`);
   const db = getDatabase();
 
   db.run(sql_truncate, function (err) {

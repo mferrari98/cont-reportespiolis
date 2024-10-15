@@ -30,7 +30,7 @@ function lanzarETL(lines, etiempo, cb) {
     lines.splice(0, 1);    
     getSitiosNombre(lines, (msjSit) => {
       
-      console.log(`${ID_MOD} - ${msjTVar} ${msjSit}`);
+      logamarillo(1, `${ID_MOD} - ${msjTVar} ${msjSit}`);
 
       historicoLecturaDAO.existe(etiempo, (_, existe) => {
         
@@ -196,7 +196,7 @@ function insertar(lineas_modif, columna, timestamp, callback) {
             }
 
             if (verLog)
-              console.log(
+              logamarillo(1, 
                 `${ID_MOD} - Insertando historico_lectura {${sitio.descriptor}:${tipoVariable.descriptor}:${valor}}`
               );
 
@@ -304,6 +304,6 @@ function getColumna(modifiedLines, numCol) {
 module.exports = { lanzarETL, sindet:SIN_DETERMINAR };
 
 if (verLog) {
-  console.log(`${ID_MOD} - Directorio trabajo:`, process.cwd());
-  console.log(`${ID_MOD} - Directorio del archivo:`, __dirname);
+  logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
+  logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);
 }

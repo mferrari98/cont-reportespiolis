@@ -73,20 +73,20 @@ router.get('/soquete', (req, res) => {
 
   const puertoWS = 8081;
 
-  console.log("antes")
+  logamarillo(1, "antes")
   const wss = new WebSocket.Server({ port: puertoWS });
-  console.log("desp")
+  logamarillo(1, "desp")
 
   wss.on('connection', (ws) => {
-    console.log(`${ID_MOD} - Cliente conectado para sincronización`);
+    logamarillo(1, `${ID_MOD} - Cliente conectado para sincronización`);
 
     ws.on('message', (message) => {
-      console.log(`${ID_MOD} - Recibido comando SQL: ${message}`);
+      logamarillo(1, `${ID_MOD} - Recibido comando SQL: ${message}`);
       ws.send(JSON.stringify("querias cumbia? toma!"));
     });
 
     ws.on('close', () => {
-      console.log(`${ID_MOD} - Cliente desconectado`);
+      logamarillo(1, `${ID_MOD} - Cliente desconectado`);
     });
   });
 

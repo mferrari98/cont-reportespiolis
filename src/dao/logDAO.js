@@ -22,7 +22,7 @@ function LogDAO() { }
 LogDAO.prototype.create = function (mensaje, etiempo, callback) {
 
   if (verLog)
-    console.log(`${ID_MOD} - create`);
+    logamarillo(1, `${ID_MOD} - create`);
 
   const db = getDatabase();
 

@@ -80,9 +80,9 @@ EmailControl.prototype.enviar = function () {
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            return console.log(`${ID_MOD} - %s`, error);
+            return logamarillo(1, `${ID_MOD} - %s`, error);
         }
-        console.log(`${ID_MOD} - Mensaje enviado: %s, Destinatarios: %s`, info.envelope.from, JSON.stringify(info.envelope.to));
+        logamarillo(1, `${ID_MOD} - Mensaje enviado: %s, Destinatarios: %s`, info.envelope.from, JSON.stringify(info.envelope.to));
     });   
 }
 
@@ -104,10 +104,10 @@ function getCurrentDateTime() {
 (function initTransporter() {
     dns.lookup(smtpHost, (err) => {
         if (err) {
-            console.log(`${ID_MOD} - Error resolviendo ${smtpHost}, usando IP fallback: ${smtpHostFallback}`);
+            logamarillo(1, `${ID_MOD} - Error resolviendo ${smtpHost}, usando IP fallback: ${smtpHostFallback}`);
             transporter = createTransporter(smtpHostFallback);
         } else {
-            console.log(`${ID_MOD} - ${smtpHost} resuelto correctamente.`);
+            logamarillo(1, `${ID_MOD} - ${smtpHost} resuelto correctamente.`);
             transporter = createTransporter(smtpHost);
         }        
     });
@@ -116,6 +116,6 @@ function getCurrentDateTime() {
 module.exports = EmailControl;
 
 if (verLog) {
-    console.log(`${ID_MOD} - Directorio trabajo:`, process.cwd());
-    console.log(`${ID_MOD} - Directorio del archivo:`, __dirname);
+    logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
+    logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);
 }

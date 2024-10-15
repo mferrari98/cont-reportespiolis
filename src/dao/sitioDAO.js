@@ -46,7 +46,7 @@ function SitioDAO() { }
 SitioDAO.prototype.create = function (descriptor, orden, callback) {
 
   if (verLog)
-    console.log(`${ID_MOD} - create`);
+    logamarillo(1, `${ID_MOD} - create`);
 
   const db = getDatabase();
   const rebalse = rebalseMap.get(descriptor) || 0.0;
@@ -60,7 +60,7 @@ SitioDAO.prototype.create = function (descriptor, orden, callback) {
 SitioDAO.prototype.getById = function (id, callback) {
 
   if (verLog)
-    console.log(`${ID_MOD} - getById`);
+    logamarillo(1, `${ID_MOD} - getById`);
 
   const db = getDatabase();
 
@@ -72,7 +72,7 @@ SitioDAO.prototype.getById = function (id, callback) {
 SitioDAO.prototype.getByDescriptor = function (descriptor, callback) {
 
   if (verLog)
-    console.log(`${ID_MOD} - getByDescriptor`);
+    logamarillo(1, `${ID_MOD} - getByDescriptor`);
 
   const db = getDatabase();
 
@@ -84,7 +84,7 @@ SitioDAO.prototype.getByDescriptor = function (descriptor, callback) {
 SitioDAO.prototype.getByOrden = function (orden, callback) {
 
   if (verLog)
-    console.log(`${ID_MOD} - getByOrden`);
+    logamarillo(1, `${ID_MOD} - getByOrden`);
 
   const db = getDatabase();
 
@@ -96,7 +96,7 @@ SitioDAO.prototype.getByOrden = function (orden, callback) {
 SitioDAO.prototype.getAll = function (callback) {
 
   if (verLog)
-    console.log(`${ID_MOD} - getAll`);
+    logamarillo(1, `${ID_MOD} - getAll`);
 
   const db = getDatabase();
 
@@ -108,7 +108,7 @@ SitioDAO.prototype.getAll = function (callback) {
 SitioDAO.prototype.getTodosDescriptores = function (callback) {
 
   if (verLog)
-    console.log(`${ID_MOD} - getTodosDescriptores`);
+    logamarillo(1, `${ID_MOD} - getTodosDescriptores`);
 
   const db = getDatabase();
 
@@ -121,7 +121,7 @@ SitioDAO.prototype.getTodosDescriptores = function (callback) {
 SitioDAO.prototype.cantSitios = function (callback) {
 
   if (verLog)
-    console.log(`${ID_MOD} - cantSitios`);
+    logamarillo(1, `${ID_MOD} - cantSitios`);
 
   const db = getDatabase();
 
@@ -133,7 +133,7 @@ SitioDAO.prototype.cantSitios = function (callback) {
 SitioDAO.prototype.delete = function (id, callback) {
 
   if (verLog)
-    console.log(`${ID_MOD} - delete`);
+    logamarillo(1, `${ID_MOD} - delete`);
 
   const db = getDatabase();
 

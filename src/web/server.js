@@ -42,7 +42,7 @@ const desarrolloRoutes = require('./routes/desarrollo');
 levantar server
 */
 const server = app.listen(currentPort, () => {
-  console.log(`${ID_MOD} - Escuchando en p=${currentPort}`);
+  logamarillo(1, `${ID_MOD} - Escuchando en p=${currentPort}`);
 });
 
 /*
@@ -59,18 +59,18 @@ server.on('connection', (conn) => {
 });
 
 server.on('error', (conn) => {  
-    console.log(`${ID_MOD} - Error abriendo puerto`);  
+    logamarillo(1, `${ID_MOD} - Error abriendo puerto`);  
 })
 
 function closeServer(cb) {
 
-  console.log(`${ID_MOD} - destruyendo ${connections.size} conexion`);
+  logamarillo(1, `${ID_MOD} - destruyendo ${connections.size} conexion`);
   for (const conn of connections) {
     conn.destroy();
   }
 
   server.close(() => {
-    console.log(`${ID_MOD} - Server closed`);
+    logamarillo(1, `${ID_MOD} - Server closed`);
     cb();
   });
 }

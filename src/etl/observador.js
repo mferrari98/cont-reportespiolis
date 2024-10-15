@@ -43,7 +43,7 @@ function parar() {
   clearInterval(intervalId);
 
   if (verLog)
-    console.log(`${ID_MOD} - deteniendo observador`);
+    logamarillo(1, `${ID_MOD} - deteniendo observador`);
 }
 
 /* ===========================================================
@@ -81,7 +81,7 @@ function datosWizcon(lines, cb) {
     });
 
     rl.on("close", () => {
-      console.log(`${ID_MOD} - se leyeron datos desde wizcon`)
+      logamarillo(1, `${ID_MOD} - se leyeron datos desde wizcon`)
       cb(lines)
     });
 
@@ -121,7 +121,7 @@ function datosCitec(lines, cb) {
 
     // Llamar al callback con la fila más cercana encontrada
     if (filaMasCercana) {
-      console.log(`${ID_MOD} - se leyeron datos desde citec. %s fila %s`, filaMasCercana, posfila)
+      logamarillo(1, `${ID_MOD} - se leyeron datos desde citec. %s fila %s`, filaMasCercana, posfila)
       lines.push(`Cota45              ${filaMasCercana.split(' - ')[1].replace(',', '.')}`);
       cb(lines)      
     }
@@ -142,8 +142,8 @@ function checkFileModification() {
 
     if (err && !antes_hubo_error) {
       antes_hubo_error = true
-      console.log(`${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
-      notificarFallo(false, err.message, currentModifiedTime, () => { })
+      logamarillo(1, `${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+      notificarFallo(err.message, currentModifiedTime, () => { })
       return;
     }
 
@@ -152,12 +152,12 @@ function checkFileModification() {
     if (!lastModifiedTime || currentModifiedTime > lastModifiedTime) {
       
       lastModifiedTime = currentModifiedTime;      
-      console.log(`${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+      logamarillo(1, `${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
 
       readAndProcessFile();
     } else {      
       if (verLog)
-        console.log(`${ID_MOD} - El archivo no ha sido modificado desde la última lectura`);
+        logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la última lectura`);
     }
   });
 }
@@ -182,6 +182,6 @@ const intervalId = setInterval(checkFileModification, checkInterval);
 module.exports = { iniciar, verUltimoCambio, parar };
 
 if (verLog) {
-  console.log(`${ID_MOD} - Directorio trabajo:`, process.cwd());
-  console.log(`${ID_MOD} - Directorio del archivo:`, __dirname);
+  logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
+  logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);
 }

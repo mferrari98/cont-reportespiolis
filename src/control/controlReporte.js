@@ -1,4 +1,4 @@
-const { verLog } = require("../../config.json").desarrollo
+const { logamarillo } = require("../control/controlLog")
 
 const SitioDAO = require("../dao/sitioDAO");
 const TipoVariableDAO = require("../dao/tipoVariableDAO");
@@ -18,21 +18,6 @@ const emailMensaje = new EmailMensaje();
 const reporte = new Reporte()
 
 const ID_MOD = "REPORTE";
-
-/**
- * 
- * @param {*} reporte 
- * @returns 
- */
-let reportesMadryn = function (reporte) {
-
-    let listaMadryn = []
-
-    if(esMadryn(elem)) // agrego a una lista que estoy creando
-        listaMadryn.push(elem)
-    
-    return listaMadryn
-}
 
 /**
  * 
@@ -59,13 +44,14 @@ let lanzarReporte = function (enviarEmail, currentModifiedTime, cb) {
 }
 
 /**
+ * dejar registrado en base de datos los errores de acceso al intentar leer
+ * el archivo base generado por el fixture-user wizcon
  * 
- * @param {*} enviarEmail 
  * @param {*} mensaje 
  * @param {*} currentModifiedTime 
  * @param {*} cb 
  */
-let notificarFallo = function (_, mensaje, currentModifiedTime, cb) {
+let notificarFallo = function (mensaje, currentModifiedTime, cb) {
     logDAO.create(mensaje, currentModifiedTime, () => cb())
 }
 
@@ -73,19 +59,6 @@ let notificarFallo = function (_, mensaje, currentModifiedTime, cb) {
 ===================== FUNCIONES INTERNAS =====================
 ==============================================================
 */
-
-/**
- * esta funcion recibe un objeto reporte y sabe responder si ese objeto es del dominio de trelew 
- * o de madryn. para ello compara el descriptor del objeto entregado con una lista conocida por el
- * de la que sabe su correspondencia
- * 
- * @param {*} reporte 
- * @param {*} cb 
- */
-let esMadryn = function (reporte) {
-    if(true) true
-    else false
-}
 
 function getNuevosDatos(callback) {
 
@@ -120,7 +93,5 @@ function getNuevosDatos(callback) {
 
 module.exports = { lanzarReporte, notificarFallo, esMadryn };
 
-if (verLog) {
-    console.log(`${ID_MOD} - Directorio trabajo:`, process.cwd());
-    console.log(`${ID_MOD} - Directorio del archivo:`, __dirname);
-}
+logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
+logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

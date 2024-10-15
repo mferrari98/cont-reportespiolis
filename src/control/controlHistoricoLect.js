@@ -5,6 +5,7 @@ const TipoVariableDAO = require("../dao/tipoVariableDAO");
 const SitioDAO = require("../dao/sitioDAO");
 const HistoricoLecturaDAO = require("../dao/historicoLecturaDAO");
 const desviacion = require("../../config.json").desarrollo.desviacion_poblarbd
+const { logamarillo } = require("../control/controlLog")
 
 const tipoVariableDAO = new TipoVariableDAO();
 const sitioDAO = new SitioDAO();
@@ -34,13 +35,13 @@ HistLectControl.prototype.sincronizar = function (cb) {
         // Al finalizar la respuesta
         res.on('end', () => {
             const respuesta = JSON.parse(data);
-            console.log(`${ID_MOD} - Datos recibidos:`, respuesta);
+            logamarillo(1, `${ID_MOD} - Datos recibidos:`, respuesta);
 
             // Abrir WebSocket con el puerto recibido
             const ws = new WebSocket(`ws://10.10.4.125:${respuesta.puerto}`);
 
             ws.on('open', () => {
-                console.log(`${ID_MOD} - WebSocket abierto en puerto ${respuesta.puerto}`);
+                logamarillo(1, `${ID_MOD} - WebSocket abierto en puerto ${respuesta.puerto}`);
 
                 // Enviar comando SQL por WebSocket
                 const comandoSQL = "SELECT * FROM log WHERE id > 100"; // Ejemplo de comando SQL
@@ -48,19 +49,19 @@ HistLectControl.prototype.sincronizar = function (cb) {
             });
 
             ws.on('message', (message) => {
-                console.log(`${ID_MOD} - Resultado del servidor:`, message);
+                logamarillo(1, `${ID_MOD} - Resultado del servidor:`, message);
             });
 
             ws.on('close', () => {
-                console.log(`${ID_MOD} - Conexión WebSocket cerrada`);
+                logamarillo(1, `${ID_MOD} - Conexión WebSocket cerrada`);
             });
 
             ws.on('error', (err) => {
-                console.error(`${ID_MOD} - Error en WebSocket:`, err.message);
+                logamarillo(1, `${ID_MOD} - Error en WebSocket:`, err.message);
             });
         });
     }).on('error', (err) => {
-        console.error(`${ID_MOD} - Error en la solicitud:`, err.message);
+        logamarillo(1, `${ID_MOD} - Error en la solicitud:`, err.message);
     });
 }
 

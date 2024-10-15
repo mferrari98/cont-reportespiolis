@@ -7,7 +7,7 @@ const SitioDAO = require('../../dao/sitioDAO');
 const sitioDAO = new SitioDAO();
 
 router.get('/', async (req, res) => {
-  console.log(`${ID_MOD} - ${req.query}`);
+  logamarillo(1, `${ID_MOD} - ${req.query}`);
 
   sitioDAO.getAll((err, rows) => {
     if (err) {
@@ -20,19 +20,19 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
-  console.log(`${ID_MOD} - ${req.body}`);
+  logamarillo(1, `${ID_MOD} - ${req.body}`);
 });
 
 router.post('/', async (req, res) => {
-  console.log(`${ID_MOD} - ${req.body}`);
+  logamarillo(1, `${ID_MOD} - ${req.body}`);
 });
 
 router.put('/:id', async (req, res) => {
-  console.log(`${ID_MOD} - ${req.body}`);
+  logamarillo(1, `${ID_MOD} - ${req.body}`);
 });
 
 router.delete('/:id', async (req, res) => {
-  console.log(`${ID_MOD} - ${req.body}`);
+  logamarillo(1, `${ID_MOD} - ${req.body}`);
 });
 
 module.exports = router;

@@ -1,7 +1,8 @@
-const { activo } = require("../../config.json").desarrollo
-
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+
+const { activo } = require("../../config.json").desarrollo
+const { logamarillo } = require("../control/controlLog")
 
 const ID_MOD = "DB"
 
@@ -17,14 +18,14 @@ let db;
 function openDatabase() {
   if (!db) {
     db = new sqlite3.Database(dbPath, (_) => {
-      console.log(`${ID_MOD} - Conectado a base de datos`);
+      logamarillo(1, `${ID_MOD} - Conectado a base de datos`)
     });
   }
 }
 
 function closeDatabase(cb) {
   db.close((_) => {
-    console.log(`${ID_MOD} - Desconectado de base de datos`);
+    logamarillo(1, `${ID_MOD} - Desconectado de base de datos`)
     cb()
   });
 }

@@ -323,7 +323,7 @@ function crearHTMLSalida(contenido, cb) {
       console.error("Error al escribir archivo:", err);
       return;
     }
-    if (verLog) console.log(`${ID_MOD} - Archivo escrito correctamente`);
+    if (verLog) logamarillo(1, `${ID_MOD} - Archivo escrito correctamente`);
 
     cb();
   });

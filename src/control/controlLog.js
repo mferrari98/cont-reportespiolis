@@ -1,26 +1,11 @@
-const { verLog } = require("../../config.json").desarrollo
-
-const LogDAO = require("../dao/logDAO");
-const logDAO = new LogDAO();
+const { nivLog } = require("../../config.json").desarrollo
 
 const ID_MOD = "LOG";
 
-let lanzarReporte = function (enviarEmail, currentModifiedTime, cb) {
-    getNuevosDatos((err, reporte) => {
-        if (!err) {
-            transpilar(reporte, currentModifiedTime, () => {
-                
-                if (enviarEmail) {
-                    emailMensaje.extraerTabla(() => {
-                        emailMensaje.renderizar();
-                        cb()
-                    });
-                }
-                else
-                    cb()
-            });
-        }
-    });
+let logamarillo = function (nivel, ...contenido) {
+
+    if (nivel >= nivLog)
+        console.log(1, ...contenido)
 }
 
 /* ===========================================================
@@ -28,9 +13,7 @@ let lanzarReporte = function (enviarEmail, currentModifiedTime, cb) {
 ==============================================================
 */
 
-module.exports = { lanzarReporte };
+module.exports = { logamarillo };
 
-if (verLog) {
-    console.log(`${ID_MOD} - Directorio trabajo:`, process.cwd());
-    console.log(`${ID_MOD} - Directorio del archivo:`, __dirname);
-}
+logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
+logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

@@ -4,7 +4,6 @@ const fs = require("fs");
 const cheerio = require("cheerio");
 const { sindet } = require("./etl");
 
-const { esMadryn } = require("../control/controlReporte")
 const ID_MOD = "TRANS";
 
 function transpilar(reporte, estampatiempo, cb) {
@@ -15,11 +14,15 @@ function transpilar(reporte, estampatiempo, cb) {
       return;
     }
 
+    reporte.forEach(function(sitio) {
+      console.log("%s -> esMadryn?", sitio.sitio, sitio.esMadryn)
+    });
+
     let contenido = expandirPlantilla(reporte, data);
     contenido = sustituirMarcas(reporte, estampatiempo, contenido);
     contenido = calcularLlenado(reporte, contenido);
     contenido = prepararGrafLineas(reporte, contenido);
-
+  
     // solo para debug
     fs.writeFile("./etl/plantilla.expand.html", contenido, () => { });
 

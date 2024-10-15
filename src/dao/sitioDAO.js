@@ -93,6 +93,14 @@ SitioDAO.prototype.getByOrden = function (orden, callback) {
   });
 };
 
+SitioDAO.prototype.getSitiosMadryn = function (callback) {
+
+  if (verLog)
+    console.log(`${ID_MOD} - getByOrden`);
+
+    callback(null, ["KM11", "R6000", "B.OESTE(1K)", "B.SAN MIGUEL", "NUEVA CHUBUT", "B.PUJOL", "Cota45"]);
+};
+
 SitioDAO.prototype.getAll = function (callback) {
 
   if (verLog)

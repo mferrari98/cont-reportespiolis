@@ -21,7 +21,7 @@ const cant_sitios = 11
 const MAX_RANGO = 4.5
 const MIN_RANGO = 0.1
 
-const url_soquete = 'http://localhost:^puerto^/desa/soquete'
+const url_soquete = 'http://10.10.4.125:^puerto^/desa/soquete'
 
 function HistLectControl() { }
 
@@ -50,11 +50,15 @@ HistLectControl.prototype.sincronizar = function (puerto, cb) {
 
                 // Enviar comando SQL por WebSocket
                 const comandoSQL = "SELECT * FROM log WHERE id > 100"; // Ejemplo de comando SQL
+                logamarillo(3, `${ID_MOD} - enviando cmd "${comandoSQL}"`);
+
                 ws.send(comandoSQL);
             });
 
             ws.on('message', (message) => {
-                logamarillo(3, `${ID_MOD} - Resultado del servidor:`, message);
+                const respuesta = JSON.parse(message)
+                logamarillo(3, `${ID_MOD} - Resultado del servidor:`, respuesta);
+                ws.close()
             });
 
             ws.on('close', () => {

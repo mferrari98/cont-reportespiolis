@@ -8,6 +8,8 @@ const { logamarillo } = require("../../control/controlLog")
 const HistLectControl = require("../../control/controlHistoricoLect");
 const histLectControl = new HistLectControl();
 
+const ID_MOD = "DESA"
+
 const whitelist = ['localhost', "127.0.0.1", "10.10.4.125", "10.10.3.22"]
 
 // Middleware para validar el host
@@ -19,7 +21,6 @@ function validateHost(req, res, next) {
   no me explico que paso
   */
   const host = req.socket.remoteAddress.split(":")[3]
-  logamarillo(3, host)
 
   if (whitelist.includes(host)) {
     // Si el host está en la lista blanca, permite la solicitud
@@ -89,7 +90,7 @@ router.get('/soquete', (req, res) => {
     logamarillo(3, `${ID_MOD} - Cliente conectado para sincronización`);
 
     ws.on('message', (message) => {
-      logamarillo(3, `${ID_MOD} - Recibido comando SQL: ${message}`);
+      logamarillo(3, `${ID_MOD} - recibiendo cmd "${message}"`);
       ws.send(JSON.stringify("querias cumbia? toma!"));
     });
 

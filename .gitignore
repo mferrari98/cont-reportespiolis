@@ -138,3 +138,6 @@ src/basedatos/desarrollo.sqlite
 src/etl/plantilla.expand.html
 src/web/public/reporte.html
 src/reporte/salida/*
+
+# archivos que dependen de la instancia
+./config.json

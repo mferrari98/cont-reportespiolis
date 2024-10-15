@@ -1,22 +1,22 @@
 {
   "direcciones": {
-    "sca_wizcon3": "//10.10.3.2/SERVICOOP/REP002.DAT",
+    "sca_wizcon": "//10.10.3.2/SERVICOOP/REP002.DAT",
     "sca_wizcon1": "//pc0043/SERVICOOP/REP002.DAT",
     "sca_wizcon2": "//PC0346/datos/reporte_horario_test.log",
-    "sca_wizcon": "//PC0301/datos/reporte_horario_test.log",
+    "sca_wizcon3": "//PC0301/datos/reporte_horario_test.log",
     "sca_wizcon4": "//mnt/pc0346.compartido",
-    "cota45_": "//serv_en_01/compartido/NivelCisSur.txt",
-    "cota45": "//PC0301/datos/NivelCisSur.txt"
+    "cota45": "//serv_en_01/compartido/NivelCisSur.txt",
+    "cota45_": "//PC0301/datos/NivelCisSur.txt"
   },
   "email": {
     "credenciales": {
-      "user_": "hdonato@servicoop.com",
-      "pass_": "ddonato",
-      "user": "mferrari@servicoop.com",
-      "pass": "servicoop1"
+      "user": "hdonato@servicoop.com",
+      "pass": "ddonato",
+      "user_": "mferrari@servicoop.com",
+      "pass_": "servicoop1"
     },
     "difusion": [
-      "mferrari@servicoop.com"
+      "hdonato@servicoop.com"
     ],
     "difusionreal": [
       "lbarrera@servicoop.com",
@@ -37,7 +37,7 @@
   },
   "observador": {
     "umbral_parser_columnas": 20,
-    "tiempo_milis": 4000
+    "tiempo_milis": 40000
   },
   "desarrollo": {
     "activo": false,

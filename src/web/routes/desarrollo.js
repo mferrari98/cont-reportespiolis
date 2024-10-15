@@ -8,6 +8,8 @@ const { logamarillo } = require("../../control/controlLog")
 const HistLectControl = require("../../control/controlHistoricoLect");
 const histLectControl = new HistLectControl();
 
+const ID_MOD = "DESA"
+
 const whitelist = ['localhost', "127.0.0.1", "10.10.4.125", "10.10.3.22"]
 
 // Middleware para validar el host
@@ -19,7 +21,6 @@ function validateHost(req, res, next) {
   no me explico que paso
   */
   const host = req.socket.remoteAddress.split(":")[3]
-  logamarillo(3, host)
 
   if (whitelist.includes(host)) {
     // Si el host está en la lista blanca, permite la solicitud
@@ -73,28 +74,33 @@ router.get('/', (req, res) => {
 router.get('/sinc', (req, res) => {
 
   histLectControl.sincronizar(req.socket.localPort, (cantidad) => {
-    res.json({ message: `tu servidor trajo ${cantidad} de datos a revisar desde servidor de referencia` });
+    res.json({
+      message: `
+      tu servidor trajo esto
+      ${cantidad}
+      desde servidor de referencia
+      `
+    });
   })
 });
 
 router.get('/soquete', (req, res) => {
 
   const puertoWS = 8081;
-
-  logamarillo(3, "antes")
   const wss = new WebSocket.Server({ port: puertoWS });
-  logamarillo(3, "desp")
 
   wss.on('connection', (ws) => {
-    logamarillo(3, `${ID_MOD} - Cliente conectado para sincronización`);
+    logamarillo(3, `${ID_MOD} - (WS-SVR) Cliente conectado para sincronización`);
 
     ws.on('message', (message) => {
-      logamarillo(3, `${ID_MOD} - Recibido comando SQL: ${message}`);
+      logamarillo(3, `${ID_MOD} - (WS-SVR) recibiendo cmd "${message}"`);
+      
       ws.send(JSON.stringify("querias cumbia? toma!"));
+      ws.close()
     });
 
     ws.on('close', () => {
-      logamarillo(3, `${ID_MOD} - Cliente desconectado`);
+      logamarillo(3, `${ID_MOD} - (WS-SVR) Cliente desconectado`);
     });
   });
 

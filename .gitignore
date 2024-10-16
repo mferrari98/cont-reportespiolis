@@ -140,5 +140,6 @@ src/web/public/reporte.html
 src/reporte/salida/*
 
 # archivos que dependen de la instancia
-./config.json
-./historico.txt
+config.json
+historico.txt
+historico.txt

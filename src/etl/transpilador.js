@@ -234,7 +234,10 @@ function prepararGrafLineas(reporte, contenido) {
         \t    name: "${reporte[indice].sitio}",
         \t    x: [${valx}],
         \t    y: [${valy}],
-        \t    type: 'scatter'
+        \t    type: 'scatter',
+			  line: {
+				width: 2.5,
+			  },
         \t};`;
 
 		// Inserta la estructura en la posición original de la marca.
@@ -245,7 +248,7 @@ function prepararGrafLineas(reporte, contenido) {
 
 	resultadoFinal += `\n\t
   \t\t\tvar layout = {
-  \t\t\t  title: 'Historico',
+  \t\t\t  title: 'Historico de Niveles',
   \t\t\t  height: 600,
   \t\t\t  xaxis: {
   \t\t\t    title: 'Fecha',

@@ -20,7 +20,7 @@
 
 <body>
     <h1 style="text-align: center; font-family: 'Consolas';">REPORTE HORARIO</h1>
-    <h3 style="text-align: center; font-family: 'Courier New';"><!-- ESTAMPATIEMPO --></h3>
+    <h3 style="text-align: center; font-family: 'consolas';"> última actualización: <!-- ESTAMPATIEMPO --></h3>
     <div>
         <table
             style="margin: 25px auto; border-collapse: collapse; border: 1px solid #eee; border-bottom: 2px solid #3498db; box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.10), 0px 10px 20px rgba(0, 0, 0, 0.05), 0px 20px 20px rgba(0, 0, 0, 0.05), 0px 30px 20px rgba(0, 0, 0, 0.05); font-family: 'consolas';">
@@ -62,9 +62,17 @@
 
     <!-- Div donde se renderizará el gráfico -->        
     <div id="grafBarras" style="width: 100%; margin: 50px 0px 0px 0px;"></div>
-    <div id="grafPieMdy" style="width: 100%; margin: 50px 0px 0px 0px;"></div>
-    <div id="grafPieTw" style="width: 100%; margin: 50px 0px 0px 0px;"></div> 
-    <div id="grafLineas" style="width: 100%; margin: 50px 0px 0px 0px;"></div>
+    <div style="text-align: center; font-family: 'consolas'; margin: 25px 0px; font-size: 20px;">Volúmenes de agua en m3</div>
+    <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
+    <div id="grafPieMdy" style="margin: 25px 0px;"></div>
+    <div id="grafPieTw" style="margin: 25px 0px;"></div>
+    </div>
+    <div id="grafLineas" style="margin: 50px 0px ;"></div>
+
+
+    
+
+
 
     <script>
         document.getElementById('copiar').addEventListener('click', function () {
@@ -180,7 +188,7 @@
                 margin: {l: 0, r: 0, b: 0, t: 25},
                 autosize: true,
                 title: {
-                    text: 'Volúmenes de las reservas en m3',
+                    text: 'Puerto Madryn',
                     font: {
                         family: 'consolas',
                         size: 17
@@ -223,7 +231,7 @@
                 margin: {l: 0, r: 0, b: 0, t: 25},
                 autosize: true,
                 title: {
-                    text: 'Volúmenes de las reservas en m3',
+                    text: 'Trelew',
                     font: {
                         family: 'consolas',
                         size: 17

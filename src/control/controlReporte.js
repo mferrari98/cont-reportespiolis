@@ -93,5 +93,4 @@ function getNuevosDatos(callback) {
 
 module.exports = { lanzarReporte, notificarFallo };
 
-logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
 logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

@@ -115,5 +115,4 @@ function getCurrentDateTime() {
 
 module.exports = EmailControl;
 
-logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
 logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

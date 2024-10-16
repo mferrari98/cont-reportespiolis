@@ -296,5 +296,4 @@ function getColumna(modifiedLines, numCol) {
 
 module.exports = { lanzarETL, sindet: SIN_DETERMINAR };
 
-logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
 logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

@@ -14,6 +14,8 @@ armar esquema de base de datos
 */
 const { crearTablas } = require('./src/basedatos/crear_tablas');
 
+const ID_MOD = "SUPERINDEX"
+
 crearTablas((err) => {
     logamarillo(2, "ESQUEMA - resumen errores ->", err)
     observador.iniciar()
@@ -27,3 +29,5 @@ process.on('SIGINT', () => {
         })
     })
 });
+
+logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());

@@ -90,5 +90,4 @@ async function plotLineas(page) {
 
 module.exports = EmailMensaje;
 
-logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
 logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

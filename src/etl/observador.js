@@ -176,5 +176,4 @@ const intervalId = setInterval(checkFileModification, checkInterval);
 
 module.exports = { iniciar, verUltimoCambio, parar };
 
-logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
 logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

@@ -3,22 +3,44 @@ const { nivLog } = require("../../config.json").desarrollo
 
 const ID_MOD = "LOG";
 
+let ultimoMensaje = null;
+let conteoRepeticiones = 0;
+
 let logamarillo = function (nivel, ...contenido) {
 
     if (nivel >= nivLog)
         console.log(...contenido)
 
     const estampaTiempo = obtenerEstampaDeTiempo();
-    const linea = `${estampaTiempo} [-] ${contenido}\n`;
+    const mensaje = contenido.join(' '); // Unir el contenido para comparar
 
-    // Append la línea al archivo (si no existe, lo crea)
-    fs.appendFile('historico.txt', linea, (err) => {
-        if (err) {
-            logamarillo(1, `${ID_MOD} - Error escribiendo archivo:`, err);
+    // Si el mensaje es el mismo que el anterior, aumentar el conteo de repeticiones
+    if (mensaje === ultimoMensaje) {
+        conteoRepeticiones++;
+    } else {
+        // Si hay repeticiones registradas, guardar el último mensaje repetido
+        if (conteoRepeticiones > 0) {
+            const lineaFinalRepetido = `${estampaTiempo} [-] ${ultimoMensaje} (se omitieron ${conteoRepeticiones - 1} repeticiones)\n`;
+            fs.appendFile('historico.txt', lineaFinalRepetido, (err) => {
+                if (err) {
+                    logamarillo(1, `Error escribiendo archivo:`, err);
+                }
+            });
         }
-        historia = contenido
-    })
-}
+
+        // Guardar la nueva línea y reiniciar el contador de repeticiones
+        const lineaNueva = `${estampaTiempo} [-] ${mensaje}\n`;
+        fs.appendFile('historico.txt', lineaNueva, (err) => {
+            if (err) {
+                logamarillo(1, `Error escribiendo archivo:`, err);
+            }
+        });
+
+        // Actualizar los registros
+        ultimoMensaje = mensaje;
+        conteoRepeticiones = 0; // Reiniciar el conteo
+    }
+};
 
 /* ===========================================================
 ===================== FUNCIONES INTERNAS =====================
@@ -34,5 +56,4 @@ function obtenerEstampaDeTiempo() {
 
 module.exports = { logamarillo };
 
-logamarillo(1, `${ID_MOD} - Directorio trabajo:`, process.cwd());
 logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

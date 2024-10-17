@@ -36,6 +36,17 @@ const sql_getHistorico = `
 const sql_delete = `DELETE FROM historico_lectura WHERE id = ?`;
 // sqlite no acepta truncate, por lo que debe emularse su comportamiento con delete
 const sql_truncate = `DELETE FROM historico_lectura; DELETE FROM SQLITE_SEQUENCE WHERE name="historico_lectura"`;
+const sql_curar = `
+  SELECT *, etiempo / 1000 % 3600 AS desv_sobre, abs(etiempo / 1000 % 3600 - 3600) as desv_sub
+  FROM historico_lectura
+  WHERE
+      CASE
+        -- 900 es 1/4 de un minuto (3600/4 = 900)
+        -- 240 son 4 minutos
+        WHEN desv_sobre > 900 THEN desv_sub < ?
+        WHEN desv_sobre <= 900 THEN desv_sobre < ?
+      END
+`;
 
 /*
 *************************************************
@@ -124,6 +135,16 @@ HistoricoLecturaDAO.prototype.truncate = function (callback) {
   db.run(sql_truncate, function (err) {
     // TRUNCATE no devuelve el número de filas afectadas
     callback(null, { changes: "se borro todo el contenido de la tabla" });
+  });
+};
+
+HistoricoLecturaDAO.prototype.listParaCurar = function (segundos, callback) {
+
+  logamarillo(1, `${ID_MOD} - listParaCurar`);
+  const db = getDatabase();
+
+  db.get(sql_curar, [segundos, segundos], (_, row) => {
+    callback(null, row);
   });
 };
 

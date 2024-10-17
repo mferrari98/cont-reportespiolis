@@ -236,7 +236,7 @@ function prepararGrafLineas(reporte, contenido) {
         \t    y: [${valy}],
         \t    type: 'scatter',
 			  line: {
-				width: 2.5,
+				width: 1.5,
 			  },
         \t};`;
 
@@ -250,8 +250,11 @@ function prepararGrafLineas(reporte, contenido) {
   \t\t\tvar layout = {
   \t\t\t  title: 'Historico de Niveles',
   \t\t\t  height: 600,
+  \t\t\t  font: {
+  \t\t\t    family: 'consolas',
+  \t\t\t    size: 12
+  \t\t\t  },
   \t\t\t  xaxis: {
-  \t\t\t    title: 'Fecha',
   \t\t\t    range: [${primerafecha}, ${ultimafecha}],
   \t\t\t    rangeselector: {buttons: [
   \t\t\t      {
@@ -281,7 +284,7 @@ function prepararGrafLineas(reporte, contenido) {
   \t\t\t    type: 'date'
   \t\t\t  },
   \t\t\t  yaxis: {
-  \t\t\t    title: 'Valor',
+  \t\t\t    title: 'Nivel',
   \t\t\t    range: [0, 5],  // Rango definido
   \t\t\t    type: 'linear'
   \t\t\t  }

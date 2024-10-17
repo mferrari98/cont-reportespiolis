@@ -18,9 +18,11 @@
     </style>
 </head>
 
-<body>
+<body style="margin: 0; padding: 0;">
+    
+    <div id="barrasup" style="background-color: #000000; margin: 0px 0px 50px 0px; padding: 5px 0px; color: #ffffff; text-align: center; font-family: consolas, sans-serif; font-size: 14px;">Desarrollado por Telecomunicaciones y Automatismos</div>
     <h1 style="text-align: center; font-family: 'Consolas';">REPORTE HORARIO</h1>
-    <h3 style="text-align: center; font-family: 'consolas';"> última actualización: <!-- ESTAMPATIEMPO --></h3>
+    <div style="text-align: center; font-size: 16px; font-family: 'consolas';"> última actualización: <!-- ESTAMPATIEMPO --></div>
     <div>
         <table
             style="margin: 25px auto; border-collapse: collapse; border: 1px solid #eee; border-bottom: 2px solid #3498db; box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.10), 0px 10px 20px rgba(0, 0, 0, 0.05), 0px 20px 20px rgba(0, 0, 0, 0.05), 0px 30px 20px rgba(0, 0, 0, 0.05); font-family: 'consolas';">
@@ -62,7 +64,7 @@
 
     <!-- Div donde se renderizará el gráfico -->        
     <div id="grafBarras" style="width: 100%; margin: 50px 0px 0px 0px;"></div>
-    <div style="text-align: center; font-family: 'consolas'; margin: 25px 0px; font-size: 20px;">Volúmenes de agua en m3</div>
+    <div id="TituloVolumenes" style="text-align: center; font-family: 'consolas'; margin: 25px 0px; font-size: 18px;">Volúmenes y Porcentajes de agua en m3</div>
     <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
     <div id="grafPieMdy" style="margin: 25px 0px;"></div>
     <div id="grafPieTw" style="margin: 25px 0px;"></div>

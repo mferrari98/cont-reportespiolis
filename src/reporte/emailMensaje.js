@@ -20,7 +20,7 @@ EmailMensaje.prototype.extraerTabla = function (cb) {
     $('#copiar').remove();
 
     const headContent = $('head').children().not('script').toString();
-    const bodyContent = $('body').children().not('script, #grafBarras, #grafLineas, #grafPieMdy, #grafPieTw').toString();
+    const bodyContent = $('body').children().not('script, #barrasup, #TituloVolumenes, #grafBarras, #grafLineas, #grafPieMdy, #grafPieTw').toString();
 
     // armar un nuevo html
     const newHtml = `
@@ -57,6 +57,7 @@ EmailMensaje.prototype.renderizar = function () {
 
         await plotBarras(page)
         await plotPieMdy(page)
+        await plotPieTw(page)
         await plotLineas(page)
 
         emailControl.enviar()
@@ -77,6 +78,10 @@ async function plotBarras(page) {
 async function plotPieMdy(page) {
     const element = await page.$('#grafPieMdy');
     await element.screenshot({ path: './src/reporte/salida/grafPieMdy.png' });
+}
+async function plotPieTw(page) {
+    const element = await page.$('#grafPieTw');
+    await element.screenshot({ path: './src/reporte/salida/grafPieTw.png' });
 }
 
 async function plotLineas(page) {

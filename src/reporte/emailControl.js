@@ -56,6 +56,7 @@ EmailControl.prototype.enviar = function () {
             <div style="text-align: center;">
                 <img src="cid:grafBarras" alt="Grafico de Barras"/>
                 <img src="cid:grafPieMdy" alt="Grafico Pie Madryn"/>
+                <img src="cid:grafPieTw" alt="Grafico Pie Trelew"/>
                 <img src="cid:grafLineas" alt="Grafico de Lineas"/>
             </div>
             `,
@@ -72,6 +73,11 @@ EmailControl.prototype.enviar = function () {
             },
             {
                 filename: 'imagen3.jpg',
+                path: './src/reporte/salida/grafPieTw.png', // Ruta de la imagen
+                cid: 'grafPieTw' // CID para referenciar la imagen en el cuerpo del mensaje
+            },
+            {
+                filename: 'imagen4.jpg',
                 path: './src/reporte/salida/grafLineas.png', // Ruta de la imagen
                 cid: 'grafLineas' // CID para referenciar la imagen en el cuerpo del mensaje
             }

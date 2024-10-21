@@ -40,12 +40,12 @@ const sql_curar = `
   SELECT *, etiempo / 1000 % 3600 AS desv_sobre, abs(etiempo / 1000 % 3600 - 3600) as desv_sub
   FROM historico_lectura
   WHERE
-      CASE
-        -- 900 es 1/4 de un minuto (3600/4 = 900)
-        -- 240 son 4 minutos
-        WHEN desv_sobre > 900 THEN desv_sub < ?
-        WHEN desv_sobre <= 900 THEN desv_sobre < ?
-      END
+    CASE
+      -- 900 es 1/4 de un minuto (3600/4 = 900)
+      -- 240 son 4 minutos
+      WHEN desv_sobre > 900 THEN desv_sub > ?
+      WHEN desv_sobre <= 900 THEN desv_sobre > ?
+    END
 `;
 
 /*
@@ -143,7 +143,12 @@ HistoricoLecturaDAO.prototype.listParaCurar = function (segundos, callback) {
   logamarillo(1, `${ID_MOD} - listParaCurar`);
   const db = getDatabase();
 
-  db.get(sql_curar, [segundos, segundos], (_, row) => {
+  db.all(sql_curar, [segundos, segundos], (err, row) => {
+    
+    console.log(segundos)
+    console.log(err)
+    console.log(row)
+    
     callback(null, row);
   });
 };

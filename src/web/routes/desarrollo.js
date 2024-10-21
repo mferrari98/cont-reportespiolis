@@ -5,6 +5,9 @@ const router = express.Router();
 
 const { logamarillo } = require("../../control/controlLog")
 
+const HistoricoLecturaDAO = require("../../dao/historicoLecturaDAO");
+const historicoLecturaDAO = new HistoricoLecturaDAO();
+
 const HistLectControl = require("../../control/controlHistoricoLect");
 const histLectControl = new HistLectControl();
 
@@ -126,6 +129,15 @@ router.get('/truncar', (req, res) => {
     histLectControl.truncate((resultado) => {
       res.json({ message: 'vaciando bd', resultado });
     })
+});
+
+router.get('/curar/:seg', (req, res) => {
+
+  const { seg } = req.params;  
+
+  historicoLecturaDAO.listParaCurar(seg, (resultado) => {
+    res.json({ message: 'datos para curar', resultado });
+  })
 });
 
 module.exports = router

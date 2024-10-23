@@ -42,7 +42,7 @@ EmailControl.prototype.enviar = function () {
     const { date, time } = getCurrentDateTime();
 
     // Enviar el correo
-    let resumen = "Generacion automatica de reportes mejorada"
+    let resumen = "Generacion automatica de reportes"
     let htmlContent = fs.readFileSync('./src/reporte/salida/tabla.html', 'utf8');
 
     let mailOptions = {
@@ -51,9 +51,10 @@ EmailControl.prototype.enviar = function () {
         subject: `Reporte de agua potable ${date} ${time}`,
         text: resumen,
         html: `
-            ${resumen}
-            <a href="http://10.10.4.125:3000/reporte" style="color: blue; text-decoration: underline;">
-            -> Click para ver versión web</a>
+            ${resumen}            
+            <a href="http://10.10.3.50:3000/reporte" style="color: blue;">
+                🌐 <b>ver online</b> 
+            </a>            
             ${htmlContent}
             <div style="text-align: center;">
                 <img src="cid:grafBarras" alt="Grafico de Barras"/>

@@ -43,7 +43,7 @@ const desarrolloRoutes = require('./routes/desarrollo');
 levantar server
 */
 const server = app.listen(currentPort, () => {
-  logamarillo(1, `${ID_MOD} - Escuchando en p=${currentPort}`);
+  logamarillo(2, `${ID_MOD} - Escuchando en p=${currentPort}`);
 });
 
 /*

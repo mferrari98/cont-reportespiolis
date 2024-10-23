@@ -21,7 +21,7 @@ function transpilar(reporte, estampatiempo, cb) {
 		contenido = prepararGrafLineas(reporte, contenido);
 
 		// solo para debug
-		fs.writeFile('./etl/plantilla.expand.html', contenido, () => { });
+		fs.writeFile('./src/etl/plantilla.expand.html', contenido, (err) => { logamarillo(1, err) });
 
 		crearHTMLSalida(contenido, () => {
 			cb();
@@ -309,7 +309,7 @@ function convertirTimestampsAISO(timestamps) {
 }
 
 function crearHTMLSalida(contenido, cb) {
-	// Escribir en el archivo
+	// Escribir en el archivo	
 	fs.writeFile('./src/web/public/reporte.html', contenido, (err) => {
 		if (err) {
 			logamarillo(2, 'Error al escribir archivo:', err);

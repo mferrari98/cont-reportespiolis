@@ -92,6 +92,7 @@ SitioDAO.prototype.getSitiosMadryn = function (callback) {
 		"NUEVA CHUBUT",
 		"B.PUJOL",
 		"Cota45",
+		"Doradillo",
 	]);
 };
 

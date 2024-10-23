@@ -20,7 +20,10 @@
 
 <body style="margin: 0; padding: 0;">
     
-    <div id="barrasup" style="background-color: #000000; margin: 0px 0px 50px 0px; padding: 5px 0px; color: #ffffff; text-align: center; font-family: consolas, sans-serif; font-size: 14px;">Desarrollado por Telecomunicaciones y Automatismos</div>
+    <div id="barrasup" style="background-color: #000000; color: #ffffff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; font-family: Arial, sans-serif; font-size: 16px;">
+    <span style="color: white;">Servicoop</span>
+    <span style="color: white;">Desarrollado por Telecomunicaciones</span>
+    </div>
     <h1 style="text-align: center; font-family: 'Consolas';">REPORTE HORARIO</h1>
     <div style="text-align: center; font-size: 16px; font-family: 'consolas';"> última actualización: <!-- ESTAMPATIEMPO --></div>
     <div>

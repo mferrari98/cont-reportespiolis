@@ -52,6 +52,8 @@ EmailControl.prototype.enviar = function () {
         text: resumen,
         html: `
             ${resumen}
+            <a href="http://10.10.4.125:3000/reporte" style="color: blue; text-decoration: underline;">
+            -> Click para ver versión web</a>
             ${htmlContent}
             <div style="text-align: center;">
                 <img src="cid:grafBarras" alt="Grafico de Barras"/>

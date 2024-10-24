@@ -90,7 +90,7 @@
             navigator.clipboard.writeText(textToCopy).then(() => {
                 alert('Texto copiado al portapapeles');
             }).catch(err => {
-                logamarillo(2, 'Error al copiar el texto: ', err);
+                console.log('Error al copiar el texto: ', err);
             });
         });
     </script>

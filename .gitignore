@@ -142,3 +142,4 @@ src/reporte/salida/*
 # archivos que dependen de la instancia
 historico.txt
 config.json
+src/web/cert/*

@@ -146,7 +146,7 @@ function calcularLlenadoMdy(reporte, contenido) {
 		return acc;
 	}, { llenado: [], llenadoniveltotal: 0, llenadocomplementototal: 0 });
 
-	const marcaPie = '[tracePie]';
+	const marcaPie = '[tracePieMdy]';
 	const posicionMarcaPie = contenido.indexOf(marcaPie);
 
 	// Modificar el contenido eliminando la marca y preparando el resultado final.
@@ -185,7 +185,7 @@ function calcularLlenadoTw(reporte, contenido) {
 		return acc;
 	}, { llenado: [], llenadoniveltotal: 0, llenadocomplementototal: 0 });
 
-	const marcaPie = '[trace2Pie]';
+	const marcaPie = '[tracePieTw]';
 	const posicionMarcaPie = contenido.indexOf(marcaPie);
 
 	// Modificar el contenido eliminando la marca y preparando el resultado final.

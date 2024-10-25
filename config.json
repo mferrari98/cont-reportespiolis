@@ -1,9 +1,9 @@
 {
   "direcciones": {
     "sca_wizcon": "//mnt/compartido/valScadaWizcon/REP002.DAT",
-    "sca_wizcon1": "//10.10.3.2/SERVICOOP/REP002.DAT",    
+    "sca_wizcon1": "//10.10.3.2/SERVICOOP/REP002.DAT",
     "sca_wizcon2": "//PC0346/datos/reporte_horario_test.log",
-    "sca_wizcon3": "//PC0301/datos/reporte_horario_test.log",    
+    "sca_wizcon3": "//PC0301/datos/reporte_horario_test.log",
     "cota45": "//mnt/compartido/nvCistSur/NivelCisSur.txt",
     "cota45_1": "//serv_en_01/compartido/NivelCisSur.txt",
     "cota45_2": "//PC0301/datos/NivelCisSur.txt"
@@ -17,8 +17,8 @@
       "hdonato@servicoop.com",
       "donatohugo13@yahoo.com",
       "matiastomasferrari@gmail.com",
-      "mferrari@servicoop.com",
-      "juanargt@gmail.com"
+      "juanargt@gmail.com",
+      "mferrari@servicoop.com"
     ],
     "difusionreal": [
       "lbarrera@servicoop.com",

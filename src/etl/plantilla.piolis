@@ -187,7 +187,7 @@
             }];
 
             var layout = {
-                margin: {l: 0, r: 0, b: 0, t: 25},
+                margin: {l: 0, r: 0, b: 25, t: 25},
                 autosize: true,
                 title: {
                     text: 'Puerto Madryn',

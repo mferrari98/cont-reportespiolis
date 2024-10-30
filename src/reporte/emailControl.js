@@ -42,11 +42,11 @@ EmailControl.prototype.enviar = function () {
     const { date, time } = getCurrentDateTime();
 
     // Enviar el correo
-    let resumen = "Generacion automatica de reportes"
+    let resumen = "Para ver datos historicos →"
     let htmlContent = fs.readFileSync('./src/reporte/salida/tabla.html', 'utf8');
 
     let mailOptions = {
-        from: "<fachada.correo@servicoop.com>",
+        from: "<servicoop.comunicaciones@servicoop.com>",
         to: destinos,
         subject: `Reporte de agua potable ${date} ${time}`,
         text: resumen,

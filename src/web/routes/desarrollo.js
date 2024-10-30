@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const WebSocket = require('ws');
 
 const router = express.Router();
@@ -74,6 +75,11 @@ router.get('/', (req, res) => {
   `);
 });
 
+router.get('/omelet', (req, res) => {
+  const filePath = path.join(__dirname, '..', 'public', 'omelet.html');
+  res.sendFile(filePath);
+});
+
 router.get('/sinc', (req, res) => {
 
   histLectControl.sincronizar(req.socket.localPort, (cantidad) => {
@@ -93,17 +99,17 @@ router.get('/soquete', (req, res) => {
   const wss = new WebSocket.Server({ port: puertoWS });
 
   wss.on('connection', (ws) => {
-    logamarillo(3, `${ID_MOD} - (WS-SVR) Cliente conectado para sincronización`);
+    logamarillo(3, `${ID_MOD} - (WS-SRV) Cliente conectado para sincronización`);
 
     ws.on('message', (message) => {
-      logamarillo(3, `${ID_MOD} - (WS-SVR) recibiendo cmd "${message}"`);
+      logamarillo(3, `${ID_MOD} - (WS-SRV) recibiendo cmd "${message}"`);
       
       ws.send(JSON.stringify("querias cumbia? toma!"));
       ws.close()
     });
 
     ws.on('close', () => {
-      logamarillo(3, `${ID_MOD} - (WS-SVR) Cliente desconectado`);
+      logamarillo(3, `${ID_MOD} - (WS-SRV) Cliente desconectado`);
     });
   });
 

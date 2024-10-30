@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SVG Tooltip with Text Inside Rect</title>
+    <style>
+        .tooltip {
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="svg-container"></div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const tooltip = document.getElementById('tooltip');
+
+        // Cargar el SVG externo
+        fetch('/modulos.svg')
+            .then(response => response.text())
+            .then(svgText => {
+                document.getElementById('svg-container').innerHTML = svgText;
+
+                // Una vez cargado el SVG, se añade la interacción al <rect>
+                const rect = document.querySelector('[data-cell-id="rect-1"] rect');
+                const textElement = document.querySelector('[data-cell-id="rect-1"] text');
+
+                rect.addEventListener('mouseover', (evt) => {
+                    showTooltip(evt, textElement.textContent, rect);
+                });
+
+                rect.addEventListener('mouseout', () => {
+                    hideTooltip(rect);
+                });
+            })
+            .catch(error => console.error('Error loading SVG:', error));
+
+        // Mostrar el tooltip y cambiar color del elemento
+        function showTooltip(evt, text, element) {
+            tooltip.innerHTML = text;
+            tooltip.style.display = 'block';
+            tooltip.style.left = evt.pageX + 10 + 'px';
+            tooltip.style.top = evt.pageY + 10 + 'px';
+
+            // Cambiar color del elemento
+            element.originalColor = element.getAttribute("fill") || element.getAttribute("stroke");
+            element.setAttribute("fill", "#ff8800"); // Nuevo color para el rectángulo
+        }
+
+        // Ocultar el tooltip y restaurar color del elemento
+        function hideTooltip(element) {
+            tooltip.style.display = 'none';
+            element.setAttribute("fill", element.originalColor); // Restaurar color
+        }
+    </script>
+</body>
+
+</html>

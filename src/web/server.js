@@ -21,6 +21,7 @@ const httpsOptions = {
 // Middleware para Content-Security-Policy
 app.use((req, res, next) => {
   res.setHeader("Content-Security-Policy", "\
+    default-src 'self' https://localhost:" + currentPort + ";\
     script-src 'self' 'unsafe-inline' 'unsafe-eval' https://localhost:" + currentPort + ";\
     style-src 'self' 'unsafe-inline' https://localhost:" + currentPort + ";\
     img-src 'self' data: blob: https://localhost:" + currentPort + ";\

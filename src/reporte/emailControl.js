@@ -52,7 +52,7 @@ EmailControl.prototype.enviar = function () {
         text: resumen,
         html: `
             ${resumen}            
-            <a href="http://10.10.3.50:3000/reporte" style="color: blue;">
+            <a href="https://10.10.3.50:3000/reporte" style="color: blue;">
                 🌐 <b>ver online</b> 
             </a>            
             ${htmlContent}

@@ -248,7 +248,7 @@ function prepararGrafLineas(reporte, contenido) {
 
 	resultadoFinal += `\n\t
   \t\t\tvar layout = {
-  \t\t\t  title: 'Historico de Niveles',
+  \t\t\t  title: 'Niveles Historicos',
   \t\t\t  height: 600,
   \t\t\t  font: {
   \t\t\t    family: 'consolas',

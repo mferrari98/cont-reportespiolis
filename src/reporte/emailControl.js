@@ -42,11 +42,11 @@ EmailControl.prototype.enviar = function () {
     const { date, time } = getCurrentDateTime();
 
     // Enviar el correo
-    let resumen = "Para ver datos historicos →"
+    let resumen = "Para datos historicos →"
     let htmlContent = fs.readFileSync('./src/reporte/salida/tabla.html', 'utf8');
 
     let mailOptions = {
-        from: "<servicoop.comunicaciones@servicoop.com>",
+        from: "<comunicaciones.servicoop@servicoop.com>",
         to: destinos,
         subject: `Reporte de agua potable ${date} ${time}`,
         text: resumen,
@@ -58,8 +58,14 @@ EmailControl.prototype.enviar = function () {
             ${htmlContent}
             <div style="text-align: center;">
                 <img src="cid:grafBarras" alt="Grafico de Barras"/>
+
+                <div style="text-align: center; font-family: 'consolas'; margin: 25px 0px; font-size: 18px;">
+                    Volúmenes y Porcentajes de agua en m3
+                </div>                    
+
                 <img src="cid:grafPieMdy" alt="Grafico Pie Madryn"/>
                 <img src="cid:grafPieTw" alt="Grafico Pie Trelew"/>
+
                 <img src="cid:grafLineas" alt="Grafico de Lineas"/>
             </div>
             `,

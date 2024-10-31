@@ -15,7 +15,12 @@
     },
     "difusion": [
       "hdonato@servicoop.com",
-      "mferrari@servicoop.com",
+      "donatohugo13@yahoo.com",
+      "matiastomasferrari@gmail.com",
+      "juanargt@gmail.com",
+      "mferrari@servicoop.com"
+    ],
+    "difusionreal": [
       "lbarrera@servicoop.com",
       "okruse@servicoop.com",
       "mdigioia@servicoop.com",
@@ -34,7 +39,7 @@
   },
   "observador": {
     "umbral_parser_columnas": 20,
-    "tiempo_milis": 40000
+    "tiempo_milis": 4000
   },
   "desarrollo": {
     "activo": false,

@@ -44,7 +44,7 @@ const cubicajeMap = new Map([
 function SitioDAO() { }
 
 SitioDAO.prototype.create = function (descriptor, orden, callback) {
-	
+
 	logamarillo(1, `${ID_MOD} - create`);
 	const db = getDatabase();
 	const rebalse = rebalseMap.get(descriptor) || 0.0;
@@ -85,6 +85,7 @@ SitioDAO.prototype.getByOrden = function (orden, callback) {
 SitioDAO.prototype.getSitiosMadryn = function (callback) {
 	logamarillo(1, `${ID_MOD} - getByOrden`);
 	callback(null, [
+		"L.Maria",
 		"KM11",
 		"R6000",
 		"B.OESTE(1K)",

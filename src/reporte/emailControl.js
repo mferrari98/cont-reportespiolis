@@ -42,7 +42,7 @@ EmailControl.prototype.enviar = function () {
     const { date, time } = getCurrentDateTime();
 
     // Enviar el correo
-    let resumen = "Para datos historicos →"
+    let resumen = ""
     let htmlContent = fs.readFileSync('./src/reporte/salida/tabla.html', 'utf8');
 
     let mailOptions = {
@@ -51,10 +51,23 @@ EmailControl.prototype.enviar = function () {
         subject: `Reporte de agua potable ${date} ${time}`,
         text: resumen,
         html: `
-            ${resumen}            
-            <a href="https://10.10.3.50:3000/reporte" style="color: blue;">
-                🌐 <b>ver online</b> 
-            </a>            
+            ${resumen}
+            <div style="background-color: #000000; color: #ffffff; padding: 6px 20px; font-family: Consolas, monospace; font-size: 14px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="color: white;">
+            <tr>
+             <td align="left">
+             <a href="https://10.10.3.50:3000/reporte" style="color: white; text-decoration: none;">
+                Reporte de agua → 🌐 <b>versión web</b>
+             </a>
+             </td>
+             <td align="right">
+                 Desarrollado por Comunicaciones
+            </td>
+            </tr>
+            </table>
+            </div>
+          
+                        
             ${htmlContent}
             <div style="text-align: center;">
                 <img src="cid:grafBarras" alt="Grafico de Barras"/>
@@ -64,7 +77,7 @@ EmailControl.prototype.enviar = function () {
                 </div>                    
 
                 <img src="cid:grafPieMdy" alt="Grafico Pie Madryn"/>
-                <img src="cid:grafPieTw" alt="Grafico Pie Trelew"/>
+                <!-- <img src="cid:grafPieTw" alt="Grafico Pie Trelew"/> -->
 
                 <img src="cid:grafLineas" alt="Grafico de Lineas"/>
             </div>
@@ -80,11 +93,11 @@ EmailControl.prototype.enviar = function () {
                 path: './src/reporte/salida/grafPieMdy.png', // Ruta de la imagen
                 cid: 'grafPieMdy' // CID para referenciar la imagen en el cuerpo del mensaje
             },
-            {
+            /*{
                 filename: 'imagen3.jpg',
                 path: './src/reporte/salida/grafPieTw.png', // Ruta de la imagen
                 cid: 'grafPieTw' // CID para referenciar la imagen en el cuerpo del mensaje
-            },
+            },*/
             {
                 filename: 'imagen4.jpg',
                 path: './src/reporte/salida/grafLineas.png', // Ruta de la imagen

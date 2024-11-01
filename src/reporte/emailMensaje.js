@@ -57,7 +57,7 @@ EmailMensaje.prototype.renderizar = function () {
 
         await plotBarras(page)
         await plotPieMdy(page)
-        await plotPieTw(page)
+        //await plotPieTw(page)
         await plotLineas(page)
 
         emailControl.enviar()

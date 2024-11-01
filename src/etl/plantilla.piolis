@@ -71,7 +71,7 @@
 
     <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
         <div id="grafPieMdy" style="margin: 25px 0px;"></div>
-        <div id="grafPieTw" style="margin: 25px 0px;"></div>
+        <!-- <div id="grafPieTw" style="margin: 25px 0px;"></div> -->
     </div>
     
     <div id="grafLineas" style="margin: 50px 0px ;"></div>
@@ -99,7 +99,7 @@
         document.addEventListener("DOMContentLoaded", function () {
             barras()
             pieMdy()
-            pieTw()
+            //pieTw()
             lineas()
         })
     </script>

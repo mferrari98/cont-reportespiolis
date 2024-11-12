@@ -191,8 +191,8 @@ function calcularLlenadoTw(reporte, contenido) {
 	// Modificar el contenido eliminando la marca y preparando el resultado final.
 	let resultadoFinalPie = contenido.replace(marcaPie, '');
 	const estructuraPie = `
-        labels: ["VACIO", "TOTAL", "AGUA", ${sitios}],
-        parents: ["TOTAL", "", "TOTAL", ${sitios.map(() => '"AGUA"').join(',')}],
+        labels: ["TOTAL", "VACIO", "AGUA", ${sitios}],
+        parents: ["", "TOTAL", "TOTAL", ${sitios.map(() => '"AGUA"').join(',')}],
         values: [${llenadocomplementototal}, ${llenadoniveltotal + llenadocomplementototal}, ${llenadoniveltotal}, ${llenado}],
     `;
 

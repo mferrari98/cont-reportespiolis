@@ -271,7 +271,19 @@ function agregarNulos(lines, threshold) {
  */
 function getColumna(modifiedLines, numCol) {
   const columnValues = [];
-  const regex = /\s(?=\d|\bs\/d)|(?<=\d|\bs\/d)\s/g;
+  
+  /*
+
+  (?=-?\d|\bs\/d): Verifica un espacio seguido de:
+    *) Un signo negativo opcional -? seguido de un dígito (\d).
+    *) O bien la secuencia s/d.
+
+  (?<=-?\d|\bs\/d): Verifica un espacio precedido de:
+    Un signo negativo opcional -? seguido de un dígito.
+    O bien la secuencia s/d.
+
+  */
+  const regex = /\s(?=-?\d|\bs\/d)|(?<=-?\d|\bs\/d)\s/g;
 
   for (let line of modifiedLines) {
 
@@ -281,7 +293,7 @@ function getColumna(modifiedLines, numCol) {
     cuando lo correcto es [B.SAN MIGUEL, 1.2, ...]
     */
     const parts = line.split(regex);
-
+    
     // Si la columna solicitada existe en la línea, añadirla al arreglo
     if (parts.length > numCol) {
       const value = parseFloat(parts[numCol]);

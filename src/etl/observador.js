@@ -64,7 +64,6 @@ function readAndProcessFile() {
 
 function datosWizcon(lines, cb) {
 
-  try {
     const rl = readline.createInterface({
       input: fs.createReadStream(filePath),
       output: process.stdout,
@@ -81,46 +80,52 @@ function datosWizcon(lines, cb) {
       cb(lines)
     });
 
-  } catch (error) {
-    logamarillo(2, `${ID_MOD} - Error al leer el archivo: ${error.message}`);
-  }
+    rl.on("error", (error) => {
+      logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
+    })
 }
 
 function datosCitec(lines, cb) {
-  fs.readFile(dir_citec, 'utf8', (err, data) => {
+  fs.readFile(dir_citec, 'utf8', (error, data) => {
 
-    // Dividir el contenido del archivo en líneas
-    const lineas = data.trim().split('\n');
+    if (!error) {
 
-    let posfila = 0
-    let filaMasCercana = null;
-    let diferenciaMinima = currentModifiedTime;
+      // Dividir el contenido del archivo en líneas
+      const lineas = data.trim().split('\n');
 
-    // Iterar desde el final del archivo hacia el principio
-    for (let i = lineas.length - 1; i >= 0; i--) {
-      const linea = lineas[i];
+      let posfila = 0
+      let filaMasCercana = null;
+      let diferenciaMinima = currentModifiedTime;
 
-      // Separar la fecha de valor y convertir a milisegundos
-      const fecha = linea.split(' - ')[0].trim()
-      const fechaMs = new Date(fecha).getTime();
+      // Iterar desde el final del archivo hacia el principio
+      for (let i = lineas.length - 1; i >= 0; i--) {
+        const linea = lineas[i];
 
-      // Calcular la diferencia con la fecha de referencia
-      const diferencia = Math.abs(currentModifiedTime - fechaMs);
+        // Separar la fecha de valor y convertir a milisegundos
+        const fecha = linea.split(' - ')[0].trim()
+        const fechaMs = new Date(fecha).getTime();
 
-      // Si la diferencia es menor que la mínima encontrada, actualizamos
-      if (diferencia < diferenciaMinima) {
-        diferenciaMinima = diferencia;
-        filaMasCercana = linea;
-        posfila = i
+        // Calcular la diferencia con la fecha de referencia
+        const diferencia = Math.abs(currentModifiedTime - fechaMs);
+
+        // Si la diferencia es menor que la mínima encontrada, actualizamos
+        if (diferencia < diferenciaMinima) {
+          diferenciaMinima = diferencia;
+          filaMasCercana = linea;
+          posfila = i
+        }
       }
-    }
 
-    // Llamar al callback con la fila más cercana encontrada
-    if (filaMasCercana) {
-      logamarillo(2, `${ID_MOD} - se leyeron datos desde citec. %s fila %s`, filaMasCercana, posfila)
-      lines.push(`Cota45              ${filaMasCercana.split(' - ')[1].replace(',', '.')}`);
-      cb(lines)
-    }
+      if (filaMasCercana) {        
+        logamarillo(2, `${ID_MOD} - se leyeron datos desde citec. ${filaMasCercana} fila ${posfila}`)
+        lines.push(`Cota45              ${filaMasCercana.split(' - ')[1].replace(',', '.')}`);      
+      } else
+        logamarillo(2, `${ID_MOD} - error leyendo citec: no se encontro fila`);
+      
+    } else
+      logamarillo(2, `${ID_MOD} - error leyendo citec: ${error.stack}`);
+
+    cb(lines)
   });
 }
 

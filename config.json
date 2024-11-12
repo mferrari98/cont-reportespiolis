@@ -2,7 +2,7 @@
   "direcciones": {
     "sca_wizcon1": "//mnt/compartido/valScadaWizcon/REP002.DAT",
     "sca_wizcon2": "//pC0043/servicoop/REP002.DAT",
-    "sca_wizcon": "//PC0346/datos/reporte_horario_test.lo",
+    "sca_wizcon": "//PC0346/datos/reporte_horario_test.log",
     "sca_wizcon3": "//PC0301/datos/reporte_horario_test.log",
     "cota45_1": "//mnt/compartido/nvCistSur/NivelCisSur.txt",
     "cota45": "//serv_en_01/compartido/NivelCisSur.txt",

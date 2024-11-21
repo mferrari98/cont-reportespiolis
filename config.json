@@ -1,7 +1,7 @@
 {
   "direcciones": {
     "sca_wizcon": "//mnt/compartido/valScadaWizcon/REP002.DAT",
-    "sca_wizcon1": "//pC0043/servicoop/REP002.DAT",
+    "sca_wizcon1": "//10.10.3.2/servicoop/REP002.DAT",
     "sca_wizcon2": "//PC0346/datos/reporte_horario_test.log",
     "sca_wizcon3": "//PC0301/datos/reporte_horario_test.log",
     "cota45": "//mnt/compartido/nvCistSur/NivelCisSur.txt",
@@ -12,8 +12,8 @@
     "credenciales": {
       "user": "fixture-user@servicoop.com",
       "pass": "fixture-user"
-    },
-    "difusion": [      
+    },    
+    "difusion": [
       "mferrari@servicoop.com",
       "lbarrera@servicoop.com",
       "okruse@servicoop.com",

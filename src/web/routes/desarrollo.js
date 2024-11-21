@@ -5,6 +5,7 @@ const WebSocket = require('ws');
 const router = express.Router();
 
 const { logamarillo } = require("../../control/controlLog")
+const { getDescripcion } = require('../../control/servicioDescripciones');
 
 const HistoricoLecturaDAO = require("../../dao/historicoLecturaDAO");
 const historicoLecturaDAO = new HistoricoLecturaDAO();
@@ -25,7 +26,7 @@ function validateHost(req, res, next) {
   no me explico que paso
   */
   const host = req.socket.remoteAddress.split(":")[3]
-
+  
   if (whitelist.includes(host)) {
     // Si el host está en la lista blanca, permite la solicitud
     next();
@@ -144,6 +145,14 @@ router.get('/curar/:seg', (req, res) => {
   historicoLecturaDAO.listParaCurar(seg, (resultado) => {
     res.json({ message: 'datos para curar', resultado });
   })
+});
+
+router.get('/tooltip/:nombre', (req, res) => {
+
+  const { nombre } = req.params;
+  const tooltipText = getDescripcion(nombre);
+  
+  res.send(tooltipText);
 });
 
 module.exports = router

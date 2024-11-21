@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>SVG Tooltip with Text Inside Rect</title>
+    <title>Modulos reportespiolis</title>
     <style>
         .tooltip {
             position: absolute;
@@ -29,21 +29,35 @@
         fetch('/modulos.svg')
             .then(response => response.text())
             .then(svgText => {
-                document.getElementById('svg-container').innerHTML = svgText;
+                // Insertar el contenido del SVG en el contenedor
+                document.getElementById('svg-container').innerHTML = svgText;                
+                const groups = document.querySelectorAll('g.esmodulo');
 
-                // Una vez cargado el SVG, se añade la interacción al <rect>
-                const rect = document.querySelector('[data-cell-id="rect-1"] rect');
-                const textElement = document.querySelector('[data-cell-id="rect-1"] text');
+                // Iterar por cada <g> encontrado y añadir eventos
+                groups.forEach((group) => {
+                    const rect = group.querySelector('rect'); // Seleccionar el <rect> hijo
+                    if (rect) {
+                        group.addEventListener('mouseenter', (evt) => {
+                            const textElement = group.querySelector('text');
+                            const nombre = textElement.textContent.trim()
 
-                rect.addEventListener('mouseover', (evt) => {
-                    showTooltip(evt, textElement.textContent, rect);
-                });
+                            // Hacer la llamada al servidor para obtener el texto del tooltip
+                            fetch(`/desa/tooltip/${encodeURIComponent(nombre)}`)
+                                .then(response => {                                    
+                                    return response.text();
+                                })
+                                .then(tooltipText => {
+                                    showTooltip(evt, tooltipText, rect);
+                                })
+                        });
 
-                rect.addEventListener('mouseout', () => {
-                    hideTooltip(rect);
+                        group.addEventListener('mouseleave', () => {
+                            hideTooltip(rect);
+                        });
+                    }
                 });
             })
-            .catch(error => console.error('Error loading SVG:', error));
+            .catch(error => console.error('Error cargando el SVG:', error));
 
         // Mostrar el tooltip y cambiar color del elemento
         function showTooltip(evt, text, element) {
@@ -51,9 +65,10 @@
             tooltip.style.display = 'block';
             tooltip.style.left = evt.pageX + 10 + 'px';
             tooltip.style.top = evt.pageY + 10 + 'px';
+            
+            if (!element.originalColor || element.originalColor == undefined)
+                element.originalColor = element.getAttribute("fill") || element.getAttribute("stroke");
 
-            // Cambiar color del elemento
-            element.originalColor = element.getAttribute("fill") || element.getAttribute("stroke");
             element.setAttribute("fill", "#ff8800"); // Nuevo color para el rectángulo
         }
 

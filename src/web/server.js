@@ -7,7 +7,6 @@ const { logamarillo } = require("../control/controlLog");
 
 const ID_MOD = "WEBSERV";
 const app = express();
-app.use(express.json());
 
 let currentPort = (activo) ? 3001 : 3000;  // Puerto inicial
 
@@ -30,8 +29,14 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '10mb' }));
+
+app.use((req, res, next) => {
+  logamarillo(2, `${ID_MOD} - Solicitud para: ${req.path}`);
+  next();
+});
 
 // Importar rutas
 const sitioRoutes = require('./routes/sitio');

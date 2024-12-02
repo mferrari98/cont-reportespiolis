@@ -7,20 +7,20 @@ const router = express.Router();
 
 let observador
 
-router.get('/favicon.ico', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'favicon.ico'));
-});
-
 router.get('/', async (req, res) => {
   try {
     observador.verUltimoCambio(false, () => {
-      const filePath = path.join(__dirname, '..', 'public', 'reporte.html');
+      const filePath = path.join(__dirname, "../",'./public', 'reporte.html');
       res.sendFile(filePath);
     })
   } catch (error) {
     logamarillo(2, error);
     res.status(500).send('Internal Server Error');
   }
+});
+
+router.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'favicon.ico'));
 });
 
 router.post('/imagenpt', (req, res) => {

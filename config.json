@@ -12,7 +12,8 @@
     "credenciales": {
       "user": "fixture-user@servicoop.com",
       "pass": "fixture-user"
-    },    
+    },
+    "difusion_": ["hdonato@servicoop.com"],
     "difusion": [
       "mferrari@servicoop.com",
       "lbarrera@servicoop.com",

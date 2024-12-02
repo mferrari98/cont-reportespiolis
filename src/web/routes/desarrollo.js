@@ -40,44 +40,17 @@ function validateHost(req, res, next) {
 router.use(validateHost);
 
 router.get('/', (req, res) => {
-  res.send(`
-    <html>
-      <head>
-        <title>Pantalla de Bienvenida</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-          }          
-          p {
-            font-size: 18px;
-            color: #555;
-          }
-          .warning {
-            color: red;
-            font-weight: bold;
-          }
-          img {            
-            margin-left: auto;
-            margin-right: auto;
-            margin-top: 20px;
-            width: 600px; /* Ajusta el tamaño de la imagen */
-          }
-        </style>
-      </head>
-      <body>
-        <h2>Bienvenido entusiasta</h1>
-        <p>Estás en el entrypoint de desarrollo</p>
-        <p class="warning">Ojota con /truncar y /poblar</p>
-        <img src="/git-pull.webp">
-      </body>
-    </html>
-  `);
+  const filePath = path.join(__dirname, '..', 'public', 'desa.html');
+  res.sendFile(filePath);
 });
 
 router.get('/omelet', (req, res) => {
   const filePath = path.join(__dirname, '..', 'public', 'omelet.html');
+  res.sendFile(filePath);
+});
+
+router.get('/log', (req, res) => {
+  const filePath = path.join(process.cwd(), 'historico.txt');
   res.sendFile(filePath);
 });
 

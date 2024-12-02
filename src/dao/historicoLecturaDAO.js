@@ -143,12 +143,7 @@ HistoricoLecturaDAO.prototype.listParaCurar = function (segundos, callback) {
   logamarillo(1, `${ID_MOD} - listParaCurar`);
   const db = getDatabase();
 
-  db.all(sql_curar, [segundos, segundos], (err, row) => {
-    
-    console.log(segundos)
-    console.log(err)
-    console.log(row)
-    
+  db.all(sql_curar, [segundos, segundos], (err, row) => {        
     callback(null, row);
   });
 };

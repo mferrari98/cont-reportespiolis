@@ -17,7 +17,12 @@ const { crearTablas } = require('./src/basedatos/crear_tablas');
 const ID_MOD = "SUPERINDEX"
 
 crearTablas((err) => {
-    logamarillo(2, "ESQUEMA - resumen errores ->", err)
+
+    let resultado = Object.keys(err)
+        .map(key => `${key}: ${err[key] === null ? "null" : err[key]}`)
+        .join(", ");
+    
+    logamarillo(2, `ESQUEMA - resumen errores -> ${resultado}`)
     observador.iniciar()
 });
 

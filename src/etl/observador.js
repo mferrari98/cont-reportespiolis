@@ -91,19 +91,25 @@ function datosCitec(lines, cb) {
     if (!error) {
 
       // Dividir el contenido del archivo en líneas
-      const lineas = data.trim().split('\n');
+      const lineas = data.trim().split('\r\n');
 
       let posfila = 0
       let filaMasCercana = null;
       let diferenciaMinima = currentModifiedTime;
 
       // Iterar desde el final del archivo hacia el principio
-      for (let i = lineas.length - 1; i >= 0; i--) {
+      for (let i = lineas.length - 1; i >= lineas.length - 100; i--) {
         const linea = lineas[i];
 
         // Separar la fecha de valor y convertir a milisegundos
         const fecha = linea.split(' - ')[0].trim()
-        const fechaMs = new Date(fecha).getTime();
+
+        let fecha2 = reemplazarMes(fecha, "Ene", "Jan");
+        let fecha3 = reemplazarMes(fecha2, "Abr", "Apr");
+        let fecha4 = reemplazarMes(fecha3, "Ago", "Aug");
+        let fercho = reemplazarMes(fecha4, "Dic", "Dec");
+
+        const fechaMs = new Date(fercho);
 
         // Calcular la diferencia con la fecha de referencia
         const diferencia = Math.abs(currentModifiedTime - fechaMs);
@@ -160,6 +166,16 @@ function checkFileModification() {
       logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la última lectura`);
     }
   });
+}
+
+function reemplazarMes(fechaStr, mesActual, mesNuevo) {
+  let partes = fechaStr.split(" "); // Divide la fecha en partes
+
+  if (partes.length >= 2 && partes[1] === mesActual) {
+    partes[1] = mesNuevo; // Reemplaza solo si coincide con mesActual
+  }
+
+  return partes.join(" "); // Reconstruye la fecha
 }
 
 // Función para formatear la fecha

@@ -8,11 +8,13 @@ let conteoRepeticiones = 0;
 
 let logamarillo = function (nivel, ...contenido) {
 
+    const mensaje = contenido.join(' '); // Unir el contenido para comparar
+
     if (nivel >= nivLog)
-        console.log(...contenido)
+        console.log(mensaje)
 
     const estampaTiempo = obtenerEstampaDeTiempo();
-    const mensaje = contenido.join(' '); // Unir el contenido para comparar
+    
 
     // Si el mensaje es el mismo que el anterior, aumentar el conteo de repeticiones
     if (mensaje === ultimoMensaje) {

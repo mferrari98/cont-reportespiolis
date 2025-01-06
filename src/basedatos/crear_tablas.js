@@ -4,7 +4,9 @@ const db = getDatabase();
 
 function crearTablas(callback) {
   let err_tablas = []
-  tablaSitio(err_tablas, (err_compilados) => { callback(err_compilados) })
+  tablaSitio(err_tablas, (err_compilados) => {    
+    callback(err_compilados)
+  })
 }
 
 // tabla sitio
@@ -67,7 +69,7 @@ const tablaLog = (err_previo, callback) => {
       creado_el DATETIME DEFAULT (DATETIME('now', '-3 hours'))
   )`,
     (err) => {
-      err_previo["err_log"] = err
+      err_previo["err_log"] = err      
       callback(err_previo);
     }
   );

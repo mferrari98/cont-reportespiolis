@@ -93,11 +93,6 @@ EmailControl.prototype.enviar = function () {
                 path: './src/reporte/salida/grafPieMdy.png', // Ruta de la imagen
                 cid: 'grafPieMdy' // CID para referenciar la imagen en el cuerpo del mensaje
             },
-            /*{
-                filename: 'imagen3.jpg',
-                path: './src/reporte/salida/grafPieTw.png', // Ruta de la imagen
-                cid: 'grafPieTw' // CID para referenciar la imagen en el cuerpo del mensaje
-            },*/
             {
                 filename: 'imagen4.jpg',
                 path: './src/reporte/salida/grafLineas.png', // Ruta de la imagen
@@ -110,7 +105,8 @@ EmailControl.prototype.enviar = function () {
         if (error) {
             return logamarillo(1, `${ID_MOD} - %s`, error);
         }
-        logamarillo(2, `${ID_MOD} - Mensaje enviado: %s, Destinatarios: %s`, info.envelope.from, JSON.stringify(info.envelope.to));
+        const destino = JSON.stringify(info.envelope.to)
+        logamarillo(2, `${ID_MOD} - Mensaje enviado: ${info.envelope.from}, Destinatarios: ${destino}`);
     });
 }
 

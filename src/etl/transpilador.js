@@ -67,7 +67,8 @@ function sustituirMarcas(reporte, estampatiempo, contenido, cb) {
 		contenido = contenido
 			.replace(`SITIO_${i}`, item.sitio)
 			.replace(`NIVEL_${i}`, item.variable.nivel.valor === undefined ? '-' : item.variable.nivel.valor)
-			.replace(`CLORO_${i}`, item.variable.cloro.valor === undefined ? '-' : item.variable.cloro.valor)
+			.replace(`CLORO_${i}`, item.variable.cloro.valor === undefined ? '-' :
+				(item.sitio === 'P.Pot' && item.variable.cloro.valor < 1 ? '\uD83D\uDD34 ' + item.variable.cloro.valor : item.variable.cloro.valor))
 
 			.replace(`TURB_${i}`, item.variable.turbiedad.valor === undefined ? '-' : item.variable.turbiedad.valor)
 			.replace(`VOLDIA_${i}`, item.variable.voldia.valor === undefined ? '-' : item.variable.voldia.valor);

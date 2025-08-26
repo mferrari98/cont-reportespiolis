@@ -1,35 +1,16 @@
 {
   "direcciones": {
-    "sca_wizcon": "//mnt/compartido/valScadaWizcon/REP002.DAT",
-    "sca_wizcon1": "//10.10.3.2/servicoop/REP002.DAT",
-    "sca_wizcon2": "//PC0346/datos/reporte_horario_test.log",
-    "sca_wizcon3": "//PC0301/datos/reporte_horario_test.log",
-    "cota45": "//mnt/compartido/nvCistSur/NivelCisSur.txt",
-    "cota45_1": "//serv_en_01/compartido/NivelCisSur.txt",
-    "cota45_2": "//PC0301/datos/NivelCisSur.txt"
+    "sca_wizcon": "//mnt/compartido/valScadaWizcon/REP002.DAT",    
+    "cota45": "//mnt/compartido/nvCistSur/NivelCisSur.txt"    
   },
   "email": {
     "credenciales": {
-      "user": "fixture-user@servicoop.com",
-      "pass": "fixture-user"
+      "user": "usr@email.com",
+      "pass": "email"
     },
-    "difusion_": ["hdonato@servicoop.com"],
+    "difusion_": ["usr@email.com"],
     "difusion": [
-      "mferrari@servicoop.com",
-      "lbarrera@servicoop.com",
-      "okruse@servicoop.com",
-      "mdigioia@servicoop.com",
-      "fmeoniz@servicoop.com",
-      "mcaro@servicoop.com",
-      "scadapm@gmail.com",
-      "sanambreuso001@gmail.com",
-      "vschanz@servicoop.com",
-      "valeschanz@gmail.com",
-      "laboratorio@servicoop.com",
-      "mjunyent@servicoop.com",
-      "acueducto.pm@gmail.com",
-      "fabiomartin68@gmail.com",
-      "divisionoperacionessanitarias@gmail.com"
+      "usr@email.com"
     ]
   },
   "observador": {

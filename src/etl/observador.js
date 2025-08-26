@@ -29,12 +29,18 @@ function iniciar() {
 }
 
 /**
- * 
- * @param {*} enviarEmail 
- * @param {*} cb 
+ * verUltimoCambio ahora acepta options que se pasan a lanzarReporte.
+ * options puede contener historicoLimit e historicoPage
+ * enviarEmail: boolean, options: { historicoLimit, historicoPage }, cb: callback
  */
-function verUltimoCambio(enviarEmail, cb) {
-  lanzarReporte(enviarEmail, currentModifiedTime, () => { cb() })
+function verUltimoCambio(enviarEmail, options, cb) {
+  // permitir firma antigua verUltimoCambio(enviarEmail, cb)
+  if (typeof options === "function") {
+    cb = options;
+    options = {};
+  }
+
+  lanzarReporte(enviarEmail, currentModifiedTime, options, () => { cb() })
 }
 
 function parar() {
@@ -47,7 +53,7 @@ function parar() {
 ==============================================================
 */
 
-// Función para leer y procesar el archivo
+// Funcion para leer y procesar el archivo
 function readAndProcessFile() {
 
   let lines = [];
@@ -64,25 +70,25 @@ function readAndProcessFile() {
 
 function datosWizcon(lines, cb) {
 
-    const rl = readline.createInterface({
-      input: fs.createReadStream(filePath),
-      output: process.stdout,
-      terminal: false,
-    });
+  const rl = readline.createInterface({
+    input: fs.createReadStream(filePath),
+    output: process.stdout,
+    terminal: false,
+  });
 
-    // Escucha cada línea del archivo
-    rl.on("line", (line) => {
-      lines.push(line);
-    });
+  // Escucha cada linea del archivo
+  rl.on("line", (line) => {
+    lines.push(line);
+  });
 
-    rl.on("close", () => {
-      logamarillo(2, `${ID_MOD} - se leyeron datos desde wizcon`)
-      cb(lines)
-    });
+  rl.on("close", () => {
+    logamarillo(2, `${ID_MOD} - se leyeron datos desde wizcon`)
+    cb(lines)
+  });
 
-    rl.on("error", (error) => {
-      logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
-    })
+  rl.on("error", (error) => {
+    logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
+  })
 }
 
 function datosCitec(lines, cb) {
@@ -90,7 +96,7 @@ function datosCitec(lines, cb) {
 
     if (!error) {
 
-      // Dividir el contenido del archivo en líneas
+      // Dividir el contenido del archivo en lineas
       const lineas = data.trim().split('\r\n');
 
       let posfila = 0
@@ -114,7 +120,7 @@ function datosCitec(lines, cb) {
         // Calcular la diferencia con la fecha de referencia
         const diferencia = Math.abs(currentModifiedTime - fechaMs);
 
-        // Si la diferencia es menor que la mínima encontrada, actualizamos
+        // Si la diferencia es menor que la minima encontrada, actualizamos
         if (diferencia < diferenciaMinima) {
           diferenciaMinima = diferencia;
           filaMasCercana = linea;
@@ -122,12 +128,12 @@ function datosCitec(lines, cb) {
         }
       }
 
-      if (filaMasCercana) {        
+      if (filaMasCercana) {
         logamarillo(2, `${ID_MOD} - se leyeron datos desde citec. ${filaMasCercana} fila ${posfila}`)
-        lines.push(`Cota45              ${filaMasCercana.split(' - ')[1].replace(',', '.')}`);      
+        lines.push(`Cota45              ${filaMasCercana.split(' - ')[1].replace(',', '.')}`);
       } else
         logamarillo(2, `${ID_MOD} - error leyendo citec: no se encontro fila`);
-      
+
     } else
       logamarillo(2, `${ID_MOD} - error leyendo citec: ${error.stack}`);
 
@@ -135,7 +141,7 @@ function datosCitec(lines, cb) {
   });
 }
 
-// Función para verificar la fecha de modificación del archivo
+// Funcion para verificar la fecha de modificacion del archivo
 function checkFileModification() {
   fs.stat(filePath, (err, stats) => {
 
@@ -163,7 +169,7 @@ function checkFileModification() {
 
       readAndProcessFile();
     } else {
-      logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la última lectura`);
+      logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la ultima lectura`);
     }
   });
 }
@@ -178,7 +184,7 @@ function reemplazarMes(fechaStr, mesActual, mesNuevo) {
   return partes.join(" "); // Reconstruye la fecha
 }
 
-// Función para formatear la fecha
+// Funcion para formatear la fecha
 function formatoFecha(fechaOriginal) {
   const fecha = new Date(fechaOriginal);
 

@@ -33,16 +33,28 @@ const sql_getHistorico = `
   WHERE hl.sitio_id = ? AND tv.descriptor = 'Nivel[m]'
   ORDER BY etiempo;
 `;
+
+/* SQL para paginar historico (limit/offset) en orden descendente por fecha para que pagina 1 sea la mas reciente */
+const sql_getHistorico_pag_desc = `
+  SELECT *
+  FROM (
+    SELECT hl.*
+    FROM historico_lectura hl
+    JOIN tipo_variable tv ON hl.tipo_id = tv.id
+    WHERE hl.sitio_id = ? AND tv.descriptor = 'Nivel[m]'
+    ORDER BY etiempo DESC
+    LIMIT ? OFFSET ?
+  ) sub
+  ORDER BY etiempo ASC;
+`;
+
 const sql_delete = `DELETE FROM historico_lectura WHERE id = ?`;
-// sqlite no acepta truncate, por lo que debe emularse su comportamiento con delete
 const sql_truncate = `DELETE FROM historico_lectura; DELETE FROM SQLITE_SEQUENCE WHERE name="historico_lectura"`;
 const sql_curar = `
   SELECT *, etiempo / 1000 % 3600 AS desv_sobre, abs(etiempo / 1000 % 3600 - 3600) as desv_sub
   FROM historico_lectura
   WHERE
     CASE
-      -- 900 es 1/4 de un minuto (3600/4 = 900)
-      -- 240 son 4 minutos
       WHEN desv_sobre > 900 THEN desv_sub > ?
       WHEN desv_sobre <= 900 THEN desv_sobre > ?
     END
@@ -86,7 +98,6 @@ HistoricoLecturaDAO.prototype.existe = function (etiempo, callback) {
   });
 };
 
-
 HistoricoLecturaDAO.prototype.getAll = function (callback) {
 
   logamarillo(1, `${ID_MOD} - getAll`);
@@ -117,6 +128,23 @@ HistoricoLecturaDAO.prototype.getHistorico = function (sitio_id, callback) {
   });
 };
 
+/*
+  Nuevo metodo: getHistoricoPagDesc
+  Retorna el historico en orden descendente, para que la pagina 1 sea la mas reciente.
+*/
+HistoricoLecturaDAO.prototype.getHistoricoPagDesc = function (sitio_id, limit, offset, callback) {
+
+  logamarillo(1, `${ID_MOD} - getHistoricoPagDesc limit=${limit} offset=${offset}`);
+  const db = getDatabase();
+
+  const l = parseInt(limit) > 0 ? parseInt(limit) : 100;
+  const o = parseInt(offset) >= 0 ? parseInt(offset) : 0;
+
+  db.all(sql_getHistorico_pag_desc, [sitio_id, l, o], (err, rows) => {
+    callback(null, rows);
+  });
+};
+
 HistoricoLecturaDAO.prototype.delete = function (id, callback) {
 
   logamarillo(1, `${ID_MOD} - delete`);
@@ -133,7 +161,6 @@ HistoricoLecturaDAO.prototype.truncate = function (callback) {
   const db = getDatabase();
 
   db.run(sql_truncate, function (err) {
-    // TRUNCATE no devuelve el número de filas afectadas
     callback(null, { changes: "se borro todo el contenido de la tabla" });
   });
 };
@@ -143,7 +170,7 @@ HistoricoLecturaDAO.prototype.listParaCurar = function (segundos, callback) {
   logamarillo(1, `${ID_MOD} - listParaCurar`);
   const db = getDatabase();
 
-  db.all(sql_curar, [segundos, segundos], (err, row) => {        
+  db.all(sql_curar, [segundos, segundos], (err, row) => {
     callback(null, row);
   });
 };

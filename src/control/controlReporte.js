@@ -20,15 +20,18 @@ const reporte = new Reporte()
 const ID_MOD = "REPORTE";
 
 /**
- * 
- * @param {*} enviarEmail 
- * @param {*} currentModifiedTime 
- * @param {*} cb 
+ * lanzarReporte ahora por defecto trae pagina 1 con los registros mas recientes
+ * y acepta options = { historicoLimit, historicoPage }
  */
-let lanzarReporte = function (enviarEmail, currentModifiedTime, cb) {
-    getNuevosDatos((err, reporte) => {
+let lanzarReporte = function (enviarEmail, estampatiempo, options, cb) {
+    if (typeof options === "function") {
+        cb = options;
+        options = {};
+    }
+
+    getNuevosDatos(options, (err, reporte) => {
         if (!err) {
-            transpilar(reporte, currentModifiedTime, () => {
+            transpilar(reporte, estampatiempo, () => {
 
                 if (enviarEmail) {
                     emailMensaje.extraerTabla(() => {
@@ -39,18 +42,12 @@ let lanzarReporte = function (enviarEmail, currentModifiedTime, cb) {
                 else
                     cb()
             });
+        } else {
+            cb(err);
         }
     });
 }
 
-/**
- * dejar registrado en base de datos los errores de acceso al intentar leer
- * el archivo base generado por el fixture-user wizcon
- * 
- * @param {*} mensaje 
- * @param {*} currentModifiedTime 
- * @param {*} cb 
- */
 let notificarFallo = function (mensaje, currentModifiedTime, cb) {
     logDAO.create(mensaje, currentModifiedTime, () => cb())
 }
@@ -60,32 +57,57 @@ let notificarFallo = function (mensaje, currentModifiedTime, cb) {
 ==============================================================
 */
 
-function getNuevosDatos(callback) {
+/**
+ * getNuevosDatos con paginacion invertida:
+ * pagina 1 = registros mas recientes
+ */
+function getNuevosDatos(options, callback) {
+
+    options = options || {};
+    const historicoLimit = options.historicoLimit ? parseInt(options.historicoLimit) : 100; // ahora limite fijo 100
+    let historicoPage = options.historicoPage ? parseInt(options.historicoPage) : 1;
 
     sitioDAO.getTodosDescriptores((_, descriptores) => {
-        // el objeto reporte se crea siempre, aunque no hay datos para agregar
         reporte.declarar(descriptores, (mi_reporte) => {
 
             historicoLecturaDAO.getMostRecent((_, rows) => {
 
                 let remaining = rows.length;
+                if (remaining === 0) {
+                    callback(null, mi_reporte);
+                    return;
+                }
+
                 rows.forEach((row) => {
 
                     tipoVariableDAO.getById(row.tipo_id, (err, tipoVarRow) => {
                         sitioDAO.getById(row.sitio_id, (err, sitioRow) => {
-                            historicoLecturaDAO.getHistorico(sitioRow.id, (_, historico) => {
 
-                                reporte.definir(mi_reporte, row, tipoVarRow, sitioRow, historico);
-                                remaining -= 1;
+                            // calcular offset invertido
+                            const totalCountCallback = (totalCount) => {
+                                let totalPages = Math.ceil(totalCount / historicoLimit);
+                                if (historicoPage > totalPages) historicoPage = totalPages;
 
-                                if (remaining === 0)
-                                    callback(null, mi_reporte);
-                            })
+                                const offset = (historicoPage - 1) * historicoLimit;
+
+                                const cbHistorico = (_, historico) => {
+                                    reporte.definir(mi_reporte, row, tipoVarRow, sitioRow, historico);
+                                    remaining -= 1;
+                                    if (remaining === 0)
+                                        callback(null, mi_reporte);
+                                };
+
+                                historicoLecturaDAO.getHistoricoPagDesc(sitioRow.id, historicoLimit, offset, cbHistorico);
+                            };
+
+                            // primero contamos registros totales para cada sitio
+                            historicoLecturaDAO.getHistorico(sitioRow.id, (_, totalHistorico) => {
+                                totalCountCallback(totalHistorico.length);
+                            });
+
                         });
                     });
                 });
-                if (remaining === 0)
-                    callback(null, mi_reporte);
             });
         })
     });

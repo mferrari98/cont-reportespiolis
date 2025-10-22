@@ -101,8 +101,8 @@ function getNuevosDatos(options, callback) {
                             };
 
                             // primero contamos registros totales para cada sitio
-                            historicoLecturaDAO.getHistorico(sitioRow.id, (_, totalHistorico) => {
-                                totalCountCallback(totalHistorico.length);
+                            historicoLecturaDAO.getHistoricoCount(sitioRow.id, (err, totalCount) => {
+                                totalCountCallback(totalCount);
                             });
 
                         });

@@ -48,6 +48,14 @@ const sql_getHistorico_pag_desc = `
   ORDER BY etiempo ASC;
 `;
 
+/* SQL para contar registros históricos sin traerlos a memoria (optimización) */
+const sql_getHistoricoCount = `
+  SELECT COUNT(*) as total
+  FROM historico_lectura hl
+  JOIN tipo_variable tv ON hl.tipo_id = tv.id
+  WHERE hl.sitio_id = ? AND tv.descriptor = 'Nivel[m]'
+`;
+
 const sql_delete = `DELETE FROM historico_lectura WHERE id = ?`;
 const sql_truncate = `DELETE FROM historico_lectura; DELETE FROM SQLITE_SEQUENCE WHERE name="historico_lectura"`;
 const sql_curar = `
@@ -142,6 +150,24 @@ HistoricoLecturaDAO.prototype.getHistoricoPagDesc = function (sitio_id, limit, o
 
   db.all(sql_getHistorico_pag_desc, [sitio_id, l, o], (err, rows) => {
     callback(null, rows);
+  });
+};
+
+/**
+ * Cuenta los registros históricos de un sitio sin traerlos a memoria
+ * Optimización para paginación
+ */
+HistoricoLecturaDAO.prototype.getHistoricoCount = function (sitio_id, callback) {
+
+  logamarillo(1, `${ID_MOD} - getHistoricoCount sitio_id=${sitio_id}`);
+  const db = getDatabase();
+
+  db.get(sql_getHistoricoCount, [sitio_id], (err, row) => {
+    if (err) {
+      callback(err, null);
+    } else {
+      callback(null, row ? row.total : 0);
+    }
   });
 };
 

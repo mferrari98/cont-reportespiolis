@@ -81,7 +81,11 @@ HistoricoLecturaDAO.prototype.create = function (sitio_id, tipo_id, valor, etiem
   logamarillo(1, `${ID_MOD} - create`);
   const db = getDatabase();
 
-  db.run(sql_create, [sitio_id, tipo_id, valor, etiempo], function (_) {
+  db.run(sql_create, [sitio_id, tipo_id, valor, etiempo], function (err) {
+    if (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      return callback(err, null);
+    }
     callback(null, { id: this.lastID, sitio_id, tipo_id, valor, etiempo });
   });
 };
@@ -91,7 +95,11 @@ HistoricoLecturaDAO.prototype.getById = function (id, callback) {
   logamarillo(1, `${ID_MOD} - getById`);
   const db = getDatabase();
 
-  db.get(sql_getById, [id], (_, row) => {
+  db.get(sql_getById, [id], (err, row) => {
+    if (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      return callback(err, null);
+    }
     callback(null, row);
   });
 };
@@ -101,7 +109,11 @@ HistoricoLecturaDAO.prototype.existe = function (etiempo, callback) {
   logamarillo(1, `${ID_MOD} - existe`);
   const db = getDatabase();
 
-  db.get(sql_existe, [etiempo], (_, row) => {
+  db.get(sql_existe, [etiempo], (err, row) => {
+    if (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      return callback(err, null);
+    }
     callback(null, row.existe);
   });
 };
@@ -111,7 +123,11 @@ HistoricoLecturaDAO.prototype.getAll = function (callback) {
   logamarillo(1, `${ID_MOD} - getAll`);
   const db = getDatabase();
 
-  db.all(sql_getAll, [], (_, rows) => {
+  db.all(sql_getAll, [], (err, rows) => {
+    if (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      return callback(err, null);
+    }
     callback(null, rows);
   });
 };
@@ -121,7 +137,11 @@ HistoricoLecturaDAO.prototype.getMostRecent = function (callback) {
   logamarillo(1, `${ID_MOD} - getMostRecent`);
   const db = getDatabase();
 
-  db.all(sql_getMostRecent, (_, rows) => {
+  db.all(sql_getMostRecent, (err, rows) => {
+    if (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      return callback(err, null);
+    }
     callback(null, rows);
   });
 };
@@ -131,7 +151,11 @@ HistoricoLecturaDAO.prototype.getHistorico = function (sitio_id, callback) {
   logamarillo(1, `${ID_MOD} - getHistorico`);
   const db = getDatabase();
 
-  db.all(sql_getHistorico, [sitio_id], (_, rows) => {
+  db.all(sql_getHistorico, [sitio_id], (err, rows) => {
+    if (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      return callback(err, null);
+    }
     callback(null, rows);
   });
 };
@@ -177,6 +201,10 @@ HistoricoLecturaDAO.prototype.delete = function (id, callback) {
   const db = getDatabase();
 
   db.run(sql_delete, [id], function (err) {
+    if (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      return callback(err, null);
+    }
     callback(null, { changes: this.changes });
   });
 };
@@ -187,6 +215,10 @@ HistoricoLecturaDAO.prototype.truncate = function (callback) {
   const db = getDatabase();
 
   db.run(sql_truncate, function (err) {
+    if (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      return callback(err, null);
+    }
     callback(null, { changes: "se borro todo el contenido de la tabla" });
   });
 };
@@ -197,6 +229,10 @@ HistoricoLecturaDAO.prototype.listParaCurar = function (segundos, callback) {
   const db = getDatabase();
 
   db.all(sql_curar, [segundos, segundos], (err, row) => {
+    if (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      return callback(err, null);
+    }
     callback(null, row);
   });
 };

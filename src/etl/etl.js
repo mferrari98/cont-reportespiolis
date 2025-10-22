@@ -1,5 +1,6 @@
 const config = require("../../config.json")
 const { logamarillo } = require("../control/controlLog")
+const { getDatabase } = require("../basedatos/db");
 
 const TipoVariableDAO = require("../dao/tipoVariableDAO");
 const SitioDAO = require("../dao/sitioDAO");
@@ -139,16 +140,53 @@ function getSitiosNombre(lines, cb) {
 
 function nuevoHistoricoLectura(lines, etiempo, callback) {
 
+  const db = getDatabase();
   const lineas_modif = agregarNulos(lines, umbral);
 
-  insertar(lineas_modif, 1, etiempo, () => {        // nivel
-    insertar(lineas_modif, 2, etiempo, () => {      // cloro
-      insertar(lineas_modif, 3, etiempo, () => {    // turbiedad
-        insertar(lineas_modif, 4, etiempo, () => {  // vol/dia
-          callback();
+  // Envolver todas las inserciones en una transacción
+  db.serialize(() => {
+    db.run('BEGIN TRANSACTION', (err) => {
+      if (err) {
+        logamarillo(2, `${ID_MOD} - Error iniciando transacción: ${err.message}`);
+        return callback(err);
+      }
+
+      insertar(lineas_modif, 1, etiempo, (err1) => {        // nivel
+        if (err1) return rollback(db, callback, err1);
+
+        insertar(lineas_modif, 2, etiempo, (err2) => {      // cloro
+          if (err2) return rollback(db, callback, err2);
+
+          insertar(lineas_modif, 3, etiempo, (err3) => {    // turbiedad
+            if (err3) return rollback(db, callback, err3);
+
+            insertar(lineas_modif, 4, etiempo, (err4) => {  // vol/dia
+              if (err4) return rollback(db, callback, err4);
+
+              db.run('COMMIT', (err) => {
+                if (err) {
+                  logamarillo(2, `${ID_MOD} - Error en commit: ${err.message}`);
+                  return rollback(db, callback, err);
+                }
+                logamarillo(1, `${ID_MOD} - Transacción completada exitosamente`);
+                callback();
+              });
+            });
+          });
         });
       });
     });
+  });
+}
+
+// Función helper para rollback
+function rollback(db, callback, originalError) {
+  db.run('ROLLBACK', (rollbackErr) => {
+    if (rollbackErr) {
+      logamarillo(2, `${ID_MOD} - Error en rollback: ${rollbackErr.message}`);
+    }
+    logamarillo(2, `${ID_MOD} - Transacción revertida: ${originalError.message}`);
+    callback(originalError);
   });
 }
 

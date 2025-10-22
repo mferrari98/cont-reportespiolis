@@ -51,6 +51,10 @@ SitioDAO.prototype.create = function (descriptor, orden, callback) {
 	const cubicaje = cubicajeMap.get(descriptor) || 0.0;
 
 	db.run(sql_create, [descriptor, orden, rebalse, cubicaje], function (err) {
+		if (err) {
+			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+			return callback(err, null);
+		}
 		callback(null, { id: this.lastID, descriptor, orden, rebalse });
 	});
 };
@@ -59,7 +63,11 @@ SitioDAO.prototype.getById = function (id, callback) {
 	logamarillo(1, `${ID_MOD} - getById`);
 	const db = getDatabase();
 
-	db.get(sql_getById, [id], (_, row) => {
+	db.get(sql_getById, [id], (err, row) => {
+		if (err) {
+			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+			return callback(err, null);
+		}
 		callback(null, row);
 	});
 };
@@ -68,7 +76,11 @@ SitioDAO.prototype.getByDescriptor = function (descriptor, callback) {
 	logamarillo(1, `${ID_MOD} - getByDescriptor`);
 	const db = getDatabase();
 
-	db.get(sql_getByDescriptor, [descriptor], (_, row) => {
+	db.get(sql_getByDescriptor, [descriptor], (err, row) => {
+		if (err) {
+			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+			return callback(err, null);
+		}
 		callback(null, row);
 	});
 };
@@ -77,7 +89,11 @@ SitioDAO.prototype.getByOrden = function (orden, callback) {
 	logamarillo(1, `${ID_MOD} - getByOrden`);
 	const db = getDatabase();
 
-	db.get(sql_getByOrden, [orden], (_, row) => {
+	db.get(sql_getByOrden, [orden], (err, row) => {
+		if (err) {
+			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+			return callback(err, null);
+		}
 		callback(null, row);
 	});
 };
@@ -101,7 +117,11 @@ SitioDAO.prototype.getAll = function (callback) {
 	logamarillo(1, `${ID_MOD} - getAll`);
 	const db = getDatabase();
 
-	db.all(sql_getAll, [], (_, rows) => {
+	db.all(sql_getAll, [], (err, rows) => {
+		if (err) {
+			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+			return callback(err, null);
+		}
 		callback(null, rows);
 	});
 };
@@ -110,7 +130,11 @@ SitioDAO.prototype.getTodosDescriptores = function (callback) {
 	logamarillo(1, `${ID_MOD} - getTodosDescriptores`);
 	const db = getDatabase();
 
-	db.all(sql_getTodosDescriptores, [], (_, rows) => {
+	db.all(sql_getTodosDescriptores, [], (err, rows) => {
+		if (err) {
+			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+			return callback(err, null);
+		}
 		callback(null, rows);
 	});
 };
@@ -119,7 +143,11 @@ SitioDAO.prototype.cantSitios = function (callback) {
 	logamarillo(1, `${ID_MOD} - cantSitios`);
 	const db = getDatabase();
 
-	db.get(sql_cantSitios, [], (_, ret) => {
+	db.get(sql_cantSitios, [], (err, ret) => {
+		if (err) {
+			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+			return callback(err, null);
+		}
 		callback(null, ret.cant);
 	});
 };
@@ -128,7 +156,11 @@ SitioDAO.prototype.delete = function (id, callback) {
 	logamarillo(1, `${ID_MOD} - delete`);
 	const db = getDatabase();
 
-	db.run(sql_delete, [id], function (_) {
+	db.run(sql_delete, [id], function (err) {
+		if (err) {
+			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+			return callback(err, null);
+		}
 		callback(null, { id });
 	});
 };

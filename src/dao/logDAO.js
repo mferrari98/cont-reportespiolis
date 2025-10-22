@@ -24,7 +24,11 @@ LogDAO.prototype.create = function (mensaje, etiempo, callback) {
   logamarillo(1, `${ID_MOD} - create`);
   const db = getDatabase();
 
-  db.run(sql_create, [mensaje, etiempo], function (_) {
+  db.run(sql_create, [mensaje, etiempo], function (err) {
+    if (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      return callback(err);
+    }
     callback();
   });
 };

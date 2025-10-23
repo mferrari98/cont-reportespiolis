@@ -1,17 +1,14 @@
 {
   "direcciones": {
-    "sca_wizcon": "//mnt/compartido/valScadaWizcon/REP002.DAT",    
-    "cota45": "//mnt/compartido/nvCistSur/NivelCisSur.txt"    
+    "sca_wizcon": "//mnt/compartido/valScadaWizcon/REP002.DAT",
+    "cota45": "//mnt/compartido/nvCistSur/NivelCisSur.txt"
   },
   "email": {
     "credenciales": {
-      "user": "usr@email.com",
-      "pass": "email"
+      "user": "${EMAIL_USER}",
+      "pass": "${EMAIL_PASS}"
     },
-    "difusion_": ["usr@email.com"],
-    "difusion": [
-      "usr@email.com"
-    ]
+    "difusion": "${EMAIL_DIFUSION}"
   },
   "observador": {
     "umbral_parser_columnas": 20,

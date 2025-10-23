@@ -56,7 +56,7 @@ EmailControl.prototype.enviar = function () {
             <table width="100%" cellpadding="0" cellspacing="0" style="color: white;">
             <tr>
              <td align="left">
-             <a href="http://10.10.9.250/reporte" style="color: white; text-decoration: none;">
+             <a href="http://10.10.9.252/reporte" style="color: white; text-decoration: none;">
                 Reporte de agua → 🌐 <b>versión web</b>
              </a>
              </td>

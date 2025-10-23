@@ -141,3 +141,9 @@ src/reporte/salida/*
 # archivos que dependen de la instancia
 historico.txt
 src/web/cert/*
+
+# herramientas de desarrollo
+.claude/
+.serena/
+AGENTS.md
+CLAUDE.md

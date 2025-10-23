@@ -1,6 +1,4 @@
-require('dotenv').config();
-
-const config = require("../../config.json")
+const config = require("../config/loader")
 const { logamarillo } = require("../control/controlLog")
 
 const fs = require('fs');
@@ -10,8 +8,8 @@ const dns = require('dns');
 const ID_MOD = "CTRL-EMAIL"
 
 let destinos = config.email.difusion
-let user = process.env.EMAIL_USER || config.email.credenciales.user
-let pass = process.env.EMAIL_PASS || config.email.credenciales.pass
+let user = config.email.credenciales.user
+let pass = config.email.credenciales.pass
 
 let transporter
 const smtpHostFallback = "10.10.1.40"; // Dirección IP alternativa si no se puede resolver el host

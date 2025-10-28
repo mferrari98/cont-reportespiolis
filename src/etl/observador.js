@@ -1,7 +1,7 @@
 const fs = require("fs");
 const readline = require("readline");
 
-const config = require("../../config.json")
+const config = require("../config/loader")
 const { logamarillo } = require("../control/controlLog")
 const { lanzarETL } = require("./etl");
 const { lanzarReporte, notificarFallo } = require("../control/controlReporte")

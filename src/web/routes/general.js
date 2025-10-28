@@ -59,11 +59,13 @@ router.get('/', async (req, res) => {
     const limit = document.getElementById('piolis_limit').value || ${historicoLimit};
     document.getElementById('piolis_prev').addEventListener('click', function(){
       const p = ${prevPage};
-      location.href = '/reporte?historicoPage=' + p + '&historicoLimit=' + limit;
+      // Usar ruta relativa para mantener el base path (funciona en /reporte y /desarrollo/reporte)
+      location.href = '?historicoPage=' + p + '&historicoLimit=' + limit;
     });
     document.getElementById('piolis_next').addEventListener('click', function(){
       const p = ${nextPage};
-      location.href = '/reporte?historicoPage=' + p + '&historicoLimit=' + limit;
+      // Usar ruta relativa para mantener el base path (funciona en /reporte y /desarrollo/reporte)
+      location.href = '?historicoPage=' + p + '&historicoLimit=' + limit;
     });
   })();
 </script>

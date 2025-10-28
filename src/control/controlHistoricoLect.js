@@ -1,8 +1,10 @@
 const http = require('http');
 const WebSocket = require('ws');
 
-const desviacion = require("../../config.json").desarrollo.desviacion_poblarbd
 const { logamarillo } = require("../control/controlLog")
+
+// Desviación para poblar base de datos (valor fijo)
+const desviacion = 1;
 
 const TipoVariableDAO = require("../dao/tipoVariableDAO");
 const SitioDAO = require("../dao/sitioDAO");
@@ -21,12 +23,15 @@ const cant_sitios = 11
 const MAX_RANGO = 4.5
 const MIN_RANGO = 0.1
 
-const url_soquete = 'http://10.10.4.125:^puerto^/desa/soquete'
+// NOTA: La función sincronizar() usa WebSocket pero el endpoint /desa/soquete fue eliminado.
+// Esta funcionalidad de sincronización ya no está disponible vía HTTP.
+// Si se necesita en el futuro, deberá reimplementarse.
+const url_soquete = 'http://10.10.4.125:^puerto^/desa/soquete';  // Endpoint eliminado
 
 function HistLectControl() { }
 
 HistLectControl.prototype.sincronizar = function (puerto, cb) {
-    
+
     let nuevaUrl = url_soquete.replace("^puerto^", puerto);    
 
     http.get(nuevaUrl, (res) => {

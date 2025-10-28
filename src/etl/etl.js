@@ -1,4 +1,4 @@
-const config = require("../../config.json")
+const config = require("../config/loader")
 const { logamarillo } = require("../control/controlLog")
 const { getDatabase } = require("../basedatos/db");
 
@@ -219,6 +219,17 @@ function insertar(lineas_modif, columna, timestamp, callback) {
           callback(err);
           return;
         }
+
+        // Validar que el sitio exista antes de usarlo
+        if (!sitio) {
+          logamarillo(2, `${ID_MOD} - ADVERTENCIA: No se encontró sitio con orden ${i}, saltando...`);
+          remaining--;
+          if (remaining === 0) {
+            callback(null);
+          }
+          return;
+        }
+
         historicoLecturaDAO.create(
           sitio.id,
           tipoVariable.id,

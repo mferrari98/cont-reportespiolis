@@ -1,7 +1,9 @@
 const fs = require('fs');
-const { nivLog } = require("../../config.json").desarrollo
 
 const ID_MOD = "LOG";
+
+// Nivel de logging: 1 = errores críticos, 2 = información general, 3 = debug
+const nivLog = 2;
 
 let ultimoMensaje = null;
 let conteoRepeticiones = 0;

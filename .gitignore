@@ -145,5 +145,11 @@ src/web/cert/*
 # herramientas de desarrollo
 .claude/
 .serena/
+openspec/
 AGENTS.md
 CLAUDE.md
+README-DEPLOYMENT.md
+NGINX-CHANGES.md
+RESUMEN-FINAL.md
+*.backup
+portal-servicios.nginx.backup

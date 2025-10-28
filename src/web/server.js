@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 const http = require('http');
-const { activo } = require("../../config.json").desarrollo;
 const { logamarillo } = require("../control/controlLog");
 
 const ID_MOD = "WEBSERV";
@@ -10,7 +9,7 @@ const app = express();
 // Configurar Express para confiar en proxy headers de nginx
 app.set('trust proxy', true);
 
-let currentPort = (activo) ? 3001 : 3000;  // Puerto inicial
+const PORT = 3000;
 
 // Middleware para Content-Security-Policy
 app.use((req, res, next) => {
@@ -37,11 +36,10 @@ app.use((req, res, next) => {
 const sitioRoutes = require('./routes/sitio');
 const tipoVarRoutes = require('./routes/tipovar');
 const generalRoutes = require('./routes/general');
-const desarrolloRoutes = require('./routes/desarrollo');
 
 // Crear el servidor HTTP
-const server = http.createServer(app).listen(currentPort, () => {
-  logamarillo(2, `${ID_MOD} - Escuchando en p=${currentPort} (HTTP)`);
+const server = http.createServer(app).listen(PORT, () => {
+  logamarillo(2, `${ID_MOD} - Escuchando en p=${PORT} (HTTP)`);
 });
 
 // Gestionar conexiones abiertas
@@ -76,7 +74,6 @@ module.exports = function (observador) {
   app.use('/sitio', sitioRoutes);
   app.use('/tipovar', tipoVarRoutes);
   app.use('/', generalRoutes(observador));
-  app.use('/desa', desarrolloRoutes);
 
   return {
     closeServer

@@ -8,8 +8,10 @@ El enfoque principal es proteger la infraestructura de sobrecargas HTTP mediante
 La **pagina inicial** devuelve siempre los registros mas recientes, y la navegacion permite avanzar o retroceder en el tiempo.  
 Se utiliza un **lote fijo de 100 registros** por pagina, con control de botones Anterior/Siguiente en el cliente web.  
 
-El sistema esta desarrollado en **Node.js** usando **Express** para el backend, y **SQLite** como base de datos.  
-Se incorporan varios modulos que se encargan de DAO, control de reportes, ETL y manejo de logs.  
+El sistema esta desarrollado en **Node.js** usando **Express** para el backend, y **SQLite** como base de datos.
+Se incorporan varios modulos que se encargan de DAO, control de reportes, ETL y manejo de logs.
+
+Para información sobre despliegue y configuración de entornos, consultar [`README-DEPLOYMENT.md`](README-DEPLOYMENT.md).
 
 ---
 

@@ -17,7 +17,8 @@ const tablaSitio = (err_previo, callback) => {
         descriptor TEXT NOT NULL,
         orden INTEGER NOT NULL,
         rebalse FLOAT NOT NULL,
-        cubicaje FLOAT NOT NULL
+        cubicaje FLOAT NOT NULL,
+        maximo_operativo FLOAT
     )`,
     (err) => {
       err_previo["err_sitio"] = err
@@ -29,7 +30,43 @@ const tablaSitio = (err_previo, callback) => {
         (errIdx) => {
           if (errIdx) err_previo["err_idx_descriptor"] = errIdx
 
-          tablaTipoVariable(err_previo, callback)
+          // Añadir columna maximo_operativo si no existe (para tablas existentes)
+          db.run(
+            `ALTER TABLE sitio ADD COLUMN maximo_operativo FLOAT`,
+            (errAlter) => {
+              // Ignorar error si la columna ya existe
+              if (errAlter && !errAlter.message.includes('duplicate column name')) {
+                console.log('Error añadiendo columna maximo_operativo:', errAlter.message);
+              }
+
+              // Actualizar sitios existentes con valores de maximo_operativo hardcodeados
+              const actualizaciones = [
+                "UPDATE sitio SET maximo_operativo = 4.45 WHERE descriptor = 'L.Maria'",
+                "UPDATE sitio SET maximo_operativo = 4.4 WHERE descriptor = 'KM11'",
+                "UPDATE sitio SET maximo_operativo = 3.5 WHERE descriptor = 'R6000'",
+                "UPDATE sitio SET maximo_operativo = 3.33 WHERE descriptor = 'B.OESTE(1K)'",
+                "UPDATE sitio SET maximo_operativo = 3.05 WHERE descriptor = 'B.SAN MIGUEL'",
+                "UPDATE sitio SET maximo_operativo = 3.4 WHERE descriptor = 'NUEVA CHUBUT'",
+                "UPDATE sitio SET maximo_operativo = 2.06 WHERE descriptor = 'B.PUJOL'",
+                "UPDATE sitio SET maximo_operativo = 3.09 WHERE descriptor = 'Cota45'",
+                "UPDATE sitio SET maximo_operativo = 2.89 WHERE descriptor = 'Doradillo'"
+              ];
+
+              let actualizacionesRestantes = actualizaciones.length;
+
+              actualizaciones.forEach(sql => {
+                db.run(sql, (errUpdate) => {
+                  if (errUpdate) {
+                    console.log('Error actualizando maximo_operativo:', errUpdate.message);
+                  }
+                  actualizacionesRestantes--;
+                  if (actualizacionesRestantes === 0) {
+                    tablaTipoVariable(err_previo, callback);
+                  }
+                });
+              });
+            }
+          );
         }
       );
     }

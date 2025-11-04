@@ -3,12 +3,12 @@ const { getDatabase } = require("../basedatos/db");
 
 const ID_MOD = "DAO-SITIO";
 
-const sql_create = `INSERT INTO sitio (descriptor, orden, rebalse, cubicaje) VALUES (?, ?, ?, ?)`;
+const sql_create = `INSERT INTO sitio (descriptor, orden, rebalse, cubicaje, maximo_operativo) VALUES (?, ?, ?, ?, ?)`;
 const sql_getById = `SELECT * FROM sitio WHERE id = ?`;
 const sql_getByDescriptor = `SELECT * FROM sitio WHERE descriptor = ?`;
 const sql_getByOrden = `SELECT * FROM sitio WHERE orden = ?`;
 const sql_getAll = `SELECT * FROM sitio`;
-const sql_getTodosDescriptores = `SELECT DISTINCT descriptor, rebalse, cubicaje FROM sitio ORDER BY orden`;
+const sql_getTodosDescriptores = `SELECT DISTINCT descriptor, rebalse, cubicaje, maximo_operativo FROM sitio ORDER BY orden`;
 const sql_cantSitios = `SELECT COUNT(*) as cant FROM sitio`;
 const sql_delete = `DELETE FROM sitio WHERE id = ?`;
 
@@ -41,6 +41,18 @@ const cubicajeMap = new Map([
 	["Doradillo", 71.83],
 ]);
 
+const maximoOperativoMap = new Map([
+	["L.Maria", 4.45],
+	["KM11", 4.4],
+	["R6000", 3.5],
+	["B.OESTE(1K)", 3.33],
+	["B.SAN MIGUEL", 3.05],
+	["NUEVA CHUBUT", 3.4],
+	["B.PUJOL", 2.06],
+	["Cota45", 3.09],
+	["Doradillo", 2.89],
+]);
+
 function SitioDAO() { }
 
 SitioDAO.prototype.create = function (descriptor, orden, callback) {
@@ -49,13 +61,14 @@ SitioDAO.prototype.create = function (descriptor, orden, callback) {
 	const db = getDatabase();
 	const rebalse = rebalseMap.get(descriptor) || 0.0;
 	const cubicaje = cubicajeMap.get(descriptor) || 0.0;
+	const maximoOperativo = maximoOperativoMap.get(descriptor) || null;
 
-	db.run(sql_create, [descriptor, orden, rebalse, cubicaje], function (err) {
+	db.run(sql_create, [descriptor, orden, rebalse, cubicaje, maximoOperativo], function (err) {
 		if (err) {
 			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
 			return callback(err, null);
 		}
-		callback(null, { id: this.lastID, descriptor, orden, rebalse });
+		callback(null, { id: this.lastID, descriptor, orden, rebalse, maximoOperativo });
 	});
 };
 
@@ -162,6 +175,27 @@ SitioDAO.prototype.delete = function (id, callback) {
 			return callback(err, null);
 		}
 		callback(null, { id });
+	});
+};
+
+// Nuevo método para obtener maximo_operativo por descriptor
+SitioDAO.prototype.getMaximoOperativo = function (descriptor, callback) {
+	logamarillo(1, `${ID_MOD} - getMaximoOperativo`);
+
+	// Primero intentar obtener del mapa hardcodeado
+	const maximoOperativo = maximoOperativoMap.get(descriptor);
+	if (maximoOperativo !== undefined) {
+		return callback(null, maximoOperativo);
+	}
+
+	// Si no está en el mapa, buscar en base de datos
+	const db = getDatabase();
+	db.get(sql_getByDescriptor, [descriptor], (err, row) => {
+		if (err) {
+			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+			return callback(err, null);
+		}
+		callback(null, row ? row.maximo_operativo : null);
 	});
 };
 

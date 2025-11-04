@@ -23,6 +23,7 @@ Reporte.prototype.declarar = function (sitios, cb) {
                         descriptor: descriptores[0].descriptor,
                         valor: undefined,
                         rebalse: sitios[index].rebalse,
+                        maximo_operativo: sitios[index].maximo_operativo,
                         cubicaje: sitios[index].cubicaje,
                         historico: undefined
                     },

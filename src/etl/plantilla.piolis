@@ -14,6 +14,7 @@
         :root {
             --color-nivel: #3498db;
             --color-rebalse: #d3a53c;
+            --color-maximo-operativo: #27ae60;
         }
     </style>
 </head>
@@ -130,13 +131,13 @@
             var trace11 = {
                 x: sitios,
                 y: [<!-- COMPLEMENTO -->],
-                name: 'Rebalse',
+                name: 'Máximo Operativo',
                 type: 'bar',
                 marker: {
                     color: getComputedStyle(document.documentElement).getPropertyValue('--color-rebalse').trim(),
                     opacity: 0.2
                 },
-                text: [<!-- REBALSE -->].map(String),
+                text: [<!-- MAXIMO_OPERATIVO -->].map(String),
                 textposition: 'auto',
                 hoverinfo: 'none',
             };
@@ -181,7 +182,7 @@
                 "branchvalues": 'total', 
                 hovertemplate: "<b>%{label}</b><br>%{value:.2f} m3<extra></extra>",
                 marker: {
-                    colors: ['rgba(211, 165, 60, 0.3)', "", getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim()] 
+                    colors: ['rgba(211, 165, 60, 0.3)', "", getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim()]
                 },
                 textinfo: "label+percent entry",
             }];
@@ -224,7 +225,7 @@
                 "branchvalues": 'total', 
                 hovertemplate: "<b>%{label}</b><br>%{value:.2f} m3<extra></extra>",
                 marker: {
-                    colors: ['rgba(211, 165, 60, 0.3)', "", getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim()] 
+                    colors: ['rgba(211, 165, 60, 0.3)', "", getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim()]
                 },
                 textinfo: "label+percent entry",
             }];

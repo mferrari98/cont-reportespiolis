@@ -1,0 +1,7 @@
+# Configuración de Email
+# Estas variables se cargan automáticamente mediante el script start.sh
+# Copie este archivo a .env y configure sus credenciales
+
+EMAIL_USER=
+EMAIL_PASS=
+EMAIL_DIFUSION=

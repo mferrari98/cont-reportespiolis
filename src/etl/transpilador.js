@@ -97,7 +97,7 @@ function sustituirMarcas(reporte, estampatiempo, contenido, cb) {
 			'<!-- COMPLEMENTO -->',
 			reporte.map((objeto) =>
 				objeto.variable.nivel.valor != sindet
-					? (objeto.variable.nivel.rebalse - objeto.variable.nivel.valor).toFixed(3)
+					? ((objeto.variable.nivel.maximo_operativo || objeto.variable.nivel.rebalse) - objeto.variable.nivel.valor).toFixed(3)
 					: 0
 			)
 		)
@@ -108,15 +108,15 @@ function sustituirMarcas(reporte, estampatiempo, contenido, cb) {
 					(total, objeto) =>
 						total +
 						(objeto.variable.nivel.valor != sindet
-							? parseFloat((objeto.variable.nivel.rebalse - objeto.variable.nivel.valor).toFixed(3))
+							? parseFloat(((objeto.variable.nivel.maximo_operativo || objeto.variable.nivel.rebalse) - objeto.variable.nivel.valor).toFixed(3))
 							: 0),
 					0
 				)
 				.toFixed(3)
 		)
 		.replaceAll(
-			'<!-- REBALSE -->',
-			reporte.map((objeto) => objeto.variable.nivel.rebalse.toFixed(3))
+			'<!-- MAXIMO_OPERATIVO -->',
+			reporte.map((objeto) => (objeto.variable.nivel.maximo_operativo || objeto.variable.nivel.rebalse).toFixed(3))
 		);
 
 	return contenido;
@@ -130,7 +130,7 @@ function calcularLlenadoMdy(reporte, contenido) {
 
 	const sitios = reporteMadryn.map(objeto => `'${objeto.sitio}'`);
 	const complemento = reporteMadryn.map(objeto =>
-		objeto.variable.nivel.valor !== sindet ? objeto.variable.nivel.rebalse - objeto.variable.nivel.valor : 0
+		objeto.variable.nivel.valor !== sindet ? (objeto.variable.nivel.maximo_operativo || objeto.variable.nivel.rebalse) - objeto.variable.nivel.valor : 0
 	);
 	const niveles = reporteMadryn.map(objeto =>
 		objeto.variable.nivel.valor !== sindet ? objeto.variable.nivel.valor : 0
@@ -169,7 +169,7 @@ function calcularLlenadoTw(reporte, contenido) {
 
 	const sitios = reporteNoMadryn.map(objeto => `'${objeto.sitio}'`);
 	const complemento = reporteNoMadryn.map(objeto =>
-		objeto.variable.nivel.valor !== sindet ? objeto.variable.nivel.rebalse - objeto.variable.nivel.valor : 0
+		objeto.variable.nivel.valor !== sindet ? (objeto.variable.nivel.maximo_operativo || objeto.variable.nivel.rebalse) - objeto.variable.nivel.valor : 0
 	);
 	const niveles = reporteNoMadryn.map(objeto =>
 		objeto.variable.nivel.valor !== sindet ? objeto.variable.nivel.valor : 0

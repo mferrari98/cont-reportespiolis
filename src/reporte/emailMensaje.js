@@ -72,16 +72,59 @@ EmailMensaje.prototype.renderizar = function () {
 
 async function plotBarras(page) {
     const element = await page.$('#grafBarras');
-    await element.screenshot({ path: './src/reporte/salida/grafBarras.png' });
+    if (!element) {
+        console.log('Aviso: Elemento #grafBarras no encontrado, omitiendo captura');
+        return;
+    }
+
+    try {
+        const boundingBox = await element.boundingBox();
+        if (!boundingBox || boundingBox.height === 0) {
+            console.log('Aviso: Elemento #grafBarras tiene altura 0, omitiendo captura');
+            return;
+        }
+        await element.screenshot({ path: './src/reporte/salida/grafBarras.png' });
+    } catch (error) {
+        console.log('Aviso: No se pudo capturar #grafBarras:', error.message);
+    }
 }
 
 async function plotPieMdy(page) {
     const element = await page.$('#grafPieMdy');
-    await element.screenshot({ path: './src/reporte/salida/grafPieMdy.png' });
+    if (!element) {
+        console.log('Aviso: Elemento #grafPieMdy no encontrado, omitiendo captura');
+        return;
+    }
+
+    try {
+        const boundingBox = await element.boundingBox();
+        if (!boundingBox || boundingBox.height === 0) {
+            console.log('Aviso: Elemento #grafPieMdy tiene altura 0, omitiendo captura');
+            return;
+        }
+        await element.screenshot({ path: './src/reporte/salida/grafPieMdy.png' });
+    } catch (error) {
+        console.log('Aviso: No se pudo capturar #grafPieMdy:', error.message);
+    }
 }
+
 async function plotPieTw(page) {
     const element = await page.$('#grafPieTw');
-    await element.screenshot({ path: './src/reporte/salida/grafPieTw.png' });
+    if (!element) {
+        console.log('Aviso: Elemento #grafPieTw no encontrado, omitiendo captura');
+        return;
+    }
+
+    try {
+        const boundingBox = await element.boundingBox();
+        if (!boundingBox || boundingBox.height === 0) {
+            console.log('Aviso: Elemento #grafPieTw tiene altura 0, omitiendo captura');
+            return;
+        }
+        await element.screenshot({ path: './src/reporte/salida/grafPieTw.png' });
+    } catch (error) {
+        console.log('Aviso: No se pudo capturar #grafPieTw:', error.message);
+    }
 }
 
 async function plotLineas(page) {

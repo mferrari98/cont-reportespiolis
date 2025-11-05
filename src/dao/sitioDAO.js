@@ -3,29 +3,29 @@ const { getDatabase } = require("../basedatos/db");
 
 const ID_MOD = "DAO-SITIO";
 
-const sql_create = `INSERT INTO sitio (descriptor, orden, rebalse, cubicaje, maximo_operativo) VALUES (?, ?, ?, ?, ?)`;
+const sql_create = `INSERT INTO sitio (descriptor, orden, rebalse, cubicaje, maxoperativo) VALUES (?, ?, ?, ?, ?)`;
 const sql_getById = `SELECT * FROM sitio WHERE id = ?`;
 const sql_getByDescriptor = `SELECT * FROM sitio WHERE descriptor = ?`;
 const sql_getByOrden = `SELECT * FROM sitio WHERE orden = ?`;
 const sql_getAll = `SELECT * FROM sitio`;
-const sql_getTodosDescriptores = `SELECT DISTINCT descriptor, rebalse, cubicaje, maximo_operativo FROM sitio ORDER BY orden`;
+const sql_getTodosDescriptores = `SELECT DISTINCT descriptor, rebalse, cubicaje, maxoperativo FROM sitio ORDER BY orden`;
 const sql_cantSitios = `SELECT COUNT(*) as cant FROM sitio`;
 const sql_delete = `DELETE FROM sitio WHERE id = ?`;
 
-const rebalseMap = new Map([
-	["Toma(Rio)", 4.0],
-	["Toma(Des.)", 3.0],
-	["P.Pot", 3.0],
-	["L.Maria", 5.0],
-	["KM11", 5.0],
-	["B.SAN MIGUEL", 4.0],
-	["R6000", 4.0],
-	["B.OESTE(1K)", 5.0],
-	["NUEVA CHUBUT", 4.0],
-	["B.PUJOL", 3.0],
-	["Cota45", 4.4],
-	["Cota126", 4.0],
-	["Doradillo", 4.0],
+const sitioConfigMap = new Map([
+	["Toma(Rio)", { rebalse: 4.0, maxoperativo: null }],
+	["Toma(Des.)", { rebalse: 3.0, maxoperativo: null }],
+	["P.Pot", { rebalse: 3.0, maxoperativo: null }],
+	["L.Maria", { rebalse: 5.0, maxoperativo: 4.45 }],
+	["KM11", { rebalse: 5.0, maxoperativo: 4.4 }],
+	["B.SAN MIGUEL", { rebalse: 4.0, maxoperativo: 3.05 }],
+	["R6000", { rebalse: 4.0, maxoperativo: 3.5 }],
+	["B.OESTE(1K)", { rebalse: 5.0, maxoperativo: 3.33 }],
+	["NUEVA CHUBUT", { rebalse: 4.0, maxoperativo: 3.4 }],
+	["B.PUJOL", { rebalse: 3.0, maxoperativo: 2.06 }],
+	["Cota45", { rebalse: 4.4, maxoperativo: 3.09 }],
+	["Cota126", { rebalse: 4.0, maxoperativo: null }],
+	["Doradillo", { rebalse: 4.0, maxoperativo: 2.89 }],
 ]);
 
 const cubicajeMap = new Map([
@@ -41,34 +41,23 @@ const cubicajeMap = new Map([
 	["Doradillo", 71.83],
 ]);
 
-const maximoOperativoMap = new Map([
-	["L.Maria", 4.45],
-	["KM11", 4.4],
-	["R6000", 3.5],
-	["B.OESTE(1K)", 3.33],
-	["B.SAN MIGUEL", 3.05],
-	["NUEVA CHUBUT", 3.4],
-	["B.PUJOL", 2.06],
-	["Cota45", 3.09],
-	["Doradillo", 2.89],
-]);
-
 function SitioDAO() { }
 
 SitioDAO.prototype.create = function (descriptor, orden, callback) {
 
 	logamarillo(1, `${ID_MOD} - create`);
 	const db = getDatabase();
-	const rebalse = rebalseMap.get(descriptor) || 0.0;
+	const config = sitioConfigMap.get(descriptor) || { rebalse: 0.0, maxoperativo: null };
+	const rebalse = config.rebalse;
+	const maxoperativo = config.maxoperativo;
 	const cubicaje = cubicajeMap.get(descriptor) || 0.0;
-	const maximoOperativo = maximoOperativoMap.get(descriptor) || null;
 
-	db.run(sql_create, [descriptor, orden, rebalse, cubicaje, maximoOperativo], function (err) {
+	db.run(sql_create, [descriptor, orden, rebalse, cubicaje, maxoperativo], function (err) {
 		if (err) {
 			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
 			return callback(err, null);
 		}
-		callback(null, { id: this.lastID, descriptor, orden, rebalse, maximoOperativo });
+		callback(null, { id: this.lastID, descriptor, orden, rebalse, cubicaje, maxoperativo });
 	});
 };
 
@@ -178,14 +167,14 @@ SitioDAO.prototype.delete = function (id, callback) {
 	});
 };
 
-// Nuevo método para obtener maximo_operativo por descriptor
-SitioDAO.prototype.getMaximoOperativo = function (descriptor, callback) {
-	logamarillo(1, `${ID_MOD} - getMaximoOperativo`);
+// Método para obtener maxoperativo por descriptor
+SitioDAO.prototype.getMaxoperativo = function (descriptor, callback) {
+	logamarillo(1, `${ID_MOD} - getMaxoperativo`);
 
 	// Primero intentar obtener del mapa hardcodeado
-	const maximoOperativo = maximoOperativoMap.get(descriptor);
-	if (maximoOperativo !== undefined) {
-		return callback(null, maximoOperativo);
+	const config = sitioConfigMap.get(descriptor);
+	if (config !== undefined) {
+		return callback(null, config.maxoperativo);
 	}
 
 	// Si no está en el mapa, buscar en base de datos
@@ -195,7 +184,28 @@ SitioDAO.prototype.getMaximoOperativo = function (descriptor, callback) {
 			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
 			return callback(err, null);
 		}
-		callback(null, row ? row.maximo_operativo : null);
+		callback(null, row ? row.maxoperativo : null);
+	});
+};
+
+// Método para obtener rebalse por descriptor (ahora desde el mapa combinado)
+SitioDAO.prototype.getRebalse = function (descriptor, callback) {
+	logamarillo(1, `${ID_MOD} - getRebalse`);
+
+	// Primero intentar obtener del mapa hardcodeado
+	const config = sitioConfigMap.get(descriptor);
+	if (config !== undefined) {
+		return callback(null, config.rebalse);
+	}
+
+	// Si no está en el mapa, buscar en base de datos
+	const db = getDatabase();
+	db.get(sql_getByDescriptor, [descriptor], (err, row) => {
+		if (err) {
+			logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+			return callback(err, null);
+		}
+		callback(null, row ? row.rebalse : null);
 	});
 };
 

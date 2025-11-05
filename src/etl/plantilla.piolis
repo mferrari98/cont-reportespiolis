@@ -14,8 +14,7 @@
         :root {
             --color-nivel: #3498db;
             --color-rebalse: #d3a53c;
-            --color-maximo-operativo: #27ae60;
-        }
+                    }
     </style>
 </head>
 
@@ -137,7 +136,7 @@
                     color: getComputedStyle(document.documentElement).getPropertyValue('--color-rebalse').trim(),
                     opacity: 0.2
                 },
-                text: [<!-- MAXIMO_OPERATIVO -->].map(String),
+                text: [<!-- MAXOPERATIVO -->].map(String),
                 textposition: 'auto',
                 hoverinfo: 'none',
             };

@@ -105,59 +105,136 @@
     </script>
 
     <script>
+        // Función para calcular porcentaje de nivel respecto al maxoperativo
+        function calcularPorcentaje(nivel, maxoperativo) {
+            if (maxoperativo === null || maxoperativo === undefined || maxoperativo === 0) {
+                return null; // Sitio sin maxoperativo definido
+            }
+            var porcentaje = (nivel / maxoperativo) * 100;
+            return Math.min(porcentaje, 100); // Limitar a máximo 100%
+        }
+
+        // Función para obtener maxoperativo por sitio (basado en sitioDAO.js)
+        function getMaxoperativo(sitio) {
+            const maxoperativos = {
+                'Toma(Rio)': 4.0,    // Usar rebalse en lugar de null
+                'Toma(Des.)': 3.0,   // Usar rebalse en lugar de null
+                'P.Pot': 3.0,        // Usar rebalse en lugar de null
+                'L.Maria': 4.45,
+                'KM11': 4.4,
+                'R6000': 3.5,
+                'B.OESTE(1K)': 3.33,
+                'B.SAN MIGUEL': 3.05,
+                'NUEVA CHUBUT': 3.4,
+                'B.PUJOL': 2.06,
+                'Doradillo': 2.89,
+                'Cota45': 3.09
+            };
+            return maxoperativos[sitio];
+        }
+
         function barras() {
 
             /* ********************************************
-            *********** GRAFICO BARRAS APILADAS ***********
+            *********** GRAFICO BARRAS PORCENTUALES ***********
             ******************************************** */
 
             var sitios = [<!-- SITIOS -->]
             var niveles = [<!-- NIVELES -->]
 
-            var trace10 = {
+            // Calcular porcentajes y preparar datos
+            var porcentajes = [];
+            var maxoperativos = [];
+            var colores = [];
+            var textos = [];
+            var textos_restantes = [];
+            var colores_restantes = [];
+
+            for (var i = 0; i < sitios.length; i++) {
+                var maxop = getMaxoperativo(sitios[i]);
+                maxoperativos.push(maxop);
+
+                // Todos los sitios ahora tienen maxoperativo (usando rebalse para los que no tenían)
+                var porc = calcularPorcentaje(niveles[i], maxop);
+                porcentajes.push(porc);
+
+                // Determinar color basado en si excede el maxoperativo
+                if (niveles[i] > maxop) {
+                    colores.push('#ff6b6b'); // Rojo para advertencia
+                    textos.push('100%+');
+                } else {
+                    colores.push(getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim());
+                    textos.push(porc.toFixed(1) + '%');
+                }
+
+                // Calcular espacio restante hasta 100%
+                var restante = 100 - porc;
+                textos_restantes.push(restante > 0.1 ? restante.toFixed(1) + '%' : '');
+                colores_restantes.push(getComputedStyle(document.documentElement).getPropertyValue('--color-rebalse').trim());
+            }
+
+            // Trace para niveles actuales (porcentuales)
+            var traceNiveles = {
                 x: sitios,
-                y: niveles,
-                name: 'Nivel',
+                y: porcentajes,
+                name: 'Nivel Actual',
                 type: 'bar',
                 marker: {
-                    color: getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim(),
+                    color: colores,
+                    opacity: 1.0  // Opacidad original
                 },
-                text: niveles.map(String),
+                text: textos,
                 textposition: 'auto',
-                hoverinfo: 'none',
+                hoverinfo: 'text',
+                hovertext: sitios.map((sitio, i) => {
+                    var porc = porcentajes[i];
+                    var estado = niveles[i] > maxoperativos[i] ? '¡EXCEDE!' : 'Normal';
+                    var tipoRef = (sitio === 'Toma(Rio)' || sitio === 'Toma(Des.)' || sitio === 'P.Pot') ? 'Rebalse' : 'Max Op';
+                    return `${sitio}<br>Nivel: ${niveles[i].toFixed(2)}m<br>${tipoRef}: ${maxoperativos[i]}m<br>Porcentaje: ${porc.toFixed(1)}%<br>Estado: ${estado}`;
+                })
             };
 
-            var trace11 = {
+            // Trace para espacio restante hasta 100%
+            var traceRestante = {
                 x: sitios,
-                y: [<!-- COMPLEMENTO -->],
-                name: 'Máximo Operativo',
+                y: porcentajes.map(p => 100 - p),
+                name: 'Espacio Disponible',
                 type: 'bar',
                 marker: {
-                    color: getComputedStyle(document.documentElement).getPropertyValue('--color-rebalse').trim(),
-                    opacity: 0.2
+                    color: colores_restantes,
+                    opacity: 0.3  // Opacidad original
                 },
-                text: [<!-- MAXOPERATIVO -->].map(String),
+                text: textos_restantes,
                 textposition: 'auto',
-                hoverinfo: 'none',
+                hoverinfo: 'skip',
+                showlegend: true
             };
 
-            var datosBarra = [trace10, trace11];
+            var datosBarra = [traceNiveles, traceRestante];
 
-            // Configurar el diseño del gráfico
+            // Configurar el diseño del gráfico porcentual
             var layout = {
                 barmode: 'stack',
-                title: 'Niveles actuales',
+                title: 'Niveles actuales (% del máximo operativo)',
 
                 xaxis: {
                     title: ''
                 },
                 yaxis: {
-                    title: 'Nivel [m]'
+                    title: 'Porcentaje del Máximo Operativo [%]',
+                    range: [0, 100],
+                    tickformat: '.0f',
+                    dtick: 10,
+                    ticksuffix: '%'
                 },
                 autosize: true,
                 font: {
                     family: 'consolas',
                     size: 12
+                },
+                legend: {
+                    orientation: 'h',
+                    y: -0.2
                 }
             };
             var configBarras = { responsive: true};

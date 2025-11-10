@@ -77,7 +77,7 @@ function actualizarGraficoBarras(sitio, nuevoNivel) {
     if (maxop === null) {
         yValues[sitioIndex] = null;
         colors[sitioIndex] = '#808080';
-        texts[sitioIndex] = nuevoNivel.toFixed(2) + 'm';
+        texts[sitioIndex] = nuevoNivel.toFixed(2);
         hoverTexts[sitioIndex] = `${sitio}<br>Nivel: ${nuevoNivel.toFixed(2)}m<br>Sin referencia operativa`;
     } else {
         const porc = calcularPorcentaje(nuevoNivel, maxop);
@@ -85,10 +85,10 @@ function actualizarGraficoBarras(sitio, nuevoNivel) {
 
         if (nuevoNivel > maxop) {
             colors[sitioIndex] = '#ff6b6b';
-            texts[sitioIndex] = '100%+';
+            texts[sitioIndex] = maxop.toFixed(2);
         } else {
             colors[sitioIndex] = getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim();
-            texts[sitioIndex] = porc.toFixed(1) + '%';
+            texts[sitioIndex] = nuevoNivel.toFixed(2);
         }
 
         const estado = nuevoNivel > maxop ? '¡EXCEDE!' : 'Normal';
@@ -105,15 +105,19 @@ function actualizarGraficoBarras(sitio, nuevoNivel) {
 
     // Actualizar también el trace restante
     const restanteYValues = [...currentData[1].y];
+    const restanteTexts = [...currentData[1].text];
     if (maxop !== null) {
         const porc = calcularPorcentaje(nuevoNivel, maxop);
         restanteYValues[sitioIndex] = 100 - porc;
+        restanteTexts[sitioIndex] = maxop.toFixed(2);
     } else {
         restanteYValues[sitioIndex] = 0;
+        restanteTexts[sitioIndex] = '';
     }
 
     Plotly.restyle('grafBarras', {
-        y: [restanteYValues]
+        y: [restanteYValues],
+        text: [restanteTexts]
     }, [1]);
 }
 

@@ -66,7 +66,8 @@ function sustituirMarcas(reporte, estampatiempo, contenido, cb) {
 	reporte.forEach((item, i) => {
 		contenido = contenido
 			.replace(`SITIO_${i}`, item.sitio)
-			.replace(`NIVEL_${i}`, item.variable.nivel.valor === undefined ? '-' : item.variable.nivel.valor)
+			.replace(`NIVEL_${i}`, item.variable.nivel.valor === undefined ? '-' :
+				((item.sitio === 'L.Maria' || item.sitio === 'KM11' || item.sitio === 'R6000') && item.variable.nivel.valor < 3 ? '\uD83D\uDD34 ' + item.variable.nivel.valor : item.variable.nivel.valor))
 			.replace(`CLORO_${i}`, item.variable.cloro.valor === undefined ? '-' :
 				(item.sitio === 'P.Pot' && item.variable.cloro.valor < 1 ? '\uD83D\uDD34 ' + item.variable.cloro.valor : item.variable.cloro.valor))
 

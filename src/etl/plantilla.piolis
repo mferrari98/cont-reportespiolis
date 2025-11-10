@@ -161,15 +161,14 @@
                 // Determinar color basado en si excede el maxoperativo
                 if (niveles[i] > maxop) {
                     colores.push('#ff6b6b'); // Rojo para advertencia
-                    textos.push('100%+');
+                    textos.push(maxop.toFixed(2));
                 } else {
                     colores.push(getComputedStyle(document.documentElement).getPropertyValue('--color-nivel').trim());
-                    textos.push(porc.toFixed(1) + '%');
+                    textos.push(niveles[i].toFixed(2));
                 }
 
-                // Calcular espacio restante hasta 100%
-                var restante = 100 - porc;
-                textos_restantes.push(restante > 0.1 ? restante.toFixed(1) + '%' : '');
+                // Mostrar el valor del máximo operativo en la barra restante
+                textos_restantes.push(maxop.toFixed(2));
                 colores_restantes.push(getComputedStyle(document.documentElement).getPropertyValue('--color-rebalse').trim());
             }
 

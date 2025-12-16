@@ -15,6 +15,9 @@ let transporter
 const smtpHostFallback = "10.10.1.40"; // Dirección IP alternativa si no se puede resolver el host
 const smtpHost = 'post.servicoop.com';
 
+// Para testing, también podemos usar Gmail
+const smtpHostTest = 'smtp.gmail.com';
+
 /*
 Configuración del transporte SMTP
 es importante entender que SMTP se usa para enviar mensajes unicamente, es decir no se usa

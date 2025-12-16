@@ -50,19 +50,22 @@ EmailMensaje.prototype.extraerTabla = function (cb) {
 
 EmailMensaje.prototype.renderizar = function () {
 
-    (async () => {
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        await page.goto(`file:///${process.cwd()}/src/web/public/reporte.html`);
+    // Versión simplificada sin Puppeteer para asegurar envío de emails
+    // Los gráficos se renderizan en el navegador web, no son necesarios en el email
 
-        await plotBarras(page)
-        await plotPieMdy(page)
-        //await plotPieTw(page)
-        await plotLineas(page)
+    logamarillo(2, `${ID_MOD} - Iniciando envío de email (versión simplificada sin gráficos Puppeteer)`);
 
-        emailControl.enviar()
-        browser.close();
-    })()
+    try {
+        // Extraer tabla sin usar Puppeteer
+        this.extraerTabla(() => {
+            // Enviar email con la tabla extraída
+            emailControl.enviar();
+            logamarillo(2, `${ID_MOD} - Proceso de email completado`);
+        });
+    } catch (error) {
+        logamarillo(1, `${ID_MOD} - Error en proceso de email: ${error.message}`);
+        logamarillo(2, `${ID_MOD} - Stack trace: ${error.stack}`);
+    }
 }
 
 /* ===========================================================

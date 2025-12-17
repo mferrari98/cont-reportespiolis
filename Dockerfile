@@ -1,39 +1,35 @@
-# Usar Node.js con Debian para mejor compatibilidad con Puppeteer
+# Usar Debian slim para mejor compatibilidad con Puppeteer y módulos nativos
 FROM node:20-slim
 
-# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Instalar dependencias del sistema para Puppeteer
+# Instalar dependencias para Puppeteer (sin Chrome completo)
 RUN apt-get update \
-    && apt-get install -y wget gnupg \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-    && apt-get update \
-    && apt-get install -y google-chrome-stable \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        fonts-liberation \
+        libnss3 \
+        libatk-bridge2.0-0 \
+        libdrm2 \
+        libxkbcommon0 \
+        libxcomposite1 \
+        libxdamage1 \
+        libxrandr2 \
+        libgbm1 \
+        libxss1 \
+        libasound2 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Copiar package.json y package-lock.json
+# Copiar package files
 COPY package*.json ./
 
-# Instalar dependencias de Node.js
-RUN npm ci --only=production
+# Instalar dependencias
+RUN npm ci
 
-# Copiar el código fuente
+# Copiar código fuente
 COPY . .
 
-# Crear directorios necesarios si no existen
-RUN mkdir -p src/basedatos src/web/public datos
-
-# Establecer Puppeteer para usar Chrome instalado
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome
-
-# Exponer el puerto que usa la aplicación (3000)
 EXPOSE 3000
 
-# Variable de entorno para el puerto (sobrescribir si es necesario)
-ENV PORT=3000
-
-# Comando para iniciar la aplicación
 CMD ["npm", "start"]

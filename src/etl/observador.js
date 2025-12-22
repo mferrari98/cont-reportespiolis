@@ -62,11 +62,7 @@ function readAndProcessFile() {
     datosCitec(lin_wiz, (lin_wiztec) => {
 
       lanzarETL(lin_wiztec, currentModifiedTime, () => {
-        verUltimoCambio(true, (err) => {
-      if (err) {
-        logamarillo(1, `${ID_MOD} - Error al lanzar reporte: ${err.message}`);
-      }
-    })  // Emails habilitados con configuración existente
+        verUltimoCambio(true, () => { })
       })
     })
   })

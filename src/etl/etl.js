@@ -38,7 +38,7 @@ function lanzarETL(lines, etiempo, cb) {
         if (existe)
           cb()
         else
-          nuevoHistoricoLectura(lines, etiempo, () => { cb() });
+          nuevoHistoricoLectura(lines, etiempo, (ret) => { cb() });
       })
     });
   });
@@ -143,51 +143,24 @@ function nuevoHistoricoLectura(lines, etiempo, callback) {
   const db = getDatabase();
   const lineas_modif = agregarNulos(lines, umbral);
 
-  // Envolver todas las inserciones en una transacción
-  db.serialize(() => {
-    db.run('BEGIN TRANSACTION', (err) => {
-      if (err) {
-        logamarillo(2, `${ID_MOD} - Error iniciando transacción: ${err.message}`);
-        return callback(err);
-      }
-
       insertar(lineas_modif, 1, etiempo, (err1) => {        // nivel
-        if (err1) return rollback(db, callback, err1);
+        if (err1) callback(err1); 
 
         insertar(lineas_modif, 2, etiempo, (err2) => {      // cloro
-          if (err2) return rollback(db, callback, err2);
+          if (err2) callback(err2); 
 
           insertar(lineas_modif, 3, etiempo, (err3) => {    // turbiedad
-            if (err3) return rollback(db, callback, err3);
+            if (err3) callback(err3);
 
             insertar(lineas_modif, 4, etiempo, (err4) => {  // vol/dia
-              if (err4) return rollback(db, callback, err4);
+              if (err4) callback(err4);
 
-              db.run('COMMIT', (err) => {
-                if (err) {
-                  logamarillo(2, `${ID_MOD} - Error en commit: ${err.message}`);
-                  return rollback(db, callback, err);
-                }
-                logamarillo(1, `${ID_MOD} - Transacción completada exitosamente`);
-                callback();
-              });
+              logamarillo(1, `${ID_MOD} - Transacción completada exitosamente`);
+              callback(null);
             });
           });
         });
       });
-    });
-  });
-}
-
-// Función helper para rollback
-function rollback(db, callback, originalError) {
-  db.run('ROLLBACK', (rollbackErr) => {
-    if (rollbackErr) {
-      logamarillo(2, `${ID_MOD} - Error en rollback: ${rollbackErr.message}`);
-    }
-    logamarillo(2, `${ID_MOD} - Transacción revertida: ${originalError.message}`);
-    callback(originalError);
-  });
 }
 
 function insertar(lineas_modif, columna, timestamp, callback) {

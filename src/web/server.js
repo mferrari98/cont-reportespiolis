@@ -11,15 +11,25 @@ app.set('trust proxy', true);
 
 const PORT = 3000;
 
-// Middleware para Content-Security-Policy
+const CSP_POLICY = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "frame-ancestors 'self'",
+  "form-action 'self'"
+].join('; ');
+
 app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "\
-    default-src 'self';\
-    script-src 'self' 'unsafe-inline' 'unsafe-eval';\
-    style-src 'self' 'unsafe-inline';\
-    img-src 'self' data: blob:;\
-    connect-src 'self';\
-  ");
+  res.setHeader("Content-Security-Policy", CSP_POLICY);
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
   next();
 });
 

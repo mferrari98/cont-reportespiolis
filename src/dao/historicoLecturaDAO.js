@@ -34,6 +34,34 @@ const sql_getHistorico = `
   ORDER BY etiempo;
 `;
 
+/* SQL para contar paginas por timestamp (hora) basado en Nivel[m] */
+const sql_getHistoricoEtiempoCount = `
+  SELECT COUNT(DISTINCT hl.etiempo) as total
+  FROM historico_lectura hl
+  JOIN tipo_variable tv ON hl.tipo_id = tv.id
+  WHERE tv.descriptor = 'Nivel[m]'
+`;
+
+/* SQL para obtener el timestamp (etiempo) de una pagina en orden descendente */
+const sql_getHistoricoEtiempoPagDesc = `
+  SELECT hl.etiempo
+  FROM historico_lectura hl
+  JOIN tipo_variable tv ON hl.tipo_id = tv.id
+  WHERE tv.descriptor = 'Nivel[m]'
+  GROUP BY hl.etiempo
+  ORDER BY hl.etiempo DESC
+  LIMIT 1 OFFSET ?
+`;
+
+/* SQL para obtener todas las lecturas de un timestamp especifico */
+const sql_getByEtiempo = `
+  SELECT hl.*
+  FROM historico_lectura hl
+  JOIN sitio s ON hl.sitio_id = s.id
+  WHERE hl.etiempo = ?
+  ORDER BY s.orden;
+`;
+
 /* SQL para paginar historico (limit/offset) en orden descendente por fecha para que pagina 1 sea la mas reciente */
 const sql_getHistorico_pag_desc = `
   SELECT *
@@ -42,6 +70,20 @@ const sql_getHistorico_pag_desc = `
     FROM historico_lectura hl
     JOIN tipo_variable tv ON hl.tipo_id = tv.id
     WHERE hl.sitio_id = ? AND tv.descriptor = 'Nivel[m]'
+    ORDER BY etiempo DESC
+    LIMIT ? OFFSET ?
+  ) sub
+  ORDER BY etiempo ASC;
+`;
+
+/* SQL para paginar historico hasta un timestamp (hora) especifico */
+const sql_getHistorico_pag_desc_hasta = `
+  SELECT *
+  FROM (
+    SELECT hl.*
+    FROM historico_lectura hl
+    JOIN tipo_variable tv ON hl.tipo_id = tv.id
+    WHERE hl.sitio_id = ? AND tv.descriptor = 'Nivel[m]' AND hl.etiempo <= ?
     ORDER BY etiempo DESC
     LIMIT ? OFFSET ?
   ) sub
@@ -161,6 +203,59 @@ HistoricoLecturaDAO.prototype.getHistorico = function (sitio_id, callback) {
 };
 
 /*
+  Cuenta los timestamps distintos para paginacion por hora.
+*/
+HistoricoLecturaDAO.prototype.getHistoricoEtiempoCount = function (callback) {
+
+  logamarillo(1, `${ID_MOD} - getHistoricoEtiempoCount`);
+  const db = getDatabase();
+
+  db.get(sql_getHistoricoEtiempoCount, (err, row) => {
+    if (err) {
+      callback(err, null);
+    } else {
+      callback(null, row ? row.total : 0);
+    }
+  });
+};
+
+/*
+  Obtiene el timestamp (etiempo) para una pagina (offset en orden descendente).
+*/
+HistoricoLecturaDAO.prototype.getHistoricoEtiempoPagDesc = function (offset, callback) {
+
+  logamarillo(1, `${ID_MOD} - getHistoricoEtiempoPagDesc offset=${offset}`);
+  const db = getDatabase();
+
+  const o = parseInt(offset) >= 0 ? parseInt(offset) : 0;
+
+  db.get(sql_getHistoricoEtiempoPagDesc, [o], (err, row) => {
+    if (err) {
+      callback(err, null);
+    } else {
+      callback(null, row ? row.etiempo : null);
+    }
+  });
+};
+
+/*
+  Obtiene todas las lecturas para un timestamp especifico.
+*/
+HistoricoLecturaDAO.prototype.getByEtiempo = function (etiempo, callback) {
+
+  logamarillo(1, `${ID_MOD} - getByEtiempo etiempo=${etiempo}`);
+  const db = getDatabase();
+
+  db.all(sql_getByEtiempo, [etiempo], (err, rows) => {
+    if (err) {
+      callback(err, null);
+    } else {
+      callback(null, rows);
+    }
+  });
+};
+
+/*
   Nuevo metodo: getHistoricoPagDesc
   Retorna el historico en orden descendente, para que la pagina 1 sea la mas reciente.
 */
@@ -173,6 +268,22 @@ HistoricoLecturaDAO.prototype.getHistoricoPagDesc = function (sitio_id, limit, o
   const o = parseInt(offset) >= 0 ? parseInt(offset) : 0;
 
   db.all(sql_getHistorico_pag_desc, [sitio_id, l, o], (err, rows) => {
+    callback(null, rows);
+  });
+};
+
+/*
+  Retorna el historico hasta un timestamp (hora) especifico, en orden descendente.
+*/
+HistoricoLecturaDAO.prototype.getHistoricoPagDescHasta = function (sitio_id, limit, offset, etiempo, callback) {
+
+  logamarillo(1, `${ID_MOD} - getHistoricoPagDescHasta limit=${limit} offset=${offset} etiempo=${etiempo}`);
+  const db = getDatabase();
+
+  const l = parseInt(limit) > 0 ? parseInt(limit) : 100;
+  const o = parseInt(offset) >= 0 ? parseInt(offset) : 0;
+
+  db.all(sql_getHistorico_pag_desc_hasta, [sitio_id, etiempo, l, o], (err, rows) => {
     callback(null, rows);
   });
 };

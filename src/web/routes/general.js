@@ -32,6 +32,7 @@ router.get('/', async (req, res) => {
     // Llamamos al observador para regenerar reporte.html con la pagina solicitada
     observador.verUltimoCambio(false, options, () => {
       const filePath = path.join(__dirname, "../", './public', 'reporte.html');
+      const dataPath = path.join(__dirname, "../", './public', 'report-data.json');
 
       fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
@@ -39,44 +40,62 @@ router.get('/', async (req, res) => {
           return res.status(500).send('Error leyendo reporte');
         }
 
-        // prev = mas viejo, next = mas nuevo
-        const prevDisabled = ''; // siempre habilitado; se puede mejorar deshabilitando si pagina=ultima
-        const nextDisabled = (historicoPage <= 1) ? 'disabled' : '';
-        const prevPage = historicoPage + 1; // anterior = mas atras en el tiempo
-        const nextPage = Math.max(1, historicoPage - 1); // siguiente = mas reciente
+        fs.readFile(dataPath, 'utf8', (dataErr, rawData) => {
+          let pagination = null;
+          if (!dataErr) {
+            try {
+              const parsed = JSON.parse(rawData);
+              pagination = parsed && parsed.pagination ? parsed.pagination : null;
+            } catch (parseErr) {
+              pagination = null;
+            }
+          }
 
-        const navHtml = `
-<!-- INICIO_CONTROLES_PAGINACION -->
-<div id="piolis_paginacion" style="position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); border: 1px solid #ccc; padding: 8px 12px; border-radius: 6px; z-index:9999; font-family: Consolas, monospace;">
-  <button id="piolis_prev">Anterior</button>
-  <span style="margin:0 8px;">Pagina ${historicoPage}</span>
-  <button id="piolis_next" ${nextDisabled}>Siguiente</button>
-  <input type="hidden" id="piolis_limit" value="${historicoLimit}" />
-</div>
+          const totalPagesValue = Number.isFinite(pagination?.totalPages) ? pagination.totalPages : null;
+          const limitValue = Number.isFinite(pagination?.limit) ? pagination.limit : historicoLimit;
+          const pageValue = Number.isFinite(pagination?.page) ? pagination.page : historicoPage;
 
-<script>
-  (function(){
-    const limit = document.getElementById('piolis_limit').value || ${historicoLimit};
-    document.getElementById('piolis_prev').addEventListener('click', function(){
-      const p = ${prevPage};
-      // Usar ruta relativa para mantener el base path (funciona en /reporte y /desarrollo/reporte)
-      location.href = '?historicoPage=' + p + '&historicoLimit=' + limit;
-    });
-    document.getElementById('piolis_next').addEventListener('click', function(){
-      const p = ${nextPage};
-      // Usar ruta relativa para mantener el base path (funciona en /reporte y /desarrollo/reporte)
-      location.href = '?historicoPage=' + p + '&historicoLimit=' + limit;
-    });
-  })();
-</script>
-<!-- FIN_CONTROLES_PAGINACION -->
-`;
+          const safeTotalPages = totalPagesValue && totalPagesValue > 0 ? totalPagesValue : null;
+          const safePage = safeTotalPages
+            ? Math.min(Math.max(pageValue, 1), safeTotalPages)
+            : Math.max(pageValue, 1);
 
-        const newData = data.replace(/<\/body>/i, navHtml + '\n</body>');
+          // anterior = pagina mas vieja, siguiente = pagina mas nueva
+          const prevDisabled = safeTotalPages ? (safePage >= safeTotalPages) : false;
+          const nextDisabled = safePage <= 1;
+          const prevPage = safeTotalPages ? Math.min(safePage + 1, safeTotalPages) : (safePage + 1);
+          const nextPage = Math.max(1, safePage - 1);
 
-        res.send(newData);
+          const prevHref = `?historicoPage=${prevPage}&historicoLimit=${limitValue}`;
+          const nextHref = `?historicoPage=${nextPage}&historicoLimit=${limitValue}`;
+          const prevLink = prevDisabled
+            ? '<span id="piolis_prev" style="opacity:0.5; cursor: default;">Anterior</span>'
+            : `<a id="piolis_prev" href="${prevHref}">Anterior</a>`;
+          const nextLink = nextDisabled
+            ? '<span id="piolis_next" style="opacity:0.5; cursor: default;">Siguiente</span>'
+            : `<a id="piolis_next" href="${nextHref}">Siguiente</a>`;
+
+          const pageLabel = safeTotalPages
+            ? `Pagina ${safePage} / ${safeTotalPages}`
+            : `Pagina ${safePage}`;
+
+          const navHtml = `
+ <!-- INICIO_CONTROLES_PAGINACION -->
+ <div id="piolis_paginacion" style="position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); border: 1px solid #ccc; padding: 8px 12px; border-radius: 6px; z-index:9999; font-family: Consolas, monospace;">
+   ${prevLink}
+   <span style="margin:0 8px;">${pageLabel}</span>
+   ${nextLink}
+ </div>
+ <!-- FIN_CONTROLES_PAGINACION -->
+ `;
+
+          const newData = data.replace(/<\/body>/i, navHtml + '\n</body>');
+
+          res.send(newData);
+        })
       })
     })
+
   } catch (error) {
     logamarillo(2, error);
     res.status(500).send('Internal Server Error');

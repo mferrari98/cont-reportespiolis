@@ -1,9 +1,7 @@
-# Usar Debian slim para mejor compatibilidad con Puppeteer y módulos nativos
 FROM node:20-slim
 
 WORKDIR /app
 
-# Instalar dependencias para Puppeteer (sin Chrome completo)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -30,18 +28,19 @@ RUN apt-get update \
         libxi6 \
         libxtst6 \
         libpangocairo-1.0-0 \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+        python3 \
+        make \
+        g++ \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copiar package files
-COPY package*.json ./
+COPY package.json package-lock.json ./
+RUN npm_config_build_from_source=true npm ci \
+    && apt-get purge -y python3 make g++ \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 
-# Instalar dependencias
-RUN npm ci
-
-# Copiar código fuente
-COPY . .
-
-EXPOSE 3000
+COPY config.json ./
+COPY index.js ./
+COPY src ./src
 
 CMD ["npm", "start"]

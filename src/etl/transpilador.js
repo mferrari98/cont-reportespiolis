@@ -6,24 +6,26 @@ const { sindet } = require('./etl');
 
 const ID_MOD = 'TRANS';
 
+const PUBLIC_REPORT_PATH = './src/web/public/reporte.html';
+const PUBLIC_DATA_PATH = './src/web/public/report-data.json';
+const PUBLIC_JS_DIR = './src/web/public/js';
+const ECHARTS_SRC_PATH = './node_modules/echarts/dist/echarts.min.js';
+const ECHARTS_DEST_PATH = `${PUBLIC_JS_DIR}/echarts.min.js`;
+
 function transpilar(reporte, estampatiempo, cb) {
 	fs.readFile('./src/etl/plantilla.piolis', 'utf8', (err, data) => {
 		if (err) {
 			logamarillo(2, 'Error al leer el archivo:', err);
-			res.status(500).send('Error interno del servidor');
 			return;
 		}
 
 		let contenido = expandirPlantilla(reporte, data);
 		contenido = sustituirMarcas(reporte, estampatiempo, contenido);
-		contenido = calcularLlenadoMdy(reporte, contenido);
-		contenido = calcularLlenadoTw(reporte, contenido);
-		contenido = prepararGrafLineas(reporte, contenido);
 
-		// solo para debug
-		fs.writeFile('./src/etl/plantilla.expand.html', contenido, (err) => { logamarillo(1, err) });
+		const reportData = buildReportData(reporte);
 
-		crearHTMLSalida(contenido, () => {
+		writeReportHtml(contenido, () => {
+			writeReportData(reportData);
 			cb();
 		});
 	});
@@ -310,9 +312,30 @@ function convertirTimestampsAISO(timestamps) {
 	});
 }
 
-function crearHTMLSalida(contenido, cb) {
-	// Escribir en el archivo	
-	fs.writeFile('./src/web/public/reporte.html', contenido, (err) => {
+function ensureDir(dirPath) {
+	try {
+		fs.mkdirSync(dirPath, { recursive: true });
+	} catch (err) {
+		logamarillo(2, `${ID_MOD} - Error creando directorio: ${err.message}`);
+	}
+}
+
+function copyEcharts() {
+	if (!fs.existsSync(ECHARTS_SRC_PATH)) {
+		logamarillo(2, `${ID_MOD} - ECharts no encontrado en ${ECHARTS_SRC_PATH}`);
+		return;
+	}
+
+	ensureDir(PUBLIC_JS_DIR);
+	try {
+		fs.copyFileSync(ECHARTS_SRC_PATH, ECHARTS_DEST_PATH);
+	} catch (err) {
+		logamarillo(2, `${ID_MOD} - Error copiando ECharts: ${err.message}`);
+	}
+}
+
+function writeReportHtml(contenido, cb) {
+	fs.writeFile(PUBLIC_REPORT_PATH, contenido, (err) => {
 		if (err) {
 			logamarillo(2, 'Error al escribir archivo:', err);
 			return;
@@ -320,6 +343,112 @@ function crearHTMLSalida(contenido, cb) {
 		logamarillo(1, `${ID_MOD} - Archivo escrito correctamente`);
 		cb();
 	});
+}
+
+function writeReportData(reportData) {
+	copyEcharts();
+	try {
+		fs.writeFileSync(PUBLIC_DATA_PATH, JSON.stringify(reportData));
+	} catch (err) {
+		logamarillo(2, `${ID_MOD} - Error escribiendo datos del reporte: ${err.message}`);
+	}
+}
+
+function safeNumber(value) {
+	const numberValue = Number(value);
+	return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function buildPieMdyData(reporte) {
+	const reporteMadryn = reporte.filter((objeto) => objeto.esMadryn);
+	let totalAgua = 0;
+	let totalVacio = 0;
+	const siteData = [];
+
+	reporteMadryn.forEach((objeto) => {
+		const nivel = safeNumber(objeto?.variable?.nivel?.valor) ?? 0;
+		const maxOp = safeNumber(objeto?.variable?.nivel?.maxoperativo ?? objeto?.variable?.nivel?.rebalse) ?? 0;
+		const cubicaje = safeNumber(objeto?.variable?.nivel?.cubicaje) ?? 0;
+		const llenado = nivel * cubicaje;
+		const vacio = Math.max(maxOp - nivel, 0) * cubicaje;
+
+		if (llenado > 0) {
+			siteData.push({
+				name: objeto.sitio,
+				value: Number(llenado.toFixed(3))
+			});
+		}
+
+		totalAgua += llenado;
+		totalVacio += vacio;
+	});
+
+	return {
+		totals: {
+			Agua: Number(totalAgua.toFixed(3)),
+			Vacio: Number(totalVacio.toFixed(3))
+		},
+		sites: siteData
+	};
+}
+
+function buildLineSeries(reporte) {
+	const series = [];
+
+	reporte.forEach((objeto) => {
+		const historicos = objeto?.variable?.nivel?.historico;
+		if (!Array.isArray(historicos) || historicos.length === 0) {
+			return;
+		}
+
+		const data = historicos
+			.map((row) => {
+				const x = safeNumber(row.etiempo);
+				const y = safeNumber(row.valor);
+				if (x === null || y === null) {
+					return null;
+				}
+				return [x, y];
+			})
+			.filter(Boolean);
+
+		if (data.length) {
+			series.push({
+				name: objeto.sitio,
+				data
+			});
+		}
+	});
+
+	return series;
+}
+
+function buildReportData(reporte) {
+	const sitios = [];
+	const niveles = [];
+	const maxOperativos = [];
+
+	const cubicajes = [];
+
+	reporte.forEach((objeto) => {
+		sitios.push(objeto.sitio);
+		const nivel = safeNumber(objeto?.variable?.nivel?.valor);
+		niveles.push(nivel === null ? 0 : nivel);
+		const maxOp = safeNumber(objeto?.variable?.nivel?.maxoperativo ?? objeto?.variable?.nivel?.rebalse);
+		maxOperativos.push(maxOp === null ? 0 : maxOp);
+		const cubicaje = safeNumber(objeto?.variable?.nivel?.cubicaje);
+		cubicajes.push(cubicaje === null ? 0 : cubicaje);
+	});
+
+	return {
+		sitios,
+		niveles,
+		maxOperativos,
+		cubicajes,
+		pieMdy: buildPieMdyData(reporte),
+		lineSeries: buildLineSeries(reporte),
+		pagination: reporte.paginacion || null
+	};
 }
 
 function fechaLegible(estampatiempo) {
@@ -337,14 +466,19 @@ function getCurrentDateTime(estampatiempo) {
 		minute: '2-digit',
 		second: '2-digit',
 		hour12: false,
+		timeZone: 'America/Argentina/Buenos_Aires'
 	};
-	// es necesario compensar 3 horas por GMT-3 (tiempo medio de Greenwich)
 	const formatter = new Intl.DateTimeFormat('es-ES', options);
 	const parts = formatter.formatToParts(now);
-	const date = `${parts[4].value}-${parts[2].value}-${parts[0].value}`; // dd/mm/yy
-	const time = `${parts[6].value}:${parts[8].value}:${parts[10].value}`; // hh:mm:ss
+	const partMap = parts.reduce((acc, part) => {
+		acc[part.type] = part.value;
+		return acc;
+	}, {});
+	const date = `${partMap.day}-${partMap.month}-${partMap.year}`;
+	const time = `${partMap.hour}:${partMap.minute}:${partMap.second}`;
 	return { date, time };
 }
+
 
 // Exportar la función si es necesario
 module.exports = {

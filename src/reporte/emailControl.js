@@ -43,7 +43,7 @@ EmailControl.prototype.enviar = function () {
 
     // Enviar el correo
     let resumen = ""
-    let htmlContent = fs.readFileSync('./src/reporte/salida/tabla.html', 'utf8');
+    let htmlContent = fs.readFileSync('./src/reporte/salida/tabla.html', 'utf8').trim();
 
     let mailOptions = {
         from: "<comunicaciones.servicoop@servicoop.com>",
@@ -66,36 +66,36 @@ EmailControl.prototype.enviar = function () {
             </tr>
             </table>
             </div>
-          
-                        
-            ${htmlContent}
+
             <div style="text-align: center;">
-                <img src="cid:grafBarras" alt="Grafico de Barras"/>
+                <div style="display: inline-block; text-align: center;">
+                    ${htmlContent}
+                    <div style="height: 12px; line-height: 12px;">&nbsp;</div>
+                    <div style="text-align: center; font-family: 'consolas'; margin: 10px 0 8px; font-size: 16px;">
+                        Volúmenes y Porcentajes de agua en m3
+                    </div>
 
-                <div style="text-align: center; font-family: 'consolas'; margin: 25px 0px; font-size: 18px;">
-                    Volúmenes y Porcentajes de agua en m3
-                </div>                    
-
-                <img src="cid:grafPieMdy" alt="Grafico Pie Madryn"/>
-                <!-- <img src="cid:grafPieTw" alt="Grafico Pie Trelew"/> -->
-
-                <img src="cid:grafLineas" alt="Grafico de Lineas"/>
+                    <img src="cid:grafBarras" alt="Grafico de Barras" style="display: block; width: 103.5%; height: auto; margin: 0 auto 14px;"/>
+                    <img src="cid:grafPieMdy" alt="Grafico Pie Madryn" style="display: block; width: 46.96%; height: auto; margin: 0 auto 14px;"/>
+                    <!-- <img src="cid:grafPieTw" alt="Grafico Pie Trelew" style="display: block; width: 100%; height: auto; margin: 0 auto 14px;"/> -->
+                    <img src="cid:grafLineas" alt="Grafico de Lineas" style="display: block; width: 90%; height: auto; margin: 0 auto 8px;"/>
+                </div>
             </div>
             `,
         attachments: [
             {
-                filename: 'imagen.jpg',
-                path: './src/reporte/salida/grafBarras.png', // Ruta de la imagen
+                filename: 'grafBarras.png',
+                path: './src/web/public/grafBarras.png', // Ruta de la imagen
                 cid: 'grafBarras' // CID para referenciar la imagen en el cuerpo del mensaje
             },
             {
-                filename: 'imagen2.jpg',
-                path: './src/reporte/salida/grafPieMdy.png', // Ruta de la imagen
+                filename: 'grafPieMdy.png',
+                path: './src/web/public/grafPieMdy.png', // Ruta de la imagen
                 cid: 'grafPieMdy' // CID para referenciar la imagen en el cuerpo del mensaje
             },
             {
-                filename: 'imagen4.jpg',
-                path: './src/reporte/salida/grafLineas.png', // Ruta de la imagen
+                filename: 'grafLineas.png',
+                path: './src/web/public/grafLineas.png', // Ruta de la imagen
                 cid: 'grafLineas' // CID para referenciar la imagen en el cuerpo del mensaje
             }
         ]

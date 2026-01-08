@@ -29,9 +29,14 @@ let lanzarReporte = function (enviarEmail, estampatiempo, options, cb) {
         options = {};
     }
 
-    getNuevosDatos(options, (err, reporte) => {
+    getNuevosDatos(options, (err, reporte, estampaReporte) => {
         if (!err) {
-            transpilar(reporte, estampatiempo, () => {
+            let estampaFinal = estampatiempo;
+            if (estampaReporte !== null && typeof estampaReporte !== "undefined") {
+                const estampaNumero = Number(estampaReporte);
+                estampaFinal = Number.isFinite(estampaNumero) ? estampaNumero : estampaReporte;
+            }
+            transpilar(reporte, estampaFinal, () => {
 
                 if (enviarEmail) {
                     emailMensaje.extraerTabla(() => {
@@ -58,53 +63,89 @@ let notificarFallo = function (mensaje, currentModifiedTime, cb) {
 */
 
 /**
- * getNuevosDatos con paginacion invertida:
- * pagina 1 = registros mas recientes
+ * getNuevosDatos con paginacion invertida por hora:
+ * pagina 1 = hora mas reciente
  */
 function getNuevosDatos(options, callback) {
 
     options = options || {};
-    const historicoLimit = options.historicoLimit ? parseInt(options.historicoLimit) : 100; // ahora limite fijo 100
-    let historicoPage = options.historicoPage ? parseInt(options.historicoPage) : 1;
+    const historicoLimit = options.historicoLimit ? parseInt(options.historicoLimit) : 200;
+    const requestedPage = options.historicoPage ? parseInt(options.historicoPage) : 1;
+    const safeRequestedPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
     sitioDAO.getTodosDescriptores((_, descriptores) => {
         reporte.declarar(descriptores, (mi_reporte) => {
 
-            historicoLecturaDAO.getMostRecent((_, rows) => {
+            historicoLecturaDAO.getHistoricoEtiempoCount((_, totalCount) => {
+                const parsedTotal = Number(totalCount);
+                const safeTotal = Number.isFinite(parsedTotal) ? parsedTotal : 0;
+                const totalPages = safeTotal > 0 ? safeTotal : 1;
+                const safePage = Math.min(safeRequestedPage, totalPages);
 
-                let remaining = rows.length;
-                if (remaining === 0) {
-                    callback(null, mi_reporte);
+                mi_reporte.paginacion = {
+                    page: safePage,
+                    limit: historicoLimit,
+                    totalPages
+                };
+
+                if (safeTotal === 0) {
+                    callback(null, mi_reporte, null);
                     return;
                 }
 
-                rows.forEach((row) => {
+                const pageOffset = safePage - 1;
 
-                    tipoVariableDAO.getById(row.tipo_id, (err, tipoVarRow) => {
-                        sitioDAO.getById(row.sitio_id, (err, sitioRow) => {
+                historicoLecturaDAO.getHistoricoEtiempoPagDesc(pageOffset, (_, etiempo) => {
+                    const targetEtiempo = etiempo;
+                    if (targetEtiempo === null || typeof targetEtiempo === "undefined") {
+                        callback(null, mi_reporte, null);
+                        return;
+                    }
 
-                            // calcular offset invertido
-                            const totalCountCallback = (totalCount) => {
-                                let totalPages = Math.ceil(totalCount / historicoLimit);
-                                if (historicoPage > totalPages) historicoPage = totalPages;
+                    historicoLecturaDAO.getByEtiempo(targetEtiempo, (_, rows) => {
+                        let remaining = rows.length;
+                        let finalized = false;
 
-                                const offset = (historicoPage - 1) * historicoLimit;
+                        const finalize = () => {
+                            if (finalized) {
+                                return;
+                            }
+                            finalized = true;
+                            callback(null, mi_reporte, targetEtiempo);
+                        };
 
-                                const cbHistorico = (_, historico) => {
-                                    reporte.definir(mi_reporte, row, tipoVarRow, sitioRow, historico);
-                                    remaining -= 1;
-                                    if (remaining === 0)
-                                        callback(null, mi_reporte);
-                                };
+                        if (remaining === 0) {
+                            finalize();
+                            return;
+                        }
 
-                                historicoLecturaDAO.getHistoricoPagDesc(sitioRow.id, historicoLimit, offset, cbHistorico);
-                            };
+                        rows.forEach((row) => {
+                            tipoVariableDAO.getById(row.tipo_id, (err, tipoVarRow) => {
+                                sitioDAO.getById(row.sitio_id, (err, sitioRow) => {
+                                    const cbHistorico = (_, historico) => {
+                                        if (tipoVarRow && sitioRow) {
+                                            reporte.definir(mi_reporte, row, tipoVarRow, sitioRow, historico);
+                                        }
+                                        remaining -= 1;
+                                        if (remaining === 0) {
+                                            finalize();
+                                        }
+                                    };
 
-                            // primero contamos registros totales para cada sitio
-                            historicoLecturaDAO.getHistoricoCount(sitioRow.id, (err, totalCount) => {
-                                totalCountCallback(totalCount);
+                                    const historicoOffset = 0;
+                                    if (sitioRow) {
+                                        historicoLecturaDAO.getHistoricoPagDescHasta(
+                                            sitioRow.id,
+                                            historicoLimit,
+                                            historicoOffset,
+                                            targetEtiempo,
+                                            cbHistorico
+                                        );
+                                    } else {
+                                        cbHistorico(null, []);
+                                    }
+                                });
                             });
-
                         });
                     });
                 });

@@ -132,6 +132,7 @@ dist
 # historicos de base de datos
 src/basedatos/database.sqlite
 src/basedatos/desarrollo.sqlite
+src/basedatos/_database.sqlite
 
 # archivos que se autogeneran
 src/etl/plantilla.expand.html
@@ -141,6 +142,9 @@ src/reporte/salida/*
 # archivos que dependen de la instancia
 historico.txt
 src/web/cert/*
+
+# libs locales grandes
+src/web/public/js/plotly-latest.min.js
 
 # herramientas de desarrollo
 .claude/

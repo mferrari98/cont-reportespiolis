@@ -75,9 +75,11 @@ router.get('/', async (req, res) => {
             ? '<span id="piolis_next" style="opacity:0.5; cursor: default;">Siguiente</span>'
             : `<a id="piolis_next" href="${nextHref}">Siguiente</a>`;
 
-          const pageLabel = safeTotalPages
-            ? `Pagina ${safePage} / ${safeTotalPages}`
-            : `Pagina ${safePage}`;
+          let pageLabel = 'Ultimo reporte';
+          if (safePage > 1) {
+            const horasAtras = safePage - 1;
+            pageLabel = `Reporte ${horasAtras} hora${horasAtras === 1 ? '' : 's'} atras`;
+          }
 
           const navHtml = `
  <!-- INICIO_CONTROLES_PAGINACION -->

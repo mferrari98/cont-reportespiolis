@@ -72,6 +72,7 @@ function getNuevosDatos(options, callback) {
     const historicoLimit = options.historicoLimit ? parseInt(options.historicoLimit) : 200;
     const requestedPage = options.historicoPage ? parseInt(options.historicoPage) : 1;
     const safeRequestedPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+    const maxPaginas = 48;
 
     sitioDAO.getTodosDescriptores((_, descriptores) => {
         reporte.declarar(descriptores, (mi_reporte) => {
@@ -79,7 +80,7 @@ function getNuevosDatos(options, callback) {
             historicoLecturaDAO.getHistoricoEtiempoCount((_, totalCount) => {
                 const parsedTotal = Number(totalCount);
                 const safeTotal = Number.isFinite(parsedTotal) ? parsedTotal : 0;
-                const totalPages = safeTotal > 0 ? safeTotal : 1;
+                const totalPages = safeTotal > 0 ? Math.min(safeTotal, maxPaginas) : 1;
                 const safePage = Math.min(safeRequestedPage, totalPages);
 
                 mi_reporte.paginacion = {

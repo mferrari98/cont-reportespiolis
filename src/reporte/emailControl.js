@@ -44,6 +44,18 @@ EmailControl.prototype.enviar = function () {
     // Enviar el correo
     let resumen = ""
     let htmlContent = fs.readFileSync('./src/reporte/salida/tabla.html', 'utf8').trim();
+    let pieLeyenda = '';
+
+    try {
+        const rawData = fs.readFileSync('./src/web/public/report-data.json', 'utf8');
+        const parsed = JSON.parse(rawData);
+        const sitios = Array.isArray(parsed?.pieMdy?.sitiosConsiderados) ? parsed.pieMdy.sitiosConsiderados : [];
+        if (sitios.length) {
+            pieLeyenda = `<div style="text-align: center; font-family: 'consolas'; font-size: 12px; color: #444; margin: 2px auto 12px;">Sitios: ${sitios.join(', ')}</div>`;
+        }
+    } catch (err) {
+        pieLeyenda = '';
+    }
 
     let mailOptions = {
         from: "<comunicaciones.servicoop@servicoop.com>",
@@ -77,6 +89,7 @@ EmailControl.prototype.enviar = function () {
 
                     <img src="cid:grafBarras" alt="Grafico de Barras" style="display: block; width: 103.5%; height: auto; margin: 0 auto 14px;"/>
                     <img src="cid:grafPieMdy" alt="Grafico Pie Madryn" style="display: block; width: 46.96%; height: auto; margin: 0 auto 14px;"/>
+                    ${pieLeyenda}
                     <!-- <img src="cid:grafPieTw" alt="Grafico Pie Trelew" style="display: block; width: 100%; height: auto; margin: 0 auto 14px;"/> -->
                     <img src="cid:grafLineas" alt="Grafico de Lineas" style="display: block; width: 90%; height: auto; margin: 0 auto 8px;"/>
                 </div>

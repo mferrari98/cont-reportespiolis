@@ -364,6 +364,7 @@ function buildPieMdyData(reporte) {
 	let totalAgua = 0;
 	let totalVacio = 0;
 	const siteData = [];
+	const sitiosConsiderados = reporteMadryn.map((objeto) => objeto.sitio);
 
 	reporteMadryn.forEach((objeto) => {
 		const nivel = safeNumber(objeto?.variable?.nivel?.valor) ?? 0;
@@ -388,7 +389,8 @@ function buildPieMdyData(reporte) {
 			Agua: Number(totalAgua.toFixed(3)),
 			Vacio: Number(totalVacio.toFixed(3))
 		},
-		sites: siteData
+		sites: siteData,
+		sitiosConsiderados
 	};
 }
 
@@ -483,4 +485,5 @@ function getCurrentDateTime(estampatiempo) {
 // Exportar la función si es necesario
 module.exports = {
 	transpilar,
+	buildLineSeries,
 };

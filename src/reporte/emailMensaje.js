@@ -30,7 +30,7 @@ EmailMensaje.prototype.extraerTabla = function (cb) {
     const archivoHTML = fs.readFileSync('./src/web/public/reporte.html', 'utf8');
     const $ = cheerio.load(archivoHTML);
 
-    $('#copiar, #barrasup, #TituloVolumenes, #grafBarras, #grafPieMdy, #grafPieTw, #grafLineas').remove();
+    $('#copiar, #barrasup, #TituloVolumenes, #grafBarras, #grafPieMdy, #grafPieTw, #pieMdySitios, #lineasControles, #grafLineas').remove();
 
     const title = $('h1').first();
     const updated = $('div').filter((_, el) => {

@@ -8,6 +8,12 @@
     axis: 14,
     barLabel: 14
   }
+  const LINE_RANGE_DEFAULT = '1d'
+  const LINE_RANGE_MS = {
+    '1d': 24 * 60 * 60 * 1000,
+    '1w': 7 * 24 * 60 * 60 * 1000,
+    '1m': 30 * 24 * 60 * 60 * 1000
+  }
 
   function getCssVar(name, fallback) {
     const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
@@ -46,6 +52,214 @@
     return chart
   }
 
+  function getLineRangeKey() {
+    const params = new URLSearchParams(window.location.search)
+    const key = params.get('lineRange')
+    return LINE_RANGE_MS[key] ? key : LINE_RANGE_DEFAULT
+  }
+
+  function updateUrlParams(params) {
+    const url = new URL(window.location.href)
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === null || typeof value === 'undefined' || value === '') {
+        url.searchParams.delete(key)
+        return
+      }
+      url.searchParams.set(key, value)
+    })
+
+    window.history.replaceState({}, '', url)
+  }
+
+  function getSeriesBounds(seriesData) {
+    let min = null
+    let max = null
+    let step = null
+
+    seriesData.forEach((serie) => {
+      const data = Array.isArray(serie.data) ? serie.data : []
+      if (!data.length) {
+        return
+      }
+      const firstX = toNumber(data[0][0], null)
+      const lastX = toNumber(data[data.length - 1][0], null)
+      if (firstX === null || lastX === null) {
+        return
+      }
+      min = min === null ? firstX : Math.min(min, firstX)
+      max = max === null ? lastX : Math.max(max, lastX)
+      if (step === null && data.length > 1) {
+        const span = lastX - firstX
+        const approx = span / (data.length - 1)
+        if (approx > 0) {
+          step = approx
+        }
+      }
+    })
+
+    if (min === null || max === null) {
+      return null
+    }
+
+    return {
+      min,
+      max,
+      step: step || (60 * 60 * 1000)
+    }
+  }
+
+  function getMaxSeriesLength(seriesData) {
+    return seriesData.reduce((max, serie) => {
+      const length = Array.isArray(serie.data) ? serie.data.length : 0
+      return Math.max(max, length)
+    }, 0)
+  }
+
+  function estimateLimitForRange(rangeMs, stepMs, currentLimit) {
+    if (!Number.isFinite(stepMs) || stepMs <= 0) {
+      return currentLimit
+    }
+    const needed = Math.ceil(rangeMs / stepMs) + 1
+    return Math.min(1000, Math.max(currentLimit, needed))
+  }
+
+  function buildLineZoom(bounds, rangeMs) {
+    const endValue = bounds.max
+    const startValue = Math.max(bounds.min, endValue - rangeMs)
+
+    return [
+      { type: 'inside', throttle: 50, startValue, endValue },
+      { type: 'slider', bottom: 10, startValue, endValue }
+    ]
+  }
+
+  function setActiveRange(buttons, rangeKey) {
+    buttons.forEach((button) => {
+      const key = button.getAttribute('data-range')
+      if (key === rangeKey) {
+        button.classList.add('activo')
+      } else {
+        button.classList.remove('activo')
+      }
+    })
+  }
+
+  function getHistoricoPage(pagination) {
+    const params = new URLSearchParams(window.location.search)
+    const pageValue = parseInt(params.get('historicoPage'), 10)
+    if (Number.isFinite(pageValue) && pageValue > 0) {
+      return pageValue
+    }
+    const fallback = toNumber(pagination?.page, 1)
+    return fallback > 0 ? fallback : 1
+  }
+
+  function buildLineSeriesConfig(seriesData) {
+    return seriesData.map((serie) => ({
+      name: serie.name,
+      type: 'line',
+      data: serie.data,
+      showSymbol: false,
+      lineStyle: {
+        width: 1.5
+      }
+    }))
+  }
+
+  async function fetchLineData(limitValue, pageValue) {
+    const params = new URLSearchParams({
+      historicoLimit: limitValue,
+      historicoPage: pageValue
+    })
+    const response = await fetch(`./line-data?${params.toString()}`, { cache: 'no-store' })
+    if (!response.ok) {
+      throw new Error('Respuesta invalida')
+    }
+    return response.json()
+  }
+
+  function setButtonsDisabled(buttons, disabled) {
+    buttons.forEach((button) => {
+      button.disabled = disabled
+    })
+  }
+
+  function setupLineRangeControls(lineState) {
+    const controls = document.getElementById('lineasControles')
+    if (!controls) {
+      return
+    }
+
+    const buttons = Array.from(controls.querySelectorAll('button[data-range]'))
+    if (!buttons.length) {
+      return
+    }
+
+    const rangeKey = getLineRangeKey()
+    lineState.rangeKey = rangeKey
+    setActiveRange(buttons, rangeKey)
+
+    const applyRange = async (selectedKey) => {
+      const desiredMs = LINE_RANGE_MS[selectedKey] || LINE_RANGE_MS[LINE_RANGE_DEFAULT]
+      const bounds = lineState.bounds
+      if (!bounds) {
+        return
+      }
+
+      const availableMs = bounds.max - bounds.min
+      const fallbackLimit = getMaxSeriesLength(lineState.seriesData)
+      const currentLimit = Math.max(toNumber(lineState.pagination?.limit, 0), fallbackLimit)
+
+      if (availableMs < desiredMs && !lineState.loading) {
+        const nextLimit = estimateLimitForRange(desiredMs, bounds.step, currentLimit)
+        if (nextLimit > currentLimit) {
+          lineState.loading = true
+          setButtonsDisabled(buttons, true)
+
+          try {
+            const pageValue = getHistoricoPage(lineState.pagination)
+            const data = await fetchLineData(nextLimit, pageValue)
+            if (Array.isArray(data?.lineSeries) && data.lineSeries.length) {
+              lineState.seriesData = data.lineSeries
+              lineState.pagination = data.pagination || lineState.pagination
+              lineState.bounds = getSeriesBounds(lineState.seriesData)
+              if (lineState.bounds) {
+                lineState.chart.setOption({
+                  series: buildLineSeriesConfig(lineState.seriesData)
+                })
+              }
+            }
+          } catch (err) {
+            console.error('No se pudo cargar el historico', err)
+          } finally {
+            lineState.loading = false
+            setButtonsDisabled(buttons, false)
+          }
+        }
+      }
+
+      if (!lineState.bounds) {
+        return
+      }
+
+      lineState.chart.setOption({ dataZoom: buildLineZoom(lineState.bounds, desiredMs) })
+      setActiveRange(buttons, selectedKey)
+      updateUrlParams({ lineRange: selectedKey })
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', async () => {
+        const selectedKey = button.getAttribute('data-range')
+        if (!LINE_RANGE_MS[selectedKey]) {
+          return
+        }
+        await applyRange(selectedKey)
+      })
+    })
+
+    applyRange(rangeKey)
+  }
+
   async function loadReportData() {
     try {
       const response = await fetch('./report-data.json', { cache: 'no-store' })
@@ -82,7 +296,6 @@
       const maxOp = toNumber(maxOperativos[index])
       const cubicaje = toNumber(cubicajes[index])
       const volumenM3 = cubicaje > 0 ? nivel * cubicaje : 0
-      const volumenLitros = volumenM3 * 1000
       const porcentaje = maxOp > 0 ? Math.min((nivel / maxOp) * 100, 100) : 0
       const exceeded = maxOp > 0 && nivel > maxOp
 
@@ -92,7 +305,6 @@
         nivel,
         max: maxOp,
         volumenM3,
-        volumenLitros,
         itemStyle: {
           color: exceeded ? '#ff6b6b' : colorNivel
         }
@@ -131,8 +343,8 @@
           }
           const tipoRef = getTipoRef(item.sitio)
           const estado = item.max > 0 && item.nivel > item.max ? 'EXCEDE' : 'Normal'
-          const litros = item.volumenLitros > 0 ? `<br>Volumen: ${formatNumber(item.volumenLitros)} L` : ''
-          return `${item.sitio}<br>Nivel: ${item.nivel.toFixed(2)}m<br>${tipoRef}: ${item.max.toFixed(2)}m<br>Porcentaje: ${item.value.toFixed(1)}%${litros}<br>Estado: ${estado}`
+          const volumen = item.volumenM3 > 0 ? `<br>Volumen: ${formatNumber(item.volumenM3)} m3` : ''
+          return `${item.sitio}<br>Nivel: ${item.nivel.toFixed(2)}m<br>${tipoRef}: ${item.max.toFixed(2)}m<br>Porcentaje: ${item.value.toFixed(1)}%${volumen}<br>Estado: ${estado}`
         }
       },
       legend: {
@@ -207,6 +419,9 @@
     const totals = data?.pieMdy?.totals || {}
     const aguaTotal = toNumber(totals.Agua)
     const vacioTotal = toNumber(totals.Vacio)
+    const sitiosConsiderados = Array.isArray(data?.pieMdy?.sitiosConsiderados)
+      ? data.pieMdy.sitiosConsiderados
+      : []
 
     if (!aguaTotal && !vacioTotal) {
       return
@@ -236,8 +451,7 @@
         trigger: 'item',
         formatter: (params) => {
           const value = toNumber(params.value)
-          const litros = value > 0 ? `${formatNumber(value * 1000)} L` : '0 L'
-          return `${params.name}: ${formatNumber(value)} m3 (${params.percent}%)<br>${litros}`
+          return `${params.name}: ${formatNumber(value)} m3 (${params.percent}%)`
         }
       },
       legend: {
@@ -276,6 +490,13 @@
         }
       ]
     })
+
+    const pieLeyenda = document.getElementById('pieMdySitios')
+    if (pieLeyenda) {
+      pieLeyenda.textContent = sitiosConsiderados.length
+        ? `Sitios: ${sitiosConsiderados.join(', ')}`
+        : ''
+    }
   }
 
   function renderLines(data) {
@@ -288,6 +509,14 @@
     if (!seriesData.length) {
       return
     }
+
+    const bounds = getSeriesBounds(seriesData)
+    if (!bounds) {
+      return
+    }
+
+    const rangeKey = getLineRangeKey()
+    const rangeMs = LINE_RANGE_MS[rangeKey] || LINE_RANGE_MS[LINE_RANGE_DEFAULT]
 
     const chart = registerChart(window.echarts.init(container))
 
@@ -327,25 +556,32 @@
       },
       yAxis: {
         type: 'value',
+        name: 'Metros',
+        nameLocation: 'middle',
+        nameGap: 40,
+        nameTextStyle: {
+          fontFamily: 'consolas',
+          fontSize: FONT_SIZES.axis
+        },
         axisLabel: {
           fontFamily: 'consolas',
           fontSize: FONT_SIZES.axis
         }
       },
-      dataZoom: [
-        { type: 'inside', throttle: 50 },
-        { type: 'slider', bottom: 10 }
-      ],
-      series: seriesData.map((serie) => ({
-        name: serie.name,
-        type: 'line',
-        data: serie.data,
-        showSymbol: false,
-        lineStyle: {
-          width: 1.5
-        }
-      }))
+      dataZoom: buildLineZoom(bounds, rangeMs),
+      series: buildLineSeriesConfig(seriesData)
     })
+
+    const lineState = {
+      chart,
+      seriesData,
+      bounds,
+      pagination: data?.pagination || null,
+      loading: false,
+      rangeKey: rangeKey
+    }
+
+    setupLineRangeControls(lineState)
   }
 
   function setupCopy() {

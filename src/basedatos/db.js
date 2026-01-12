@@ -5,7 +5,9 @@ const { logamarillo } = require("../control/controlLog")
 
 const ID_MOD = "DB"
 
-const dbPath = path.resolve(__dirname, 'database.sqlite');
+const dbPath = process.env.DB_PATH
+  ? path.resolve(process.env.DB_PATH)
+  : path.resolve(__dirname, 'database.sqlite');
 
 let db;
 

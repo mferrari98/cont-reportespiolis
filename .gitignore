@@ -133,6 +133,7 @@ dist
 src/basedatos/database.sqlite
 src/basedatos/desarrollo.sqlite
 src/basedatos/_database.sqlite
+data/
 
 # archivos que se autogeneran
 src/etl/plantilla.expand.html

@@ -4,6 +4,7 @@ const fs = require('fs');
 const express = require('express');
 const path = require('path');
 const router = express.Router();
+const { obtenerLineas } = require("../../control/controlReporte");
 
 let observador
 
@@ -102,6 +103,30 @@ router.get('/', async (req, res) => {
     logamarillo(2, error);
     res.status(500).send('Internal Server Error');
   }
+});
+
+router.get('/line-data', (req, res) => {
+  const historicoLimit = req.query.historicoLimit ? parseInt(req.query.historicoLimit) : 200;
+  const historicoPage = req.query.historicoPage ? parseInt(req.query.historicoPage) : 1;
+
+  if (isNaN(historicoLimit) || isNaN(historicoPage)) {
+    return res.status(400).send('Error: Parámetros inválidos');
+  }
+  if (historicoLimit < 1 || historicoLimit > 1000) {
+    return res.status(400).send('Error: historicoLimit debe estar entre 1 y 1000');
+  }
+  if (historicoPage < 1) {
+    return res.status(400).send('Error: historicoPage debe ser >= 1');
+  }
+
+  obtenerLineas({ historicoLimit, historicoPage }, (err, data) => {
+    if (err) {
+      logamarillo(2, err);
+      return res.status(500).send('Error generando historico');
+    }
+    res.setHeader('Cache-Control', 'no-store');
+    return res.json(data);
+  });
 });
 
 router.get('/favicon.ico', (req, res) => {

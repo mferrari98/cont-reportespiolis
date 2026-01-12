@@ -7,7 +7,7 @@ const LogDAO = require("../dao/logDAO");
 
 const EmailMensaje = require("../reporte/emailMensaje");
 const Reporte = require("../modelo/reporte")
-const { transpilar } = require("../etl/transpilador");
+const { transpilar, buildLineSeries } = require("../etl/transpilador");
 
 const tipoVariableDAO = new TipoVariableDAO();
 const sitioDAO = new SitioDAO();
@@ -50,6 +50,24 @@ let lanzarReporte = function (enviarEmail, estampatiempo, options, cb) {
         } else {
             cb(err);
         }
+    });
+}
+
+let obtenerLineas = function (options, cb) {
+    if (typeof options === "function") {
+        cb = options;
+        options = {};
+    }
+
+    getNuevosDatos(options, (err, reporte) => {
+        if (err) {
+            cb(err);
+            return;
+        }
+
+        const lineSeries = buildLineSeries(reporte);
+        const pagination = reporte.paginacion || null;
+        cb(null, { lineSeries, pagination });
     });
 }
 
@@ -155,6 +173,6 @@ function getNuevosDatos(options, callback) {
     });
 }
 
-module.exports = { lanzarReporte, notificarFallo };
+module.exports = { lanzarReporte, notificarFallo, obtenerLineas };
 
 logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

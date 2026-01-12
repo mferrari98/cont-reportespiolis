@@ -13,7 +13,45 @@
         :root {
             --color-nivel: #3498db;
             --color-rebalse: #d3a53c;
-                    }
+        }
+
+        .lineas-controles {
+            width: 60%;
+            max-width: 1200px;
+            min-width: 320px;
+            margin: 20px auto 0px;
+            text-align: center;
+            font-family: 'consolas';
+            font-size: 13px;
+        }
+
+        .lineas-controles button {
+            margin: 0 4px;
+            padding: 4px 10px;
+            border: 1px solid #bbb;
+            border-radius: 4px;
+            background: #f7f7f7;
+            cursor: pointer;
+            font-family: 'consolas';
+            font-size: 12px;
+        }
+
+        .lineas-controles button.activo {
+            background: #3498db;
+            border-color: #2d86bf;
+            color: #fff;
+        }
+
+        .pie-leyenda {
+            width: 60%;
+            max-width: 1200px;
+            min-width: 320px;
+            margin: 6px auto 0px;
+            text-align: center;
+            font-family: 'consolas';
+            font-size: 12px;
+            color: #444;
+        }
     </style>
 </head>
 
@@ -72,8 +110,16 @@
         <div id="grafPieMdy" style="width: 60%; max-width: 1200px; min-width: 320px; height: 360px; margin: 25px auto;"></div>
         <!-- <div id="grafPieTw" style="margin: 25px 0px;"></div> -->
     </div>
+    <div id="pieMdySitios" class="pie-leyenda"></div>
     
     <div id="grafLineas" style="width: 60%; max-width: 1200px; min-width: 320px; margin: 50px auto 0px; height: 320px;"></div>
+    <div class="lineas-controles" id="lineasControles">
+        <span style="margin-right: 6px;">Rango:</span>
+        <button type="button" data-range="1d">1 día</button>
+        <button type="button" data-range="1w">1 semana</button>
+        <button type="button" data-range="1m">1 mes</button>
+    </div>
+    <div style="height: 120px;"></div>
 
     <script src="./js/echarts.min.js"></script>
     <script src="./js/reporte.js" defer></script>

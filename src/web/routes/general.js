@@ -8,18 +8,21 @@ const { obtenerLineas } = require("../../control/controlReporte");
 
 let observador
 
+const MAX_HISTORICO_LIMIT = 10080
+const DEFAULT_HISTORICO_LIMIT = MAX_HISTORICO_LIMIT
+
 router.get('/', async (req, res) => {
   try {
     // ahora pagina 1 = registros mas recientes
-    const historicoLimit = req.query.historicoLimit ? parseInt(req.query.historicoLimit) : 200;
+    const historicoLimit = req.query.historicoLimit ? parseInt(req.query.historicoLimit) : DEFAULT_HISTORICO_LIMIT;
     const historicoPage = req.query.historicoPage ? parseInt(req.query.historicoPage) : 1;
 
     // Validación de inputs
     if (isNaN(historicoLimit) || isNaN(historicoPage)) {
       return res.status(400).send('Error: Parámetros inválidos');
     }
-    if (historicoLimit < 1 || historicoLimit > 1000) {
-      return res.status(400).send('Error: historicoLimit debe estar entre 1 y 1000');
+    if (historicoLimit < 1 || historicoLimit > MAX_HISTORICO_LIMIT) {
+      return res.status(400).send(`Error: historicoLimit debe estar entre 1 y ${MAX_HISTORICO_LIMIT}`);
     }
     if (historicoPage < 1) {
       return res.status(400).send('Error: historicoPage debe ser >= 1');
@@ -106,14 +109,14 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/line-data', (req, res) => {
-  const historicoLimit = req.query.historicoLimit ? parseInt(req.query.historicoLimit) : 200;
+  const historicoLimit = req.query.historicoLimit ? parseInt(req.query.historicoLimit) : DEFAULT_HISTORICO_LIMIT;
   const historicoPage = req.query.historicoPage ? parseInt(req.query.historicoPage) : 1;
 
   if (isNaN(historicoLimit) || isNaN(historicoPage)) {
     return res.status(400).send('Error: Parámetros inválidos');
   }
-  if (historicoLimit < 1 || historicoLimit > 1000) {
-    return res.status(400).send('Error: historicoLimit debe estar entre 1 y 1000');
+  if (historicoLimit < 1 || historicoLimit > MAX_HISTORICO_LIMIT) {
+    return res.status(400).send(`Error: historicoLimit debe estar entre 1 y ${MAX_HISTORICO_LIMIT}`);
   }
   if (historicoPage < 1) {
     return res.status(400).send('Error: historicoPage debe ser >= 1');

@@ -87,7 +87,7 @@ let notificarFallo = function (mensaje, currentModifiedTime, cb) {
 function getNuevosDatos(options, callback) {
 
     options = options || {};
-    const historicoLimit = options.historicoLimit ? parseInt(options.historicoLimit) : 200;
+    const historicoLimit = options.historicoLimit ? parseInt(options.historicoLimit) : 10080;
     const requestedPage = options.historicoPage ? parseInt(options.historicoPage) : 1;
     const safeRequestedPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
     const maxPaginas = 48;

@@ -9,6 +9,8 @@
     barLabel: 14
   }
   const LINE_RANGE_DEFAULT = '1d'
+  const LINE_PRELOAD_RANGE = '1w'
+  const MAX_LINE_LIMIT = 10080
   const LINE_RANGE_MS = {
     '1d': 24 * 60 * 60 * 1000,
     '1w': 7 * 24 * 60 * 60 * 1000,
@@ -120,7 +122,7 @@
       return currentLimit
     }
     const needed = Math.ceil(rangeMs / stepMs) + 1
-    return Math.min(1000, Math.max(currentLimit, needed))
+    return Math.min(MAX_LINE_LIMIT, Math.max(currentLimit, needed))
   }
 
   function buildLineZoom(bounds, rangeMs) {
@@ -184,6 +186,51 @@
     })
   }
 
+  async function ensureLineHistory(lineState, desiredMs, buttons) {
+    const bounds = lineState.bounds
+    if (!bounds || lineState.loading) {
+      return
+    }
+
+    const availableMs = bounds.max - bounds.min
+    const fallbackLimit = getMaxSeriesLength(lineState.seriesData)
+    const currentLimit = fallbackLimit
+
+    if (availableMs >= desiredMs) {
+      return
+    }
+
+    const nextLimit = estimateLimitForRange(desiredMs, bounds.step, currentLimit)
+    if (nextLimit <= currentLimit) {
+      return
+    }
+
+    lineState.loading = true
+    setButtonsDisabled(buttons, true)
+
+    try {
+      const pageValue = getHistoricoPage(lineState.pagination)
+      const data = await fetchLineData(nextLimit, pageValue)
+      if (Array.isArray(data?.lineSeries) && data.lineSeries.length) {
+        lineState.seriesData = data.lineSeries
+        lineState.pagination = data.pagination || lineState.pagination
+        lineState.bounds = getSeriesBounds(lineState.seriesData)
+        if (lineState.bounds) {
+          const currentRangeMs = LINE_RANGE_MS[lineState.rangeKey] || LINE_RANGE_MS[LINE_RANGE_DEFAULT]
+          lineState.chart.setOption({
+            series: buildLineSeriesConfig(lineState.seriesData),
+            dataZoom: buildLineZoom(lineState.bounds, currentRangeMs)
+          })
+        }
+      }
+    } catch (err) {
+      console.error('No se pudo cargar el historico', err)
+    } finally {
+      lineState.loading = false
+      setButtonsDisabled(buttons, false)
+    }
+  }
+
   function setupLineRangeControls(lineState) {
     const controls = document.getElementById('lineasControles')
     if (!controls) {
@@ -201,42 +248,12 @@
 
     const applyRange = async (selectedKey) => {
       const desiredMs = LINE_RANGE_MS[selectedKey] || LINE_RANGE_MS[LINE_RANGE_DEFAULT]
-      const bounds = lineState.bounds
-      if (!bounds) {
+      if (!lineState.bounds) {
         return
       }
 
-      const availableMs = bounds.max - bounds.min
-      const fallbackLimit = getMaxSeriesLength(lineState.seriesData)
-      const currentLimit = Math.max(toNumber(lineState.pagination?.limit, 0), fallbackLimit)
-
-      if (availableMs < desiredMs && !lineState.loading) {
-        const nextLimit = estimateLimitForRange(desiredMs, bounds.step, currentLimit)
-        if (nextLimit > currentLimit) {
-          lineState.loading = true
-          setButtonsDisabled(buttons, true)
-
-          try {
-            const pageValue = getHistoricoPage(lineState.pagination)
-            const data = await fetchLineData(nextLimit, pageValue)
-            if (Array.isArray(data?.lineSeries) && data.lineSeries.length) {
-              lineState.seriesData = data.lineSeries
-              lineState.pagination = data.pagination || lineState.pagination
-              lineState.bounds = getSeriesBounds(lineState.seriesData)
-              if (lineState.bounds) {
-                lineState.chart.setOption({
-                  series: buildLineSeriesConfig(lineState.seriesData)
-                })
-              }
-            }
-          } catch (err) {
-            console.error('No se pudo cargar el historico', err)
-          } finally {
-            lineState.loading = false
-            setButtonsDisabled(buttons, false)
-          }
-        }
-      }
+      lineState.rangeKey = selectedKey
+      await ensureLineHistory(lineState, desiredMs, buttons)
 
       if (!lineState.bounds) {
         return
@@ -258,6 +275,10 @@
     })
 
     applyRange(rangeKey)
+
+    if (LINE_PRELOAD_RANGE && LINE_PRELOAD_RANGE !== rangeKey && LINE_RANGE_MS[LINE_PRELOAD_RANGE]) {
+      ensureLineHistory(lineState, LINE_RANGE_MS[LINE_PRELOAD_RANGE], buttons)
+    }
   }
 
   async function loadReportData() {
@@ -499,24 +520,44 @@
     }
   }
 
-  function renderLines(data) {
+  async function renderLines(data) {
     const container = document.getElementById('grafLineas')
     if (!container || !window.echarts) {
       return
     }
 
-    const seriesData = Array.isArray(data.lineSeries) ? data.lineSeries : []
+    let seriesData = Array.isArray(data.lineSeries) ? data.lineSeries : []
     if (!seriesData.length) {
       return
     }
 
-    const bounds = getSeriesBounds(seriesData)
+    let bounds = getSeriesBounds(seriesData)
     if (!bounds) {
       return
     }
 
     const rangeKey = getLineRangeKey()
     const rangeMs = LINE_RANGE_MS[rangeKey] || LINE_RANGE_MS[LINE_RANGE_DEFAULT]
+    let pagination = data?.pagination || null
+
+    const preloadMs = LINE_RANGE_MS[LINE_PRELOAD_RANGE]
+    if (preloadMs) {
+      const currentLimit = getMaxSeriesLength(seriesData)
+      const nextLimit = estimateLimitForRange(preloadMs, bounds.step, currentLimit)
+      if (nextLimit > currentLimit) {
+        try {
+          const pageValue = getHistoricoPage(pagination)
+          const preloadData = await fetchLineData(nextLimit, pageValue)
+          if (Array.isArray(preloadData?.lineSeries) && preloadData.lineSeries.length) {
+            seriesData = preloadData.lineSeries
+            pagination = preloadData.pagination || pagination
+            bounds = getSeriesBounds(seriesData) || bounds
+          }
+        } catch (err) {
+          console.error('No se pudo precargar el historico', err)
+        }
+      }
+    }
 
     const chart = registerChart(window.echarts.init(container))
 
@@ -576,7 +617,7 @@
       chart,
       seriesData,
       bounds,
-      pagination: data?.pagination || null,
+      pagination,
       loading: false,
       rangeKey: rangeKey
     }
@@ -651,7 +692,7 @@
     if (data) {
       renderBars(data)
       renderPie(data)
-      renderLines(data)
+      await renderLines(data)
     }
 
     window.reportReady = true

@@ -18,6 +18,7 @@ const emailMensaje = new EmailMensaje();
 const reporte = new Reporte()
 
 const ID_MOD = "REPORTE";
+const DEFAULT_HISTORICO_LIMIT = 48;
 
 /**
  * lanzarReporte ahora por defecto trae pagina 1 con los registros mas recientes
@@ -87,7 +88,7 @@ let notificarFallo = function (mensaje, currentModifiedTime, cb) {
 function getNuevosDatos(options, callback) {
 
     options = options || {};
-    const historicoLimit = options.historicoLimit ? parseInt(options.historicoLimit) : 10080;
+    const historicoLimit = options.historicoLimit ? parseInt(options.historicoLimit) : DEFAULT_HISTORICO_LIMIT;
     const requestedPage = options.historicoPage ? parseInt(options.historicoPage) : 1;
     const safeRequestedPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
     const maxPaginas = 48;
@@ -104,7 +105,8 @@ function getNuevosDatos(options, callback) {
                 mi_reporte.paginacion = {
                     page: safePage,
                     limit: historicoLimit,
-                    totalPages
+                    totalPages,
+                    totalCount: safeTotal
                 };
 
                 if (safeTotal === 0) {

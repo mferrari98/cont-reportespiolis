@@ -9,12 +9,14 @@
     barLabel: 14
   }
   const LINE_RANGE_DEFAULT = '1d'
-  const LINE_PRELOAD_RANGE = '1w'
-  const MAX_LINE_LIMIT = 10080
+  const LINE_PRELOAD_RANGE = ''
+  const MAX_LINE_LIMIT = 200000
   const LINE_RANGE_MS = {
     '1d': 24 * 60 * 60 * 1000,
     '1w': 7 * 24 * 60 * 60 * 1000,
-    '1m': 30 * 24 * 60 * 60 * 1000
+    '1m': 30 * 24 * 60 * 60 * 1000,
+    '1y': 365 * 24 * 60 * 60 * 1000,
+    'all': Number.POSITIVE_INFINITY
   }
 
   function getCssVar(name, fallback) {
@@ -117,7 +119,15 @@
     }, 0)
   }
 
-  function estimateLimitForRange(rangeMs, stepMs, currentLimit) {
+  function estimateLimitForRange(rangeMs, stepMs, currentLimit, pagination = null) {
+    if (rangeMs === Number.POSITIVE_INFINITY) {
+      const totalCount = toNumber(pagination?.totalCount, 0)
+      if (totalCount > 0) {
+        return Math.min(MAX_LINE_LIMIT, Math.max(currentLimit, totalCount))
+      }
+      return MAX_LINE_LIMIT
+    }
+
     if (!Number.isFinite(stepMs) || stepMs <= 0) {
       return currentLimit
     }
@@ -200,7 +210,7 @@
       return
     }
 
-    const nextLimit = estimateLimitForRange(desiredMs, bounds.step, currentLimit)
+    const nextLimit = estimateLimitForRange(desiredMs, bounds.step, currentLimit, lineState.pagination)
     if (nextLimit <= currentLimit) {
       return
     }
@@ -242,9 +252,14 @@
       return
     }
 
-    const rangeKey = getLineRangeKey()
+    // On page load, always use default range (1d), ignoring URL params
+    // This prevents heavy load when lineRange=all persists on refresh
+    const rangeKey = LINE_RANGE_DEFAULT
     lineState.rangeKey = rangeKey
     setActiveRange(buttons, rangeKey)
+
+    // Clean URL params on load to remove stale lineRange values
+    updateUrlParams({ lineRange: null })
 
     const applyRange = async (selectedKey) => {
       const desiredMs = LINE_RANGE_MS[selectedKey] || LINE_RANGE_MS[LINE_RANGE_DEFAULT]
@@ -543,7 +558,7 @@
     const preloadMs = LINE_RANGE_MS[LINE_PRELOAD_RANGE]
     if (preloadMs) {
       const currentLimit = getMaxSeriesLength(seriesData)
-      const nextLimit = estimateLimitForRange(preloadMs, bounds.step, currentLimit)
+        const nextLimit = estimateLimitForRange(preloadMs, bounds.step, currentLimit, pagination)
       if (nextLimit > currentLimit) {
         try {
           const pageValue = getHistoricoPage(pagination)

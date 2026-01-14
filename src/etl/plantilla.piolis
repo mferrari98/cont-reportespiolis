@@ -58,7 +58,10 @@
 <body style="margin: 0; padding: 0;">
     
     <div id="barrasup" style="background-color: #000000; color: #ffffff; padding: 6px 20px; display: flex; justify-content: space-between; align-items: center; font-family:consolas, monospace; font-size: 12px;">
-    <span style="color: white;">Desarrollado por Comunicaciones</span>
+    <div style="display: flex; align-items: center; gap: 16px;">
+        <a href="/" style="color: #ffffff; text-decoration: none; font-size: 12px; padding: 4px 10px; border: 1px solid #444; border-radius: 3px; transition: background 0.2s, border-color 0.2s;" onmouseover="this.style.background='#333'; this.style.borderColor='#666'" onmouseout="this.style.background='transparent'; this.style.borderColor='#444'">Volver al portal</a>
+        <span style="color: white;">Desarrollado por Comunicaciones</span>
+    </div>
     <span style="color: white;">Servicoop</span>
     </div>
     <h1 style="text-align: center; font-family: 'Consolas';">REPORTE HORARIO</h1>
@@ -118,6 +121,8 @@
         <button type="button" data-range="1d">1 día</button>
         <button type="button" data-range="1w">1 semana</button>
         <button type="button" data-range="1m">1 mes</button>
+        <button type="button" data-range="1y">1 año</button>
+        <button type="button" data-range="all">Inicio</button>
     </div>
     <div style="height: 120px;"></div>
 

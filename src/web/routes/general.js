@@ -8,8 +8,8 @@ const { obtenerLineas } = require("../../control/controlReporte");
 
 let observador
 
-const MAX_HISTORICO_LIMIT = 10080
-const DEFAULT_HISTORICO_LIMIT = MAX_HISTORICO_LIMIT
+const MAX_HISTORICO_LIMIT = 200000
+const DEFAULT_HISTORICO_LIMIT = 48
 
 router.get('/', async (req, res) => {
   try {

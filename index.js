@@ -1,5 +1,24 @@
 const { logamarillo } = require("./src/control/controlLog")
 
+const originalLog = console.log.bind(console)
+const originalWarn = console.warn.bind(console)
+const originalError = console.error.bind(console)
+
+const formatTimestamp = () => {
+    const now = new Date()
+    const gmt3 = new Date(now.getTime() - (3 * 60 * 60 * 1000))
+    return gmt3.toISOString()
+}
+
+const wrapConsole = (fn) => (...args) => {
+    const timestamp = formatTimestamp()
+    fn(`${timestamp} [-]`, ...args)
+}
+
+console.log = wrapConsole(originalLog)
+console.warn = wrapConsole(originalWarn)
+console.error = wrapConsole(originalError)
+
 const { closeDatabase } = require('./src/basedatos/db');
 /*
 observar cambios en el archivo de referencia

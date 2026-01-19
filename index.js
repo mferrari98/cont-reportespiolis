@@ -1,8 +1,18 @@
+const fs = require("fs")
+const path = require("path")
+const util = require("util")
 const { logamarillo } = require("./src/control/controlLog")
 
 const originalLog = console.log.bind(console)
 const originalWarn = console.warn.bind(console)
 const originalError = console.error.bind(console)
+
+const LOG_MAX_BYTES = 10 * 1024 * 1024
+const LOG_DIR = "/logs/reportespiolis"
+const defaultLogFile = fs.existsSync(LOG_DIR)
+    ? path.join(LOG_DIR, "app.log")
+    : path.join(process.cwd(), "app.log")
+const LOG_FILE = process.env.LOG_FILE || defaultLogFile
 
 const formatTimestamp = () => {
     const now = new Date()
@@ -10,9 +20,42 @@ const formatTimestamp = () => {
     return gmt3.toISOString()
 }
 
+const rotateIfNeeded = (filePath) => {
+    try {
+        if (fs.existsSync(filePath)) {
+            const { size } = fs.statSync(filePath)
+            if (size < LOG_MAX_BYTES) {
+                return
+            }
+        }
+
+        const rotated = `${filePath}.1`
+        if (fs.existsSync(rotated)) {
+            fs.unlinkSync(rotated)
+        }
+        if (fs.existsSync(filePath)) {
+            fs.renameSync(filePath, rotated)
+        }
+    } catch (err) {
+        originalWarn(`[LOG ROTATE] Error rotando ${filePath}`, err)
+    }
+}
+
+const appendLog = (message) => {
+    rotateIfNeeded(LOG_FILE)
+    fs.appendFile(LOG_FILE, `${message}\n`, (err) => {
+        if (err) {
+            originalError(`[LOG WRITE] Error escribiendo ${LOG_FILE}`, err)
+        }
+    })
+}
+
 const wrapConsole = (fn) => (...args) => {
     const timestamp = formatTimestamp()
-    fn(`${timestamp} [-]`, ...args)
+    const formatted = util.format(...args)
+    const message = `${timestamp} [-] ${formatted}`
+    fn(message)
+    appendLog(message)
 }
 
 console.log = wrapConsole(originalLog)

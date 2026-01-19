@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 const ID_MOD = "LOG";
 
 // Nivel de logging: 1 = errores críticos, 2 = información general, 3 = debug
@@ -22,23 +20,13 @@ let logamarillo = function (nivel, ...contenido) {
     if (mensaje === ultimoMensaje) {
         conteoRepeticiones++;
     } else {
-        // Si hay repeticiones registradas, guardar el último mensaje repetido
         if (conteoRepeticiones > 0) {
-            const lineaFinalRepetido = `${estampaTiempo} [-] ${ultimoMensaje} (se omitieron ${conteoRepeticiones - 1} repeticiones)\n`;
-            fs.appendFile('historico.txt', lineaFinalRepetido, (err) => {
-                if (err) {
-                    logamarillo(1, `Error escribiendo archivo:`, err);
-                }
-            });
+            const lineaFinalRepetido = `${estampaTiempo} [-] ${ultimoMensaje} (se omitieron ${conteoRepeticiones - 1} repeticiones)`;
+            console.log(lineaFinalRepetido)
         }
 
-        // Guardar la nueva línea y reiniciar el contador de repeticiones
-        const lineaNueva = `${estampaTiempo} [-] ${mensaje}\n`;
-        fs.appendFile('historico.txt', lineaNueva, (err) => {
-            if (err) {
-                logamarillo(1, `Error escribiendo archivo:`, err);
-            }
-        });
+        const lineaNueva = `${estampaTiempo} [-] ${mensaje}`;
+        console.log(lineaNueva)
 
         // Actualizar los registros
         ultimoMensaje = mensaje;

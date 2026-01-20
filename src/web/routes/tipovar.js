@@ -1,21 +1,24 @@
-const { logamarillo } = require("../../control/controlLog")
+const express = require("express");
 
-const express = require('express');
-const router = express.Router();
+const { logamarillo } = require("../../control/controlLog");
+const { asyncHandler } = require("../../core/http");
 
-const TipoVariableDAO = require('../../dao/tipoVariableDAO');
+const TipoVariableDAO = require("../../dao/tipoVariableDAO");
 const tipoVariableDAO = new TipoVariableDAO();
 
-router.get('/', async (req, res) => {
+const router = express.Router();
 
-  tipoVariableDAO.getAll((err, rows) => {
-    if (err) {
-      logamarillo(2, 'Error fetching tipo_variable:', err);
-      res.status(500).send('Error interno del servidor');
-    } else {
-      res.json(rows); // Envía la respuesta como JSON con los registros obtenidos
-    }
-  });
+router.get(
+  "/",
+  asyncHandler(async (req, res) => {
+    const rows = await tipoVariableDAO.getAll();
+    res.json(rows);
+  })
+);
+
+router.use((err, req, res, next) => {
+  logamarillo(2, `Error fetching tipo_variable: ${err.message}`);
+  next(err);
 });
 
 module.exports = router;

@@ -13,5 +13,8 @@
   "observador": {
     "umbral_parser_columnas": 20,
     "tiempo_milis": 40000
+  },
+  "logging": {
+    "level": 2
   }
 }

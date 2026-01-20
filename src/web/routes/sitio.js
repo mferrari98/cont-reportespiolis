@@ -1,40 +1,53 @@
-const { logamarillo } = require("../../control/controlLog")
+const express = require("express");
 
-const express = require('express');
-const router = express.Router();
+const { logamarillo } = require("../../control/controlLog");
+const { asyncHandler } = require("../../core/http");
 
-const ID_MOD = "Render"
-
-const SitioDAO = require('../../dao/sitioDAO');
+const SitioDAO = require("../../dao/sitioDAO");
 const sitioDAO = new SitioDAO();
 
-router.get('/', async (req, res) => {
-  logamarillo(1, `${ID_MOD} - ${req.query}`);
+const router = express.Router();
+const ID_MOD = "Render";
 
-  sitioDAO.getAll((err, rows) => {
-    if (err) {
-      logamarillo(2, 'Error fetching sitio:', err);
-      res.status(500).send('Error interno del servidor');
-    } else {
-      res.json(rows); // Envía la respuesta como JSON con los registros obtenidos
-    }
-  });
-});
+router.get(
+  "/",
+  asyncHandler(async (req, res) => {
+    logamarillo(1, `${ID_MOD} - ${JSON.stringify(req.query)}`);
+    const rows = await sitioDAO.getAll();
+    res.json(rows);
+  })
+);
 
-router.get('/:id', async (req, res) => {
-  logamarillo(1, `${ID_MOD} - ${req.body}`);
-});
+router.get(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    logamarillo(1, `${ID_MOD} - ${JSON.stringify(req.params)}`);
+    res.status(501).json({ message: "No implementado" });
+  })
+);
 
-router.post('/', async (req, res) => {
-  logamarillo(1, `${ID_MOD} - ${req.body}`);
-});
+router.post(
+  "/",
+  asyncHandler(async (req, res) => {
+    logamarillo(1, `${ID_MOD} - ${JSON.stringify(req.body)}`);
+    res.status(501).json({ message: "No implementado" });
+  })
+);
 
-router.put('/:id', async (req, res) => {
-  logamarillo(1, `${ID_MOD} - ${req.body}`);
-});
+router.put(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    logamarillo(1, `${ID_MOD} - ${JSON.stringify(req.body)}`);
+    res.status(501).json({ message: "No implementado" });
+  })
+);
 
-router.delete('/:id', async (req, res) => {
-  logamarillo(1, `${ID_MOD} - ${req.body}`);
-});
+router.delete(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    logamarillo(1, `${ID_MOD} - ${JSON.stringify(req.body)}`);
+    res.status(501).json({ message: "No implementado" });
+  })
+);
 
 module.exports = router;

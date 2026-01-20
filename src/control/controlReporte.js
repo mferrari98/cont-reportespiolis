@@ -1,4 +1,5 @@
-const { logamarillo } = require("../control/controlLog")
+const config = require("../config/loader");
+const { logamarillo } = require("../control/controlLog");
 
 const SitioDAO = require("../dao/sitioDAO");
 const TipoVariableDAO = require("../dao/tipoVariableDAO");
@@ -6,7 +7,7 @@ const HistoricoLecturaDAO = require("../dao/historicoLecturaDAO");
 const LogDAO = require("../dao/logDAO");
 
 const EmailMensaje = require("../reporte/emailMensaje");
-const Reporte = require("../modelo/reporte")
+const Reporte = require("../modelo/reporte");
 const { transpilar, buildLineSeries } = require("../etl/transpilador");
 
 const tipoVariableDAO = new TipoVariableDAO();
@@ -15,164 +16,118 @@ const historicoLecturaDAO = new HistoricoLecturaDAO();
 const logDAO = new LogDAO();
 
 const emailMensaje = new EmailMensaje();
-const reporte = new Reporte()
+const reporteModel = new Reporte();
 
 const ID_MOD = "REPORTE";
-const DEFAULT_HISTORICO_LIMIT = 48;
+const DEFAULT_HISTORICO_LIMIT = config.report.historico.defaultLimit;
+const MAX_PAGINAS = 48;
 
-/**
- * lanzarReporte ahora por defecto trae pagina 1 con los registros mas recientes
- * y acepta options = { historicoLimit, historicoPage }
- */
-let lanzarReporte = function (enviarEmail, estampatiempo, options, cb) {
-    if (typeof options === "function") {
-        cb = options;
-        options = {};
+async function lanzarReporte(enviarEmail, estampatiempo, options = {}) {
+  const { reporte, estampaReporte } = await getNuevosDatos(options);
+
+  let estampaFinal = estampatiempo;
+  if (estampaReporte !== null && typeof estampaReporte !== "undefined") {
+    const estampaNumero = Number(estampaReporte);
+    estampaFinal = Number.isFinite(estampaNumero) ? estampaNumero : estampaReporte;
+  }
+
+  await transpilar(reporte, estampaFinal);
+
+  if (enviarEmail) {
+    await emailMensaje.extraerTabla();
+    await emailMensaje.renderizar();
+  }
+}
+
+async function obtenerLineas(options = {}) {
+  const { reporte } = await getNuevosDatos(options);
+  return {
+    lineSeries: buildLineSeries(reporte),
+    pagination: reporte.paginacion || null
+  };
+}
+
+async function notificarFallo(mensaje, currentModifiedTime) {
+  await logDAO.create(mensaje, currentModifiedTime);
+}
+
+async function getNuevosDatos(options = {}) {
+  const parsedLimit = options.historicoLimit ? parseInt(options.historicoLimit, 10) : NaN;
+  const historicoLimit = Number.isFinite(parsedLimit) ? parsedLimit : DEFAULT_HISTORICO_LIMIT;
+  const parsedPage = options.historicoPage ? parseInt(options.historicoPage, 10) : NaN;
+  const requestedPage = Number.isFinite(parsedPage) ? parsedPage : 1;
+  const safeRequestedPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+
+  const sitios = await sitioDAO.getTodosDescriptores();
+  const reporte = await reporteModel.declarar(sitios);
+
+  const totalCount = await historicoLecturaDAO.getHistoricoEtiempoCount();
+  const parsedTotal = Number(totalCount);
+  const safeTotal = Number.isFinite(parsedTotal) ? parsedTotal : 0;
+  const totalPages = safeTotal > 0 ? Math.min(safeTotal, MAX_PAGINAS) : 1;
+  const safePage = Math.min(safeRequestedPage, totalPages);
+
+  reporte.paginacion = {
+    page: safePage,
+    limit: historicoLimit,
+    totalPages,
+    totalCount: safeTotal
+  };
+
+  if (safeTotal === 0) {
+    return { reporte, estampaReporte: null };
+  }
+
+  const pageOffset = safePage - 1;
+  const targetEtiempo = await historicoLecturaDAO.getHistoricoEtiempoPagDesc(pageOffset);
+  if (targetEtiempo === null || typeof targetEtiempo === "undefined") {
+    return { reporte, estampaReporte: null };
+  }
+
+  const rows = await historicoLecturaDAO.getByEtiempo(targetEtiempo);
+  if (!rows || rows.length === 0) {
+    return { reporte, estampaReporte: targetEtiempo };
+  }
+
+  const [tipoVariables, sitiosAll] = await Promise.all([
+    tipoVariableDAO.getAll(),
+    sitioDAO.getAll()
+  ]);
+
+  const tipoVarById = new Map(tipoVariables.map((row) => [row.id, row]));
+  const sitioById = new Map(sitiosAll.map((row) => [row.id, row]));
+
+  const historicoBySitioId = new Map();
+  const uniqueSitios = Array.from(new Set(rows.map((row) => row.sitio_id)));
+
+  await Promise.all(
+    uniqueSitios.map(async (sitioId) => {
+      const sitioRow = sitioById.get(sitioId);
+      if (!sitioRow) {
+        historicoBySitioId.set(sitioId, []);
+        return;
+      }
+      const historico = await historicoLecturaDAO.getHistoricoPagDescHasta(
+        sitioRow.id,
+        historicoLimit,
+        0,
+        targetEtiempo
+      );
+      historicoBySitioId.set(sitioId, historico || []);
+    })
+  );
+
+  rows.forEach((row) => {
+    const tipoVarRow = tipoVarById.get(row.tipo_id);
+    const sitioRow = sitioById.get(row.sitio_id);
+    if (!tipoVarRow || !sitioRow) {
+      return;
     }
+    const historico = historicoBySitioId.get(row.sitio_id) || [];
+    reporteModel.definir(reporte, row, tipoVarRow, sitioRow, historico);
+  });
 
-    getNuevosDatos(options, (err, reporte, estampaReporte) => {
-        if (!err) {
-            let estampaFinal = estampatiempo;
-            if (estampaReporte !== null && typeof estampaReporte !== "undefined") {
-                const estampaNumero = Number(estampaReporte);
-                estampaFinal = Number.isFinite(estampaNumero) ? estampaNumero : estampaReporte;
-            }
-            transpilar(reporte, estampaFinal, () => {
-
-                if (enviarEmail) {
-                    emailMensaje.extraerTabla(() => {
-                        emailMensaje.renderizar();
-                        cb()
-                    });
-                }
-                else
-                    cb()
-            });
-        } else {
-            cb(err);
-        }
-    });
-}
-
-let obtenerLineas = function (options, cb) {
-    if (typeof options === "function") {
-        cb = options;
-        options = {};
-    }
-
-    getNuevosDatos(options, (err, reporte) => {
-        if (err) {
-            cb(err);
-            return;
-        }
-
-        const lineSeries = buildLineSeries(reporte);
-        const pagination = reporte.paginacion || null;
-        cb(null, { lineSeries, pagination });
-    });
-}
-
-let notificarFallo = function (mensaje, currentModifiedTime, cb) {
-    logDAO.create(mensaje, currentModifiedTime, () => cb())
-}
-
-/* ===========================================================
-===================== FUNCIONES INTERNAS =====================
-==============================================================
-*/
-
-/**
- * getNuevosDatos con paginacion invertida por hora:
- * pagina 1 = hora mas reciente
- */
-function getNuevosDatos(options, callback) {
-
-    options = options || {};
-    const historicoLimit = options.historicoLimit ? parseInt(options.historicoLimit) : DEFAULT_HISTORICO_LIMIT;
-    const requestedPage = options.historicoPage ? parseInt(options.historicoPage) : 1;
-    const safeRequestedPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-    const maxPaginas = 48;
-
-    sitioDAO.getTodosDescriptores((_, descriptores) => {
-        reporte.declarar(descriptores, (mi_reporte) => {
-
-            historicoLecturaDAO.getHistoricoEtiempoCount((_, totalCount) => {
-                const parsedTotal = Number(totalCount);
-                const safeTotal = Number.isFinite(parsedTotal) ? parsedTotal : 0;
-                const totalPages = safeTotal > 0 ? Math.min(safeTotal, maxPaginas) : 1;
-                const safePage = Math.min(safeRequestedPage, totalPages);
-
-                mi_reporte.paginacion = {
-                    page: safePage,
-                    limit: historicoLimit,
-                    totalPages,
-                    totalCount: safeTotal
-                };
-
-                if (safeTotal === 0) {
-                    callback(null, mi_reporte, null);
-                    return;
-                }
-
-                const pageOffset = safePage - 1;
-
-                historicoLecturaDAO.getHistoricoEtiempoPagDesc(pageOffset, (_, etiempo) => {
-                    const targetEtiempo = etiempo;
-                    if (targetEtiempo === null || typeof targetEtiempo === "undefined") {
-                        callback(null, mi_reporte, null);
-                        return;
-                    }
-
-                    historicoLecturaDAO.getByEtiempo(targetEtiempo, (_, rows) => {
-                        let remaining = rows.length;
-                        let finalized = false;
-
-                        const finalize = () => {
-                            if (finalized) {
-                                return;
-                            }
-                            finalized = true;
-                            callback(null, mi_reporte, targetEtiempo);
-                        };
-
-                        if (remaining === 0) {
-                            finalize();
-                            return;
-                        }
-
-                        rows.forEach((row) => {
-                            tipoVariableDAO.getById(row.tipo_id, (err, tipoVarRow) => {
-                                sitioDAO.getById(row.sitio_id, (err, sitioRow) => {
-                                    const cbHistorico = (_, historico) => {
-                                        if (tipoVarRow && sitioRow) {
-                                            reporte.definir(mi_reporte, row, tipoVarRow, sitioRow, historico);
-                                        }
-                                        remaining -= 1;
-                                        if (remaining === 0) {
-                                            finalize();
-                                        }
-                                    };
-
-                                    const historicoOffset = 0;
-                                    if (sitioRow) {
-                                        historicoLecturaDAO.getHistoricoPagDescHasta(
-                                            sitioRow.id,
-                                            historicoLimit,
-                                            historicoOffset,
-                                            targetEtiempo,
-                                            cbHistorico
-                                        );
-                                    } else {
-                                        cbHistorico(null, []);
-                                    }
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        })
-    });
+  return { reporte, estampaReporte: targetEtiempo };
 }
 
 module.exports = { lanzarReporte, notificarFallo, obtenerLineas };

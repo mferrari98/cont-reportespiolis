@@ -1,0 +1,29 @@
+{
+  "sitios": [
+    { "descriptor": "Toma(Rio)", "rebalse": 4.0, "maxoperativo": null, "cubicaje": 0.0 },
+    { "descriptor": "Toma(Des.)", "rebalse": 3.0, "maxoperativo": null, "cubicaje": 0.0 },
+    { "descriptor": "P.Pot", "rebalse": 3.0, "maxoperativo": null, "cubicaje": 0.0 },
+    { "descriptor": "L.Maria", "rebalse": 5.0, "maxoperativo": 4.45, "cubicaje": 1086.95 },
+    { "descriptor": "KM11", "rebalse": 5.0, "maxoperativo": 4.4, "cubicaje": 3260.86 },
+    { "descriptor": "B.SAN MIGUEL", "rebalse": 4.0, "maxoperativo": 3.05, "cubicaje": 263.15 },
+    { "descriptor": "R6000", "rebalse": 4.0, "maxoperativo": 3.5, "cubicaje": 1714.28 },
+    { "descriptor": "B.OESTE(1K)", "rebalse": 5.0, "maxoperativo": 3.33, "cubicaje": 342.85 },
+    { "descriptor": "NUEVA CHUBUT", "rebalse": 4.0, "maxoperativo": 3.4, "cubicaje": 263.15 },
+    { "descriptor": "B.PUJOL", "rebalse": 3.0, "maxoperativo": 2.06, "cubicaje": 80.0 },
+    { "descriptor": "Cota45", "rebalse": 4.4, "maxoperativo": 3.09, "cubicaje": 277.77 },
+    { "descriptor": "Cota126", "rebalse": 4.0, "maxoperativo": null, "cubicaje": 0.0 },
+    { "descriptor": "Cota(126)", "rebalse": 0.0, "maxoperativo": null, "cubicaje": 54.54 },
+    { "descriptor": "Doradillo", "rebalse": 4.0, "maxoperativo": 2.89, "cubicaje": 71.83 }
+  ],
+  "madryn": [
+    "L.Maria",
+    "KM11",
+    "R6000",
+    "B.OESTE(1K)",
+    "B.SAN MIGUEL",
+    "NUEVA CHUBUT",
+    "B.PUJOL",
+    "Cota45",
+    "Doradillo"
+  ]
+}

@@ -1,13 +1,7 @@
-const { logamarillo } = require("../control/controlLog")
-const { getDatabase } = require('../basedatos/db');
+const { run, get, all, exec } = require("../basedatos/db");
+const { logamarillo } = require("../control/controlLog");
 
 const ID_MOD = "DAO-HISTORICO-LECTURA";
-
-/*
-*************************************************
-*************** INI CONSULTAS SQL ***************
-************************************************* 
-*/
 
 const sql_create = `INSERT INTO historico_lectura (sitio_id, tipo_id, valor, etiempo) VALUES (?, ?, ?, ?)`;
 const sql_getById = `SELECT * FROM historico_lectura WHERE id = ?`;
@@ -17,7 +11,7 @@ const sql_existe = `
     FROM historico_lectura 
     WHERE etiempo = ?
   ) AS existe;
-  `;
+`;
 const sql_getAll = `SELECT * FROM historico_lectura`;
 const sql_getMostRecent = `
   SELECT hl.*
@@ -33,16 +27,12 @@ const sql_getHistorico = `
   WHERE hl.sitio_id = ? AND tv.descriptor = 'Nivel[m]'
   ORDER BY etiempo;
 `;
-
-/* SQL para contar paginas por timestamp (hora) basado en Nivel[m] */
 const sql_getHistoricoEtiempoCount = `
   SELECT COUNT(DISTINCT hl.etiempo) as total
   FROM historico_lectura hl
   JOIN tipo_variable tv ON hl.tipo_id = tv.id
   WHERE tv.descriptor = 'Nivel[m]'
 `;
-
-/* SQL para obtener el timestamp (etiempo) de una pagina en orden descendente */
 const sql_getHistoricoEtiempoPagDesc = `
   SELECT hl.etiempo
   FROM historico_lectura hl
@@ -52,8 +42,6 @@ const sql_getHistoricoEtiempoPagDesc = `
   ORDER BY hl.etiempo DESC
   LIMIT 1 OFFSET ?
 `;
-
-/* SQL para obtener todas las lecturas de un timestamp especifico */
 const sql_getByEtiempo = `
   SELECT hl.*
   FROM historico_lectura hl
@@ -61,8 +49,6 @@ const sql_getByEtiempo = `
   WHERE hl.etiempo = ?
   ORDER BY s.orden;
 `;
-
-/* SQL para paginar historico (limit/offset) en orden descendente por fecha para que pagina 1 sea la mas reciente */
 const sql_getHistorico_pag_desc = `
   SELECT *
   FROM (
@@ -75,8 +61,6 @@ const sql_getHistorico_pag_desc = `
   ) sub
   ORDER BY etiempo ASC;
 `;
-
-/* SQL para paginar historico hasta un timestamp (hora) especifico */
 const sql_getHistorico_pag_desc_hasta = `
   SELECT *
   FROM (
@@ -89,15 +73,12 @@ const sql_getHistorico_pag_desc_hasta = `
   ) sub
   ORDER BY etiempo ASC;
 `;
-
-/* SQL para contar registros históricos sin traerlos a memoria (optimización) */
 const sql_getHistoricoCount = `
   SELECT COUNT(*) as total
   FROM historico_lectura hl
   JOIN tipo_variable tv ON hl.tipo_id = tv.id
   WHERE hl.sitio_id = ? AND tv.descriptor = 'Nivel[m]'
 `;
-
 const sql_delete = `DELETE FROM historico_lectura WHERE id = ?`;
 const sql_truncate = `DELETE FROM historico_lectura; DELETE FROM SQLITE_SEQUENCE WHERE name="historico_lectura"`;
 const sql_curar = `
@@ -110,242 +91,168 @@ const sql_curar = `
     END
 `;
 
-/*
-*************************************************
-*************** FIN CONSULTAS SQL ***************
-************************************************* 
-*/
-
-function HistoricoLecturaDAO() { }
-
-HistoricoLecturaDAO.prototype.create = function (sitio_id, tipo_id, valor, etiempo, callback) {
-
-  logamarillo(1, `${ID_MOD} - create`);
-  const db = getDatabase();
-
-  db.run(sql_create, [sitio_id, tipo_id, valor, etiempo], function (err) {
-    if (err) {
+class HistoricoLecturaDAO {
+  async create(sitio_id, tipo_id, valor, etiempo) {
+    logamarillo(1, `${ID_MOD} - create`);
+    try {
+      const result = await run(sql_create, [sitio_id, tipo_id, valor, etiempo]);
+      return { id: result.lastID, sitio_id, tipo_id, valor, etiempo };
+    } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
-      return callback(err, null);
+      throw err;
     }
-    callback(null, { id: this.lastID, sitio_id, tipo_id, valor, etiempo });
-  });
-};
+  }
 
-HistoricoLecturaDAO.prototype.getById = function (id, callback) {
-
-  logamarillo(1, `${ID_MOD} - getById`);
-  const db = getDatabase();
-
-  db.get(sql_getById, [id], (err, row) => {
-    if (err) {
+  async getById(id) {
+    logamarillo(1, `${ID_MOD} - getById`);
+    try {
+      return await get(sql_getById, [id]);
+    } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
-      return callback(err, null);
+      throw err;
     }
-    callback(null, row);
-  });
-};
+  }
 
-HistoricoLecturaDAO.prototype.existe = function (etiempo, callback) {
-
-  logamarillo(1, `${ID_MOD} - existe`);
-  const db = getDatabase();
-
-  db.get(sql_existe, [etiempo], (err, row) => {
-    if (err) {
+  async existe(etiempo) {
+    logamarillo(1, `${ID_MOD} - existe`);
+    try {
+      const row = await get(sql_existe, [etiempo]);
+      return row ? row.existe === 1 : false;
+    } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
-      return callback(err, null);
+      throw err;
     }
-    callback(null, row.existe);
-  });
-};
+  }
 
-HistoricoLecturaDAO.prototype.getAll = function (callback) {
-
-  logamarillo(1, `${ID_MOD} - getAll`);
-  const db = getDatabase();
-
-  db.all(sql_getAll, [], (err, rows) => {
-    if (err) {
+  async getAll() {
+    logamarillo(1, `${ID_MOD} - getAll`);
+    try {
+      return await all(sql_getAll, []);
+    } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
-      return callback(err, null);
+      throw err;
     }
-    callback(null, rows);
-  });
-};
+  }
 
-HistoricoLecturaDAO.prototype.getMostRecent = function (callback) {
-
-  logamarillo(1, `${ID_MOD} - getMostRecent`);
-  const db = getDatabase();
-
-  db.all(sql_getMostRecent, (err, rows) => {
-    if (err) {
+  async getMostRecent() {
+    logamarillo(1, `${ID_MOD} - getMostRecent`);
+    try {
+      return await all(sql_getMostRecent, []);
+    } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
-      return callback(err, null);
+      throw err;
     }
-    callback(null, rows);
-  });
-};
+  }
 
-HistoricoLecturaDAO.prototype.getHistorico = function (sitio_id, callback) {
-
-  logamarillo(1, `${ID_MOD} - getHistorico`);
-  const db = getDatabase();
-
-  db.all(sql_getHistorico, [sitio_id], (err, rows) => {
-    if (err) {
+  async getHistorico(sitio_id) {
+    logamarillo(1, `${ID_MOD} - getHistorico`);
+    try {
+      return await all(sql_getHistorico, [sitio_id]);
+    } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
-      return callback(err, null);
+      throw err;
     }
-    callback(null, rows);
-  });
-};
+  }
 
-/*
-  Cuenta los timestamps distintos para paginacion por hora.
-*/
-HistoricoLecturaDAO.prototype.getHistoricoEtiempoCount = function (callback) {
-
-  logamarillo(1, `${ID_MOD} - getHistoricoEtiempoCount`);
-  const db = getDatabase();
-
-  db.get(sql_getHistoricoEtiempoCount, (err, row) => {
-    if (err) {
-      callback(err, null);
-    } else {
-      callback(null, row ? row.total : 0);
-    }
-  });
-};
-
-/*
-  Obtiene el timestamp (etiempo) para una pagina (offset en orden descendente).
-*/
-HistoricoLecturaDAO.prototype.getHistoricoEtiempoPagDesc = function (offset, callback) {
-
-  logamarillo(1, `${ID_MOD} - getHistoricoEtiempoPagDesc offset=${offset}`);
-  const db = getDatabase();
-
-  const o = parseInt(offset) >= 0 ? parseInt(offset) : 0;
-
-  db.get(sql_getHistoricoEtiempoPagDesc, [o], (err, row) => {
-    if (err) {
-      callback(err, null);
-    } else {
-      callback(null, row ? row.etiempo : null);
-    }
-  });
-};
-
-/*
-  Obtiene todas las lecturas para un timestamp especifico.
-*/
-HistoricoLecturaDAO.prototype.getByEtiempo = function (etiempo, callback) {
-
-  logamarillo(1, `${ID_MOD} - getByEtiempo etiempo=${etiempo}`);
-  const db = getDatabase();
-
-  db.all(sql_getByEtiempo, [etiempo], (err, rows) => {
-    if (err) {
-      callback(err, null);
-    } else {
-      callback(null, rows);
-    }
-  });
-};
-
-/*
-  Nuevo metodo: getHistoricoPagDesc
-  Retorna el historico en orden descendente, para que la pagina 1 sea la mas reciente.
-*/
-HistoricoLecturaDAO.prototype.getHistoricoPagDesc = function (sitio_id, limit, offset, callback) {
-
-  logamarillo(1, `${ID_MOD} - getHistoricoPagDesc limit=${limit} offset=${offset}`);
-  const db = getDatabase();
-
-  const l = parseInt(limit) > 0 ? parseInt(limit) : 100;
-  const o = parseInt(offset) >= 0 ? parseInt(offset) : 0;
-
-  db.all(sql_getHistorico_pag_desc, [sitio_id, l, o], (err, rows) => {
-    callback(null, rows);
-  });
-};
-
-/*
-  Retorna el historico hasta un timestamp (hora) especifico, en orden descendente.
-*/
-HistoricoLecturaDAO.prototype.getHistoricoPagDescHasta = function (sitio_id, limit, offset, etiempo, callback) {
-
-  logamarillo(1, `${ID_MOD} - getHistoricoPagDescHasta limit=${limit} offset=${offset} etiempo=${etiempo}`);
-  const db = getDatabase();
-
-  const l = parseInt(limit) > 0 ? parseInt(limit) : 100;
-  const o = parseInt(offset) >= 0 ? parseInt(offset) : 0;
-
-  db.all(sql_getHistorico_pag_desc_hasta, [sitio_id, etiempo, l, o], (err, rows) => {
-    callback(null, rows);
-  });
-};
-
-/**
- * Cuenta los registros históricos de un sitio sin traerlos a memoria
- * Optimización para paginación
- */
-HistoricoLecturaDAO.prototype.getHistoricoCount = function (sitio_id, callback) {
-
-  logamarillo(1, `${ID_MOD} - getHistoricoCount sitio_id=${sitio_id}`);
-  const db = getDatabase();
-
-  db.get(sql_getHistoricoCount, [sitio_id], (err, row) => {
-    if (err) {
-      callback(err, null);
-    } else {
-      callback(null, row ? row.total : 0);
-    }
-  });
-};
-
-HistoricoLecturaDAO.prototype.delete = function (id, callback) {
-
-  logamarillo(1, `${ID_MOD} - delete`);
-  const db = getDatabase();
-
-  db.run(sql_delete, [id], function (err) {
-    if (err) {
+  async getHistoricoEtiempoCount() {
+    logamarillo(1, `${ID_MOD} - getHistoricoEtiempoCount`);
+    try {
+      const row = await get(sql_getHistoricoEtiempoCount, []);
+      return row ? row.total : 0;
+    } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
-      return callback(err, null);
+      throw err;
     }
-    callback(null, { changes: this.changes });
-  });
-};
+  }
 
-HistoricoLecturaDAO.prototype.truncate = function (callback) {
-
-  logamarillo(1, `${ID_MOD} - truncate`);
-  const db = getDatabase();
-
-  db.run(sql_truncate, function (err) {
-    if (err) {
+  async getHistoricoEtiempoPagDesc(offset) {
+    logamarillo(1, `${ID_MOD} - getHistoricoEtiempoPagDesc offset=${offset}`);
+    const safeOffset = Number.isFinite(Number(offset)) ? Math.max(parseInt(offset, 10), 0) : 0;
+    try {
+      const row = await get(sql_getHistoricoEtiempoPagDesc, [safeOffset]);
+      return row ? row.etiempo : null;
+    } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
-      return callback(err, null);
+      throw err;
     }
-    callback(null, { changes: "se borro todo el contenido de la tabla" });
-  });
-};
+  }
 
-HistoricoLecturaDAO.prototype.listParaCurar = function (segundos, callback) {
-
-  logamarillo(1, `${ID_MOD} - listParaCurar`);
-  const db = getDatabase();
-
-  db.all(sql_curar, [segundos, segundos], (err, row) => {
-    if (err) {
+  async getByEtiempo(etiempo) {
+    logamarillo(1, `${ID_MOD} - getByEtiempo etiempo=${etiempo}`);
+    try {
+      return await all(sql_getByEtiempo, [etiempo]);
+    } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
-      return callback(err, null);
+      throw err;
     }
-    callback(null, row);
-  });
-};
+  }
+
+  async getHistoricoPagDesc(sitio_id, limit, offset) {
+    logamarillo(1, `${ID_MOD} - getHistoricoPagDesc limit=${limit} offset=${offset}`);
+    const l = Number.isFinite(Number(limit)) && Number(limit) > 0 ? parseInt(limit, 10) : 100;
+    const o = Number.isFinite(Number(offset)) && Number(offset) >= 0 ? parseInt(offset, 10) : 0;
+    try {
+      return await all(sql_getHistorico_pag_desc, [sitio_id, l, o]);
+    } catch (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async getHistoricoPagDescHasta(sitio_id, limit, offset, etiempo) {
+    logamarillo(1, `${ID_MOD} - getHistoricoPagDescHasta limit=${limit} offset=${offset} etiempo=${etiempo}`);
+    const l = Number.isFinite(Number(limit)) && Number(limit) > 0 ? parseInt(limit, 10) : 100;
+    const o = Number.isFinite(Number(offset)) && Number(offset) >= 0 ? parseInt(offset, 10) : 0;
+    try {
+      return await all(sql_getHistorico_pag_desc_hasta, [sitio_id, etiempo, l, o]);
+    } catch (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async getHistoricoCount(sitio_id) {
+    logamarillo(1, `${ID_MOD} - getHistoricoCount sitio_id=${sitio_id}`);
+    try {
+      const row = await get(sql_getHistoricoCount, [sitio_id]);
+      return row ? row.total : 0;
+    } catch (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async delete(id) {
+    logamarillo(1, `${ID_MOD} - delete`);
+    try {
+      const result = await run(sql_delete, [id]);
+      return { changes: result.changes };
+    } catch (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async truncate() {
+    logamarillo(1, `${ID_MOD} - truncate`);
+    try {
+      await exec(sql_truncate);
+      return { changes: "se borro todo el contenido de la tabla" };
+    } catch (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async listParaCurar(segundos) {
+    logamarillo(1, `${ID_MOD} - listParaCurar`);
+    try {
+      return await all(sql_curar, [segundos, segundos]);
+    } catch (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      throw err;
+    }
+  }
+}
 
 module.exports = HistoricoLecturaDAO;

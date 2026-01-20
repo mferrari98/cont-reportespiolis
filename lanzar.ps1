@@ -1,1 +1,0 @@
-Start-Process powershell -ArgumentList '-NoExit', '-Command', 'cd C:\Users\hdonato.SERVICOOP\Documents\hugo\git\reportespiolis; node index.js'

@@ -1,36 +1,20 @@
-const { logamarillo } = require("../control/controlLog")
-const { getDatabase } = require('../basedatos/db');
+const { run } = require("../basedatos/db");
+const { logamarillo } = require("../control/controlLog");
 
 const ID_MOD = "DAO-LOG";
 
-/*
-*************************************************
-*************** INI CONSULTAS SQL ***************
-************************************************* 
-*/
-
 const sql_create = `INSERT INTO log (descriptor, etiempo) VALUES (?, ?)`;
 
-/*
-*************************************************
-*************** FIN CONSULTAS SQL ***************
-************************************************* 
-*/
-
-function LogDAO() { }
-
-LogDAO.prototype.create = function (mensaje, etiempo, callback) {
-
-  logamarillo(1, `${ID_MOD} - create`);
-  const db = getDatabase();
-
-  db.run(sql_create, [mensaje, etiempo], function (err) {
-    if (err) {
+class LogDAO {
+  async create(mensaje, etiempo) {
+    logamarillo(1, `${ID_MOD} - create`);
+    try {
+      await run(sql_create, [mensaje, etiempo]);
+    } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
-      return callback(err);
+      throw err;
     }
-    callback();
-  });
-};
+  }
+}
 
 module.exports = LogDAO;

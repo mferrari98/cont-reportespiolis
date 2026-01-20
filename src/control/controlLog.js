@@ -1,49 +1,160 @@
+const fs = require("fs");
+const path = require("path");
+const util = require("util");
+
+const config = require("../config/loader");
+
 const ID_MOD = "LOG";
 
-// Nivel de logging: 1 = errores críticos, 2 = información general, 3 = debug
-const nivLog = 2;
-
 let ultimoMensaje = null;
+let ultimoNivel = null;
 let conteoRepeticiones = 0;
 
-let logamarillo = function (nivel, ...contenido) {
-
-    const mensaje = contenido.join(' '); // Unir el contenido para comparar
-
-    if (nivel >= nivLog)
-        console.log(mensaje)
-
-    const estampaTiempo = obtenerEstampaDeTiempo();
-    
-
-    // Si el mensaje es el mismo que el anterior, aumentar el conteo de repeticiones
-    if (mensaje === ultimoMensaje) {
-        conteoRepeticiones++;
-    } else {
-        if (conteoRepeticiones > 0) {
-            const lineaFinalRepetido = `${estampaTiempo} [-] ${ultimoMensaje} (se omitieron ${conteoRepeticiones - 1} repeticiones)`;
-            console.log(lineaFinalRepetido)
-        }
-
-        const lineaNueva = `${estampaTiempo} [-] ${mensaje}`;
-        console.log(lineaNueva)
-
-        // Actualizar los registros
-        ultimoMensaje = mensaje;
-        conteoRepeticiones = 0; // Reiniciar el conteo
-    }
+const legacyLevelMap = {
+  1: "error",
+  2: "info",
+  3: "debug"
 };
 
-/* ===========================================================
-===================== FUNCIONES INTERNAS =====================
-==============================================================
-*/
+const levelRank = {
+  error: 1,
+  warn: 2,
+  info: 3,
+  debug: 4
+};
 
-function obtenerEstampaDeTiempo() {
-    const fechaActual = new Date();
-    // Restamos 3 horas a la fecha actual para ajustarla a GMT-3
-    const fechaGMT3 = new Date(fechaActual.getTime() - (3 * 60 * 60 * 1000));
-    return fechaGMT3.toISOString(); // Devuelve la fecha en formato ISO
+const legacyRank = {
+  error: 1,
+  warn: 2,
+  info: 2,
+  debug: 3
+};
+
+function normalizeLevel(level) {
+  if (typeof level === "number" && Number.isFinite(level)) {
+    return level;
+  }
+  if (typeof level === "string") {
+    const lowered = level.toLowerCase();
+    if (levelRank[lowered]) {
+      return levelRank[lowered];
+    }
+    const numeric = Number(level);
+    if (Number.isFinite(numeric)) {
+      return numeric;
+    }
+  }
+  return levelRank.info;
+}
+
+function shouldLog(level) {
+  const configLevel = config.logging.level;
+  const legacyThreshold = Number(configLevel);
+  if (Number.isFinite(legacyThreshold)) {
+    const legacyLevel = normalizeLegacy(level);
+    return legacyLevel >= legacyThreshold;
+  }
+
+  const threshold = normalizeLevel(configLevel);
+  return normalizeLevel(level) <= threshold;
+}
+
+function normalizeLegacy(level) {
+  if (typeof level === "number" && Number.isFinite(level)) {
+    return level;
+  }
+  if (typeof level === "string") {
+    const lowered = level.toLowerCase();
+    if (legacyRank[lowered]) {
+      return legacyRank[lowered];
+    }
+    const numeric = Number(level);
+    if (Number.isFinite(numeric)) {
+      return numeric;
+    }
+  }
+  return legacyRank.info;
+}
+
+function formatTimestamp() {
+  const now = new Date();
+  const gmt3 = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  return gmt3.toISOString();
+}
+
+function ensureDir(dirPath) {
+  try {
+    fs.mkdirSync(dirPath, { recursive: true });
+  } catch (err) {
+    process.stderr.write(`[LOG] Error creando directorio ${dirPath}: ${err.message}\n`);
+  }
+}
+
+function rotateIfNeeded(filePath) {
+  try {
+    if (fs.existsSync(filePath)) {
+      const { size } = fs.statSync(filePath);
+      if (size < config.logging.maxBytes) {
+        return;
+      }
+    }
+
+    const rotated = `${filePath}.1`;
+    if (fs.existsSync(rotated)) {
+      fs.unlinkSync(rotated);
+    }
+    if (fs.existsSync(filePath)) {
+      fs.renameSync(filePath, rotated);
+    }
+  } catch (err) {
+    process.stderr.write(`[LOG] Error rotando ${filePath}: ${err.message}\n`);
+  }
+}
+
+function appendLog(line) {
+  const filePath = config.logging.file;
+  if (!filePath) {
+    return;
+  }
+  ensureDir(path.dirname(filePath));
+  rotateIfNeeded(filePath);
+  fs.appendFile(filePath, `${line}\n`, (err) => {
+    if (err) {
+      process.stderr.write(`[LOG] Error escribiendo ${filePath}: ${err.message}\n`);
+    }
+  });
+}
+
+function writeLine(message) {
+  const line = `${formatTimestamp()} [-] ${message}`;
+  process.stdout.write(`${line}\n`);
+  appendLog(line);
+}
+
+function logamarillo(nivel, ...contenido) {
+  const message = util.format(...contenido);
+  const level = legacyLevelMap[nivel] || "info";
+
+  if (message === ultimoMensaje) {
+    conteoRepeticiones += 1;
+    return;
+  }
+
+  if (conteoRepeticiones > 0 && ultimoMensaje !== null) {
+    const resumen = `${ultimoMensaje} (se omitieron ${conteoRepeticiones - 1} repeticiones)`;
+    const resumenNivel = legacyLevelMap[ultimoNivel] || level;
+    if (shouldLog(resumenNivel)) {
+      writeLine(resumen);
+    }
+  }
+
+  if (shouldLog(level)) {
+    writeLine(message);
+  }
+
+  ultimoMensaje = message;
+  ultimoNivel = nivel;
+  conteoRepeticiones = 0;
 }
 
 module.exports = { logamarillo };

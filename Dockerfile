@@ -40,6 +40,7 @@ RUN npm_config_build_from_source=true npm ci \
     && rm -rf /var/lib/apt/lists/*
 
 COPY config.json ./
+COPY sitios.json ./
 COPY index.js ./
 COPY src ./src
 

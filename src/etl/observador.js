@@ -1,194 +1,185 @@
 const fs = require("fs");
 const readline = require("readline");
 
-const config = require("../config/loader")
-const { logamarillo } = require("../control/controlLog")
+const config = require("../config/loader");
+const { logamarillo } = require("../control/controlLog");
 const { lanzarETL } = require("./etl");
-const { lanzarReporte, notificarFallo } = require("../control/controlReporte")
+const { lanzarReporte, notificarFallo } = require("../control/controlReporte");
 
 const ID_MOD = "OBSERV";
 
-const dir_wizcon = config.direcciones.sca_wizcon
-const dir_citec = config.direcciones.cota45
+const DIR_WIZCON = config.direcciones.sca_wizcon;
+const DIR_CITEC = config.direcciones.cota45;
+const CHECK_INTERVAL = config.observador.tiempo_milis;
+const CANT_LINEAS_CITEC = config.observador.citec_lineas;
 
 let filePath = process.argv[2];
-let currentModifiedTime;
+let currentModifiedTime = null;
 let lastModifiedTime = null;
-const checkInterval = config.observador.tiempo_milis
+let antesHuboError = false;
+let intervalId = null;
 
-let antes_hubo_error = false
-
-function iniciar() {
-  // Verifica que se haya proporcionado el archivo como argumento
+async function iniciar() {
   if (process.argv.length < 3) {
-    logamarillo(1, `${ID_MOD} - No hay direccion en linea de comandos, se utilizara definicion de config.json`);
+    logamarillo(1, `${ID_MOD} - No hay direccion en linea de comandos, se utilizara config.json`);
+    filePath = DIR_WIZCON;
+  }
 
-    filePath = dir_wizcon
-    checkFileModification();
+  if (!filePath) {
+    logamarillo(1, `${ID_MOD} - Direccion de archivo no definida`);
+    return;
+  }
+
+  await checkFileModification();
+  if (!intervalId) {
+    intervalId = setInterval(checkFileModification, CHECK_INTERVAL);
   }
 }
 
-/**
- * verUltimoCambio ahora acepta options que se pasan a lanzarReporte.
- * options puede contener historicoLimit e historicoPage
- * enviarEmail: boolean, options: { historicoLimit, historicoPage }, cb: callback
- */
-function verUltimoCambio(enviarEmail, options, cb) {
-  // permitir firma antigua verUltimoCambio(enviarEmail, cb)
-  if (typeof options === "function") {
-    cb = options;
-    options = {};
-  }
-
-  lanzarReporte(enviarEmail, currentModifiedTime, options, () => { cb() })
+async function verUltimoCambio(enviarEmail, options = {}) {
+  await lanzarReporte(enviarEmail, currentModifiedTime, options);
 }
 
 function parar() {
-  clearInterval(intervalId);
+  if (intervalId) {
+    clearInterval(intervalId);
+    intervalId = null;
+  }
   logamarillo(1, `${ID_MOD} - deteniendo observador`);
 }
 
-/* ===========================================================
-===================== FUNCIONES INTERNAS =====================
-==============================================================
-*/
-
-// Funcion para leer y procesar el archivo
-function readAndProcessFile() {
-
-  let lines = [];
-
-  datosWizcon(lines, (lin_wiz) => {
-    datosCitec(lin_wiz, (lin_wiztec) => {
-
-      lanzarETL(lin_wiztec, currentModifiedTime, () => {
-        verUltimoCambio(true, () => { })
-      })
-    })
-  })
+async function readAndProcessFile() {
+  const lines = await datosWizcon();
+  const enriched = await datosCitec(lines);
+  await lanzarETL(enriched, currentModifiedTime);
+  await verUltimoCambio(true);
 }
 
-function datosWizcon(lines, cb) {
+function datosWizcon() {
+  return new Promise((resolve, reject) => {
+    const lines = [];
+    const stream = fs.createReadStream(filePath);
+    const rl = readline.createInterface({
+      input: stream,
+      output: process.stdout,
+      terminal: false
+    });
 
-  const rl = readline.createInterface({
-    input: fs.createReadStream(filePath),
-    output: process.stdout,
-    terminal: false,
+    rl.on("line", (line) => {
+      lines.push(line);
+    });
+
+    rl.on("close", () => {
+      logamarillo(2, `${ID_MOD} - se leyeron datos desde wizcon`);
+      resolve(lines);
+    });
+
+    rl.on("error", (error) => {
+      logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
+      reject(error);
+    });
+
+    stream.on("error", (error) => {
+      logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
+      reject(error);
+    });
   });
-
-  // Escucha cada linea del archivo
-  rl.on("line", (line) => {
-    lines.push(line);
-  });
-
-  rl.on("close", () => {
-    logamarillo(2, `${ID_MOD} - se leyeron datos desde wizcon`)
-    cb(lines)
-  });
-
-  rl.on("error", (error) => {
-    logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
-  })
 }
 
-function datosCitec(lines, cb) {
-  fs.readFile(dir_citec, 'utf8', (error, data) => {
+async function datosCitec(lines) {
+  try {
+    const data = await fs.promises.readFile(DIR_CITEC, "utf8");
+    const lineas = data.trim().split("\r\n");
 
-    if (!error) {
+    let posfila = 0;
+    let filaMasCercana = null;
+    let diferenciaMinima = currentModifiedTime;
 
-      // Dividir el contenido del archivo en lineas
-      const lineas = data.trim().split('\r\n');
+    for (let i = lineas.length - 1; i >= Math.max(0, lineas.length - CANT_LINEAS_CITEC); i -= 1) {
+      const linea = lineas[i];
+      const fecha = linea.split(" - ")[0].trim();
 
-      let posfila = 0
-      let filaMasCercana = null;
-      let diferenciaMinima = currentModifiedTime;
+      const fechaNormalizada = normalizarMes(fecha);
+      const fechaMs = new Date(fechaNormalizada);
 
-      // Iterar desde el final del archivo hacia el principio
-      for (let i = lineas.length - 1; i >= lineas.length - 100; i--) {
-        const linea = lineas[i];
-
-        // Separar la fecha de valor y convertir a milisegundos
-        const fecha = linea.split(' - ')[0].trim()
-
-        let fecha2 = reemplazarMes(fecha, "Ene", "Jan");
-        let fecha3 = reemplazarMes(fecha2, "Abr", "Apr");
-        let fecha4 = reemplazarMes(fecha3, "Ago", "Aug");
-        let fercho = reemplazarMes(fecha4, "Dic", "Dec");
-
-        const fechaMs = new Date(fercho);
-
-        // Calcular la diferencia con la fecha de referencia
-        const diferencia = Math.abs(currentModifiedTime - fechaMs);
-
-        // Si la diferencia es menor que la minima encontrada, actualizamos
-        if (diferencia < diferenciaMinima) {
-          diferenciaMinima = diferencia;
-          filaMasCercana = linea;
-          posfila = i
-        }
+      const diferencia = Math.abs(currentModifiedTime - fechaMs);
+      if (diferencia < diferenciaMinima) {
+        diferenciaMinima = diferencia;
+        filaMasCercana = linea;
+        posfila = i;
       }
-
-      if (filaMasCercana) {
-        logamarillo(2, `${ID_MOD} - se leyeron datos desde citec. ${filaMasCercana} fila ${posfila}`)
-        lines.push(`Cota45              ${filaMasCercana.split(' - ')[1].replace(',', '.')}`);
-      } else
-        logamarillo(2, `${ID_MOD} - error leyendo citec: no se encontro fila`);
-
-    } else
-      logamarillo(2, `${ID_MOD} - error leyendo citec: ${error.stack}`);
-
-    cb(lines)
-  });
-}
-
-// Funcion para verificar la fecha de modificacion del archivo
-function checkFileModification() {
-  fs.stat(filePath, (err, stats) => {
-
-    if (err)
-      currentModifiedTime = new Date();
-    else
-      currentModifiedTime = stats.mtime;
-
-    const fechaActual = formatoFecha(currentModifiedTime);
-    const fechaAnterior = formatoFecha(lastModifiedTime);
-
-    if (err && !antes_hubo_error) {
-      antes_hubo_error = true
-      logamarillo(2, `${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
-      notificarFallo(err.message, currentModifiedTime, () => { })
-      return;
     }
 
-    antes_hubo_error = false
-
-    if (!lastModifiedTime || currentModifiedTime > lastModifiedTime) {
-
-      lastModifiedTime = currentModifiedTime;
-      logamarillo(2, `${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
-
-      readAndProcessFile();
+    if (filaMasCercana) {
+      logamarillo(
+        2,
+        `${ID_MOD} - se leyeron datos desde citec. ${filaMasCercana} fila ${posfila}`
+      );
+      lines.push(`Cota45              ${filaMasCercana.split(" - ")[1].replace(",", ".")}`);
     } else {
-      logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la ultima lectura`);
+      logamarillo(2, `${ID_MOD} - error leyendo citec: no se encontro fila`);
     }
-  });
-}
-
-function reemplazarMes(fechaStr, mesActual, mesNuevo) {
-  let partes = fechaStr.split(" "); // Divide la fecha en partes
-
-  if (partes.length >= 2 && partes[1] === mesActual) {
-    partes[1] = mesNuevo; // Reemplaza solo si coincide con mesActual
+  } catch (error) {
+    logamarillo(2, `${ID_MOD} - error leyendo citec: ${error.message}`);
   }
 
-  return partes.join(" "); // Reconstruye la fecha
+  return lines;
 }
 
-// Funcion para formatear la fecha
+async function checkFileModification() {
+  try {
+    const stats = await fs.promises.stat(filePath);
+    currentModifiedTime = stats.mtime;
+  } catch (err) {
+    currentModifiedTime = new Date();
+    if (!antesHuboError) {
+      antesHuboError = true;
+      const fechaActual = formatoFecha(currentModifiedTime);
+      const fechaAnterior = formatoFecha(lastModifiedTime);
+      logamarillo(2, `${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+      try {
+        await notificarFallo(err.message, currentModifiedTime);
+      } catch (notifyErr) {
+        logamarillo(2, `${ID_MOD} - error registrando fallo: ${notifyErr.message}`);
+      }
+      return;
+    }
+  }
+
+  antesHuboError = false;
+  const fechaActual = formatoFecha(currentModifiedTime);
+  const fechaAnterior = formatoFecha(lastModifiedTime);
+
+  if (!lastModifiedTime || currentModifiedTime > lastModifiedTime) {
+    lastModifiedTime = currentModifiedTime;
+    logamarillo(2, `${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+    try {
+      await readAndProcessFile();
+    } catch (err) {
+      logamarillo(2, `${ID_MOD} - error procesando archivo: ${err.message}`);
+    }
+  } else {
+    logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la ultima lectura`);
+  }
+}
+
+function normalizarMes(fechaStr) {
+  const reemplazos = {
+    Ene: "Jan",
+    Abr: "Apr",
+    Ago: "Aug",
+    Dic: "Dec"
+  };
+
+  const partes = fechaStr.split(" ");
+  if (partes.length >= 2 && reemplazos[partes[1]]) {
+    partes[1] = reemplazos[partes[1]];
+  }
+  return partes.join(" ");
+}
+
 function formatoFecha(fechaOriginal) {
   const fecha = new Date(fechaOriginal);
-
-  // Obtiene los componentes de la fecha
   const year = fecha.getFullYear();
   const month = String(fecha.getMonth() + 1).padStart(2, "0");
   const day = String(fecha.getDate()).padStart(2, "0");
@@ -198,8 +189,6 @@ function formatoFecha(fechaOriginal) {
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
-
-const intervalId = setInterval(checkFileModification, checkInterval);
 
 module.exports = { iniciar, verUltimoCambio, parar };
 

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reportespiolis - Estructura</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+
+      body {
+        margin: 0;
+        font-family: Consolas, "Courier New", monospace;
+        background: #f5f6f8;
+        color: #1c1e21;
+      }
+
+      header {
+        padding: 18px 24px;
+        background: #0b0d12;
+        color: #ffffff;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 18px;
+        letter-spacing: 0.4px;
+      }
+
+      main {
+        padding: 20px 24px 40px;
+      }
+
+      .card {
+        background: #ffffff;
+        border: 1px solid #e0e3e7;
+        border-radius: 10px;
+        padding: 16px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      }
+
+      .legend {
+        margin-top: 16px;
+        font-size: 13px;
+        color: #4b5563;
+        line-height: 1.6;
+      }
+
+      .legend strong {
+        color: #111827;
+      }
+
+      svg {
+        width: 100%;
+        height: auto;
+      }
+
+      .node {
+        fill: #f8fafc;
+        stroke: #334155;
+        stroke-width: 1.2;
+        rx: 10;
+        ry: 10;
+      }
+
+      .node.dark {
+        fill: #111827;
+        stroke: #111827;
+      }
+
+      .node.light {
+        fill: #e2e8f0;
+      }
+
+      .label {
+        font-size: 12px;
+        fill: #111827;
+      }
+
+      .label.light {
+        fill: #ffffff;
+      }
+
+      .label.small {
+        font-size: 11px;
+      }
+
+      .flow {
+        stroke: #2563eb;
+        stroke-width: 1.5;
+        fill: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Reportespiolis - Estructura actual</h1>
+    </header>
+    <main>
+      <div class="card">
+        <svg viewBox="0 0 1200 720" role="img" aria-label="Diagrama de flujo de reportespiolis">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb" />
+            </marker>
+          </defs>
+
+          <rect class="node" x="40" y="80" width="170" height="54" />
+          <text class="label" x="55" y="108">Archivo Wizcon</text>
+          <text class="label small" x="55" y="126">REP002.DAT</text>
+
+          <rect class="node" x="40" y="170" width="170" height="54" />
+          <text class="label" x="55" y="198">Archivo Citec</text>
+          <text class="label small" x="55" y="216">NivelCisSur.txt</text>
+
+          <rect class="node light" x="255" y="125" width="160" height="70" />
+          <text class="label" x="270" y="155">Observador</text>
+          <text class="label small" x="270" y="174">lectura + merge</text>
+
+          <rect class="node light" x="450" y="125" width="160" height="70" />
+          <text class="label" x="470" y="155">ETL</text>
+          <text class="label small" x="470" y="174">parseo + carga</text>
+
+          <rect class="node" x="650" y="100" width="190" height="110" />
+          <text class="label" x="668" y="130">SQLite</text>
+          <text class="label small" x="668" y="150">sitio</text>
+          <text class="label small" x="668" y="168">tipo_variable</text>
+          <text class="label small" x="668" y="186">historico_lectura</text>
+          <text class="label small" x="668" y="204">log</text>
+
+          <rect class="node light" x="870" y="125" width="190" height="70" />
+          <text class="label" x="888" y="155">Transpilador</text>
+          <text class="label small" x="888" y="174">reporte + data</text>
+
+          <rect class="node" x="870" y="250" width="190" height="70" />
+          <text class="label" x="888" y="280">Public files</text>
+          <text class="label small" x="888" y="298">reporte.html</text>
+          <text class="label small" x="888" y="314">report-data.json</text>
+
+          <rect class="node dark" x="870" y="360" width="190" height="70" />
+          <text class="label light" x="888" y="392">Express</text>
+          <text class="label light small" x="888" y="410">/ , /line-data</text>
+
+          <rect class="node" x="1090" y="360" width="90" height="70" />
+          <text class="label" x="1104" y="392">Browser</text>
+          <text class="label small" x="1104" y="410">ECharts</text>
+
+          <rect class="node light" x="870" y="500" width="190" height="70" />
+          <text class="label" x="888" y="532">Puppeteer</text>
+          <text class="label small" x="888" y="550">capturas</text>
+
+          <rect class="node" x="1090" y="500" width="90" height="70" />
+          <text class="label" x="1105" y="532">PNG</text>
+          <text class="label small" x="1105" y="550">graficos</text>
+
+          <rect class="node dark" x="870" y="600" width="190" height="70" />
+          <text class="label light" x="888" y="632">Nodemailer</text>
+          <text class="label light small" x="888" y="650">envio SMTP</text>
+
+          <rect class="node" x="1090" y="600" width="90" height="70" />
+          <text class="label" x="1099" y="632">Destino</text>
+          <text class="label small" x="1099" y="650">difusion</text>
+
+          <line class="flow" x1="210" y1="107" x2="255" y2="145" marker-end="url(#arrow)" />
+          <line class="flow" x1="210" y1="197" x2="255" y2="167" marker-end="url(#arrow)" />
+          <line class="flow" x1="415" y1="160" x2="450" y2="160" marker-end="url(#arrow)" />
+          <line class="flow" x1="610" y1="160" x2="650" y2="160" marker-end="url(#arrow)" />
+          <line class="flow" x1="840" y1="160" x2="870" y2="160" marker-end="url(#arrow)" />
+          <line class="flow" x1="965" y1="195" x2="965" y2="250" marker-end="url(#arrow)" />
+          <line class="flow" x1="965" y1="320" x2="965" y2="360" marker-end="url(#arrow)" />
+          <line class="flow" x1="1060" y1="395" x2="1090" y2="395" marker-end="url(#arrow)" />
+          <line class="flow" x1="965" y1="430" x2="965" y2="500" marker-end="url(#arrow)" />
+          <line class="flow" x1="1060" y1="535" x2="1090" y2="535" marker-end="url(#arrow)" />
+          <line class="flow" x1="965" y1="570" x2="965" y2="600" marker-end="url(#arrow)" />
+          <line class="flow" x1="1060" y1="635" x2="1090" y2="635" marker-end="url(#arrow)" />
+        </svg>
+        <div class="legend">
+          <strong>Flujo principal:</strong> entradas -> observador -> ETL -> SQLite -> transpilador ->
+          archivos publicos -> express -> browser.
+          <br />
+          <strong>Salida por email:</strong> puppeteer captura graficos y nodemailer envia por SMTP.
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

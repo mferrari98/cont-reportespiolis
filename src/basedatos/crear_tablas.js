@@ -1,141 +1,122 @@
-const { getDatabase } = require('./db');
+const { run } = require("./db");
+const { logamarillo } = require("../control/controlLog");
 
-const db = getDatabase();
+const ID_MOD = "DB-SCHEMA";
 
-function crearTablas(callback) {
-  let err_tablas = []
-  tablaSitio(err_tablas, (err_compilados) => {    
-    callback(err_compilados)
-  })
-}
+async function crearTablas() {
+  const errors = {};
 
-// tabla sitio
-const tablaSitio = (err_previo, callback) => {
-  db.run(
-    `CREATE TABLE IF NOT EXISTS sitio (
+  try {
+    await run(
+      `CREATE TABLE IF NOT EXISTS sitio (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         descriptor TEXT NOT NULL,
         orden INTEGER NOT NULL,
         rebalse FLOAT NOT NULL,
         cubicaje FLOAT NOT NULL,
         maxoperativo FLOAT
-    )`,
-    (err) => {
-      err_previo["err_sitio"] = err
+      )`
+    );
+    errors.err_sitio = null;
+  } catch (err) {
+    errors.err_sitio = err;
+  }
 
-      // Índice para búsquedas por descriptor (ETL y API)
-      db.run(
-        `CREATE INDEX IF NOT EXISTS idx_sitio_descriptor
-         ON sitio(descriptor)`,
-        (errIdx) => {
-          if (errIdx) err_previo["err_idx_descriptor"] = errIdx
+  try {
+    await run(`DROP INDEX IF EXISTS idx_sitio_descriptor`);
+  } catch (err) {
+    logamarillo(2, `${ID_MOD} - Error eliminando indice de sitio: ${err.message}`);
+  }
 
-          // Migración: agregar nueva columna maxoperativo si no existe
-          db.run(
-            `ALTER TABLE sitio ADD COLUMN maxoperativo FLOAT`,
-            (errAlter) => {
-              // Ignorar error si la columna ya existe
-              if (errAlter && !errAlter.message.includes('duplicate column name')) {
-                console.log('Error añadiendo columna maxoperativo:', errAlter.message);
-              }
-
-              // Migrar datos desde maximo_operativo si existe la columna antigua
-              db.run(
-                `UPDATE sitio SET maxoperativo = maximo_operativo WHERE maximo_operativo IS NOT NULL`,
-                (errMigrate) => {
-                  if (errMigrate && !errMigrate.message.includes('no such column')) {
-                    console.log('Error migrando datos a maxoperativo:', errMigrate.message);
-                  }
-
-                  // Eliminar columna antigua si existe
-                  db.run(
-                    `ALTER TABLE sitio DROP COLUMN maximo_operativo`,
-                    (errDrop) => {
-                      // Ignorar error si la columna no existe
-                      if (errDrop && !errDrop.message.includes('no such column')) {
-                        console.log('Error eliminando columna maximo_operativo:', errDrop.message);
-                      }
-
-                      tablaTipoVariable(err_previo, callback);
-                    }
-                  );
-                }
-              );
-            }
-          );
-        }
-      );
+  try {
+    await run(`ALTER TABLE sitio ADD COLUMN maxoperativo FLOAT`);
+  } catch (err) {
+    if (!err.message.includes("duplicate column name")) {
+      logamarillo(2, `${ID_MOD} - Error agregando columna maxoperativo: ${err.message}`);
     }
-  );
-}
+  }
 
-// tabla tipo_variable
-const tablaTipoVariable = (err_previo, callback) => {
-  db.run(
-    `CREATE TABLE IF NOT EXISTS tipo_variable (
+  try {
+    await run(
+      `UPDATE sitio SET maxoperativo = maximo_operativo WHERE maximo_operativo IS NOT NULL`
+    );
+  } catch (err) {
+    if (!err.message.includes("no such column")) {
+      logamarillo(2, `${ID_MOD} - Error migrando datos: ${err.message}`);
+    }
+  }
+
+  try {
+    await run(`ALTER TABLE sitio DROP COLUMN maximo_operativo`);
+  } catch (err) {
+    if (!err.message.includes("no such column")) {
+      logamarillo(2, `${ID_MOD} - Error eliminando columna maximo_operativo: ${err.message}`);
+    }
+  }
+
+  try {
+    await run(
+      `CREATE TABLE IF NOT EXISTS tipo_variable (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         descriptor TEXT NOT NULL,
         orden INTEGER NOT NULL
-    )`,
-    (err) => {
-      err_previo["err_tvar"] = err
-      tablaHistoricosLectura(err_previo, callback)
-    }
-  );
-}
+      )`
+    );
+    errors.err_tvar = null;
+  } catch (err) {
+    errors.err_tvar = err;
+  }
 
-// tabla 'historico_lectura'
-const tablaHistoricosLectura = (err_previo, callback) => {
-  db.run(
-    `CREATE TABLE IF NOT EXISTS historico_lectura (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      sitio_id INTEGER NOT NULL,
-      tipo_id INTEGER NOT NULL,
-      valor REAL NOT NULL,
-      etiempo BIGINT NOT NULL,
-      FOREIGN KEY (sitio_id) REFERENCES sitio(id),
-      FOREIGN KEY (tipo_id) REFERENCES tipo_variable(id)
-  )`,
-    (err) => {
-      err_previo["err_histlect"] = err
+  try {
+    await run(
+      `CREATE TABLE IF NOT EXISTS historico_lectura (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sitio_id INTEGER NOT NULL,
+        tipo_id INTEGER NOT NULL,
+        valor REAL NOT NULL,
+        etiempo BIGINT NOT NULL,
+        FOREIGN KEY (sitio_id) REFERENCES sitio(id),
+        FOREIGN KEY (tipo_id) REFERENCES tipo_variable(id)
+      )`
+    );
+    errors.err_histlect = null;
+  } catch (err) {
+    errors.err_histlect = err;
+  }
 
-      // Crear índices para optimización de queries
-      // Índice compuesto para consultas N+1 (join por sitio_id y tipo_id)
-      db.run(
-        `CREATE INDEX IF NOT EXISTS idx_historico_sitio_tipo
-         ON historico_lectura(sitio_id, tipo_id)`,
-        (errIdx1) => {
-          if (errIdx1) err_previo["err_idx_sitio_tipo"] = errIdx1
+  try {
+    await run(
+      `CREATE INDEX IF NOT EXISTS idx_historico_sitio_tipo
+       ON historico_lectura(sitio_id, tipo_id)`
+    );
+  } catch (err) {
+    errors.err_idx_sitio_tipo = err;
+  }
 
-          // Índice temporal descendente para consultas recientes y paginación
-          db.run(
-            `CREATE INDEX IF NOT EXISTS idx_historico_etiempo
-             ON historico_lectura(etiempo DESC)`,
-            (errIdx2) => {
-              if (errIdx2) err_previo["err_idx_etiempo"] = errIdx2
+  try {
+    await run(
+      `CREATE INDEX IF NOT EXISTS idx_historico_etiempo
+       ON historico_lectura(etiempo DESC)`
+    );
+  } catch (err) {
+    errors.err_idx_etiempo = err;
+  }
 
-              tablaLog(err_previo, callback)
-            }
-          );
-        }
-      );
-    }
-  );
-}
+  try {
+    await run(
+      `CREATE TABLE IF NOT EXISTS log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        descriptor TEXT NOT NULL,
+        etiempo BIGINT NOT NULL,
+        creado_el DATETIME DEFAULT (DATETIME('now', '-3 hours'))
+      )`
+    );
+    errors.err_log = null;
+  } catch (err) {
+    errors.err_log = err;
+  }
 
-const tablaLog = (err_previo, callback) => {
-  db.run(
-    `CREATE TABLE IF NOT EXISTS log (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      descriptor TEXT NOT NULL,
-      etiempo BIGINT NOT NULL,
-      creado_el DATETIME DEFAULT (DATETIME('now', '-3 hours'))
-  )`,
-    (err) => {
-      err_previo["err_log"] = err      
-      callback(err_previo);
-    }
-  );
+  return errors;
 }
 
 module.exports = { crearTablas };

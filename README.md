@@ -9,13 +9,7 @@ Backend Node.js/Express que genera reportes HTML con datos historicos
 - `sitios.json` es la fuente de verdad de rebalses/cubicajes y lista de sitios Madryn.
 - El orden de visualización se basa en `sitios.json` y en el campo `tipo_variable.orden`.
 - `config.json` controla el nivel de log en `logging.level` (1 error, 2 info, 3 debug).
-- Los logs de la aplicación se guardan en `logs/app.log`.
-
-## Desarrollo
-```bash
-npm install
-npm start
-```
+- Los logs de la aplicación se guardan en `cont-reportespiolis/logs/app.log`.
 
 ## Estructura
 - Diagrama HTML disponible en `/reporte/desa`.

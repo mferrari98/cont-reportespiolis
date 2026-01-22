@@ -1,5 +1,6 @@
 const { run } = require("./db");
 const { logamarillo } = require("../control/controlLog");
+const { SQLITE_TIMEZONE_OFFSET } = require("../core/tiempo");
 
 const ID_MOD = "DB-SCHEMA";
 
@@ -108,7 +109,7 @@ async function crearTablas() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         descriptor TEXT NOT NULL,
         etiempo BIGINT NOT NULL,
-        creado_el DATETIME DEFAULT (DATETIME('now', '-3 hours'))
+        creado_el DATETIME DEFAULT (DATETIME('now', '${SQLITE_TIMEZONE_OFFSET}'))
       )`
     );
     errors.err_log = null;

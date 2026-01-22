@@ -20,6 +20,7 @@ const reporteModel = new Reporte();
 
 const ID_MOD = "REPORTE";
 const DEFAULT_HISTORICO_LIMIT = config.report.historico.defaultLimit;
+// Tope de páginas para evitar consultas muy pesadas si la BD crece demasiado.
 const MAX_PAGINAS = 48;
 
 async function lanzarReporte(enviarEmail, estampatiempo, options = {}) {
@@ -64,7 +65,10 @@ async function getNuevosDatos(options = {}) {
   const totalCount = await historicoLecturaDAO.getHistoricoEtiempoCount();
   const parsedTotal = Number(totalCount);
   const safeTotal = Number.isFinite(parsedTotal) ? parsedTotal : 0;
-  const totalPages = safeTotal > 0 ? Math.min(safeTotal, MAX_PAGINAS) : 1;
+  // El conteo devuelve cantidad de estampas de tiempo distintas, por eso se pagina por "etiempo".
+  const totalPages = safeTotal > 0
+    ? Math.min(Math.ceil(safeTotal / historicoLimit), MAX_PAGINAS)
+    : 1;
   const safePage = Math.min(safeRequestedPage, totalPages);
 
   reporte.paginacion = {
@@ -79,6 +83,7 @@ async function getNuevosDatos(options = {}) {
   }
 
   const pageOffset = safePage - 1;
+  // Se toma la "estampa" de tiempo de la página solicitada y luego se trae el resto por esa misma estampa.
   const targetEtiempo = await historicoLecturaDAO.getHistoricoEtiempoPagDesc(pageOffset);
   if (targetEtiempo === null || typeof targetEtiempo === "undefined") {
     return { reporte, estampaReporte: null };

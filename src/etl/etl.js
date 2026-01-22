@@ -10,6 +10,7 @@ const sitioDAO = new SitioDAO();
 const historicoLecturaDAO = new HistoricoLecturaDAO();
 
 const ID_MOD = "ETL";
+// Marca usada cuando faltan columnas o valores en la captura.
 const SIN_DETERMINAR = "s/d";
 
 const UMBRAL = config.observador.umbral_parser_columnas;
@@ -136,6 +137,7 @@ function mensaje(origen, cont1, cont2) {
   return `${origen} creadas=${cont1} existentes=${cont2}`;
 }
 
+// Inserta "s/d" cuando detecta demasiados espacios consecutivos (columnas faltantes).
 function agregarNulos(lines, threshold) {
   const modifiedLines = [];
 
@@ -166,6 +168,7 @@ function agregarNulos(lines, threshold) {
   return modifiedLines;
 }
 
+// Parsea una "columna" numérica o texto desde una línea ya normalizada.
 function getColumna(modifiedLines, numCol) {
   const columnValues = [];
   const regex = /\s(?=-?\d|\bs\/d)|(?<=-?\d|\bs\/d)\s/g;

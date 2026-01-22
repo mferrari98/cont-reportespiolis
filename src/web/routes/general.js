@@ -48,19 +48,19 @@ router.get(
     const safeTotalPages = totalPagesValue && totalPagesValue > 0 ? totalPagesValue : null;
     const safePage = safeTotalPages ? Math.min(Math.max(pageValue, 1), safeTotalPages) : Math.max(pageValue, 1);
 
-    const prevDisabled = safeTotalPages ? safePage >= safeTotalPages : false;
-    const nextDisabled = safePage <= 1;
-    const prevPage = safeTotalPages ? Math.min(safePage + 1, safeTotalPages) : safePage + 1;
-    const nextPage = Math.max(1, safePage - 1);
+    const olderDisabled = safeTotalPages ? safePage >= safeTotalPages : false;
+    const newerDisabled = safePage <= 1;
+    const olderPage = safeTotalPages ? Math.min(safePage + 1, safeTotalPages) : safePage + 1;
+    const newerPage = Math.max(1, safePage - 1);
 
-    const prevHref = `?historicoPage=${prevPage}&historicoLimit=${limitValue}`;
-    const nextHref = `?historicoPage=${nextPage}&historicoLimit=${limitValue}`;
-    const prevLink = prevDisabled
+    const olderHref = `?historicoPage=${olderPage}&historicoLimit=${limitValue}`;
+    const newerHref = `?historicoPage=${newerPage}&historicoLimit=${limitValue}`;
+    const olderLink = olderDisabled
       ? '<span id="piolis_prev" style="opacity:0.5; cursor: default;">Anterior</span>'
-      : `<a id="piolis_prev" href="${prevHref}">Anterior</a>`;
-    const nextLink = nextDisabled
+      : `<a id="piolis_prev" href="${olderHref}">Anterior</a>`;
+    const newerLink = newerDisabled
       ? '<span id="piolis_next" style="opacity:0.5; cursor: default;">Siguiente</span>'
-      : `<a id="piolis_next" href="${nextHref}">Siguiente</a>`;
+      : `<a id="piolis_next" href="${newerHref}">Siguiente</a>`;
 
     let pageLabel = "Ultimo reporte";
     if (safePage > 1) {
@@ -71,9 +71,9 @@ router.get(
     const navHtml = `
  <!-- INICIO_CONTROLES_PAGINACION -->
  <div id="piolis_paginacion" style="position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); border: 1px solid #ccc; padding: 8px 12px; border-radius: 6px; z-index:9999; font-family: Consolas, monospace;">
-   ${prevLink}
+   ${olderLink}
    <span style="margin:0 8px;">${pageLabel}</span>
-   ${nextLink}
+   ${newerLink}
  </div>
  <!-- FIN_CONTROLES_PAGINACION -->
  `;

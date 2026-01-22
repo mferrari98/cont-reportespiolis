@@ -1,13 +1,14 @@
 const { logamarillo } = require("./src/control/controlLog");
 const { crearTablas } = require("./src/basedatos/crear_tablas");
 const { closeDatabase } = require("./src/basedatos/db");
-const observador = require("./src/etl/observador");
+const { Observador } = require("./src/etl/observador");
 const createServer = require("./src/web/server");
 
 const ID_MOD = "SUPERINDEX";
 
 async function bootstrap() {
   try {
+    const observador = new Observador();
     const serverHandle = createServer(observador);
     const resumenErrores = await crearTablas();
 

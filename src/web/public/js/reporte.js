@@ -252,8 +252,7 @@
       return
     }
 
-    // On page load, always use default range (1d), ignoring URL params
-    // This prevents heavy load when lineRange=all persists on refresh
+    // Al cargar, siempre forzamos 1d y limpiamos la URL para evitar cargas pesadas con lineRange=all.
     const rangeKey = LINE_RANGE_DEFAULT
     lineState.rangeKey = rangeKey
     setActiveRange(buttons, rangeKey)

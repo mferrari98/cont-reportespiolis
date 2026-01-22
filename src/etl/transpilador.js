@@ -4,6 +4,7 @@ const cheerio = require("cheerio");
 
 const config = require("../config/loader");
 const { logamarillo } = require("../control/controlLog");
+const { formatDateTime } = require("../core/tiempo");
 const { sindet } = require("./etl");
 
 const ID_MOD = "TRANS";
@@ -28,6 +29,7 @@ async function transpilar(reporte, estampatiempo) {
   await writeReportData(reportPayload);
 }
 
+// Expande la plantilla HTML duplicando la fila base según la cantidad de sitios.
 function expandirPlantilla(reporte, data) {
   const $ = cheerio.load(data);
   const tbody = $("tbody");
@@ -59,6 +61,7 @@ function sustituirMarcas(reporte, estampatiempo, contenido) {
     const nivelValor = item.variable.nivel.valor;
     const cloroValor = item.variable.cloro.valor;
 
+    // Reglas de alerta en rojo para ciertos sitios/umbrales.
     const nivelAlert =
       (item.sitio === "L.Maria" || item.sitio === "KM11" || item.sitio === "R6000") &&
       nivelValor < 3;
@@ -151,6 +154,7 @@ async function ensureDir(dirPath) {
   }
 }
 
+// Copia ECharts al public si está disponible para el frontend del reporte.
 async function copyEcharts() {
   if (!fs.existsSync(echartsSrc)) {
     logamarillo(2, `${ID_MOD} - ECharts no encontrado en ${echartsSrc}`);
@@ -283,31 +287,12 @@ function buildReportData(reporte) {
 }
 
 function fechaLegible(estampatiempo) {
-  const { date, time } = getCurrentDateTime(estampatiempo);
+  const { date, time } = formatDateTime(new Date(estampatiempo), {
+    dateOrder: "DMY",
+    dateSeparator: "-",
+    year: "2-digit"
+  });
   return `${date} ${time}`;
-}
-
-function getCurrentDateTime(estampatiempo) {
-  const now = new Date(estampatiempo);
-  const options = {
-    year: "2-digit",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-    timeZone: "America/Argentina/Buenos_Aires"
-  };
-  const formatter = new Intl.DateTimeFormat("es-ES", options);
-  const parts = formatter.formatToParts(now);
-  const partMap = parts.reduce((acc, part) => {
-    acc[part.type] = part.value;
-    return acc;
-  }, {});
-  const date = `${partMap.day}-${partMap.month}-${partMap.year}`;
-  const time = `${partMap.hour}:${partMap.minute}:${partMap.second}`;
-  return { date, time };
 }
 
 module.exports = {

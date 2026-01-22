@@ -3,6 +3,7 @@ const path = require("path");
 const util = require("util");
 
 const config = require("../config/loader");
+const { formatDateTime } = require("../core/tiempo");
 
 const ID_MOD = "LOG";
 
@@ -77,9 +78,8 @@ function normalizeLegacy(level) {
 }
 
 function formatTimestamp() {
-  const now = new Date();
-  const gmt3 = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-  return gmt3.toISOString();
+  // Se usa zona Buenos Aires para mantener consistencia con reportes y correos.
+  return formatDateTime(new Date(), { dateOrder: "YMD", year: "numeric" }).dateTime;
 }
 
 function ensureDir(dirPath) {

@@ -47,7 +47,7 @@ const DEFAULTS = {
   logging: {
     level: "info",
     maxBytes: 10 * 1024 * 1024,
-    dir: "/logs/reportespiolis",
+    dir: path.join(ROOT_DIR, "logs"),
     file: ""
   },
   report: {
@@ -63,6 +63,7 @@ const DEFAULTS = {
   }
 };
 
+// Carga un .env básico sin pisar variables ya presentes en el entorno.
 function loadEnvFile() {
   if (!fs.existsSync(ENV_PATH)) {
     return;
@@ -95,6 +96,7 @@ function loadEnvFile() {
   });
 }
 
+// Permite sustituir ${VAR} en config.json. Si el valor es solo la variable y contiene comas, devuelve array.
 function expandEnvironmentVariables(obj, currentPath = "") {
   if (typeof obj === "string") {
     const regex = /\$\{([^}]+)\}/g;
@@ -238,13 +240,15 @@ function buildPaths(config) {
   };
 }
 
+// Resuelve el archivo de log final respetando el directorio configurado.
 function resolveLogFile(config) {
   const logDir = config.logging.dir;
-  const customFile = process.env.LOG_FILE || config.logging.file;
+  const customFile = config.logging.file;
   if (customFile) {
     return path.resolve(customFile);
   }
-  if (logDir && fs.existsSync(logDir)) {
+  // Mantener logs dentro del directorio configurado aunque no exista todavía.
+  if (logDir) {
     return path.join(logDir, "app.log");
   }
   return path.join(process.cwd(), "app.log");
@@ -259,18 +263,6 @@ function applyEnvOverrides(config) {
   }
   if (process.env.EMAIL_DIFUSION) {
     config.email.difusion = process.env.EMAIL_DIFUSION;
-  }
-  if (process.env.SMTP_HOST) {
-    config.email.smtp.host = process.env.SMTP_HOST;
-  }
-  if (process.env.SMTP_HOST_FALLBACK) {
-    config.email.smtp.fallback = process.env.SMTP_HOST_FALLBACK;
-  }
-  if (process.env.SMTP_PORT) {
-    config.email.smtp.port = parseNumber(process.env.SMTP_PORT, config.email.smtp.port);
-  }
-  if (process.env.SMTP_FROM) {
-    config.email.smtp.from = process.env.SMTP_FROM;
   }
 
   if (process.env.OBSERVADOR_UMBRAL_COLUMNAS) {
@@ -298,21 +290,8 @@ function applyEnvOverrides(config) {
       config.report.historico.maxLimit
     );
   }
-  if (process.env.REPORTE_WEB_URL) {
-    config.report.webUrl = process.env.REPORTE_WEB_URL;
-  }
-
-  if (process.env.LOG_LEVEL) {
-    config.logging.level = process.env.LOG_LEVEL;
-  }
   if (process.env.LOG_MAX_BYTES) {
     config.logging.maxBytes = parseNumber(process.env.LOG_MAX_BYTES, config.logging.maxBytes);
-  }
-  if (process.env.LOG_DIR) {
-    config.logging.dir = process.env.LOG_DIR;
-  }
-  if (process.env.LOG_FILE) {
-    config.logging.file = process.env.LOG_FILE;
   }
 
   if (process.env.PORT) {

@@ -51,6 +51,7 @@ const server = http.createServer(app).listen(PORT, () => {
   logamarillo(2, `${ID_MOD} - Escuchando en p=${PORT} (HTTP)`);
 });
 
+// Guardamos conexiones activas para cerrar el server de forma limpia al apagar.
 const connections = new Set();
 
 server.on("connection", (conn) => {

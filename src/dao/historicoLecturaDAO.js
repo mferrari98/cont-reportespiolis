@@ -1,5 +1,6 @@
 const { run, get, all, exec } = require("../basedatos/db");
 const { logamarillo } = require("../control/controlLog");
+const { DESCRIPTOR_NIVEL } = require("../core/constantes");
 
 const ID_MOD = "DAO-HISTORICO-LECTURA";
 
@@ -24,20 +25,20 @@ const sql_getHistorico = `
   SELECT hl.*
   FROM historico_lectura hl
   JOIN tipo_variable tv ON hl.tipo_id = tv.id
-  WHERE hl.sitio_id = ? AND tv.descriptor = 'Nivel[m]'
+  WHERE hl.sitio_id = ? AND tv.descriptor = ?
   ORDER BY etiempo;
 `;
 const sql_getHistoricoEtiempoCount = `
   SELECT COUNT(DISTINCT hl.etiempo) as total
   FROM historico_lectura hl
   JOIN tipo_variable tv ON hl.tipo_id = tv.id
-  WHERE tv.descriptor = 'Nivel[m]'
+  WHERE tv.descriptor = ?
 `;
 const sql_getHistoricoEtiempoPagDesc = `
   SELECT hl.etiempo
   FROM historico_lectura hl
   JOIN tipo_variable tv ON hl.tipo_id = tv.id
-  WHERE tv.descriptor = 'Nivel[m]'
+  WHERE tv.descriptor = ?
   GROUP BY hl.etiempo
   ORDER BY hl.etiempo DESC
   LIMIT 1 OFFSET ?
@@ -55,7 +56,7 @@ const sql_getHistorico_pag_desc = `
     SELECT hl.*
     FROM historico_lectura hl
     JOIN tipo_variable tv ON hl.tipo_id = tv.id
-    WHERE hl.sitio_id = ? AND tv.descriptor = 'Nivel[m]'
+    WHERE hl.sitio_id = ? AND tv.descriptor = ?
     ORDER BY etiempo DESC
     LIMIT ? OFFSET ?
   ) sub
@@ -67,7 +68,7 @@ const sql_getHistorico_pag_desc_hasta = `
     SELECT hl.*
     FROM historico_lectura hl
     JOIN tipo_variable tv ON hl.tipo_id = tv.id
-    WHERE hl.sitio_id = ? AND tv.descriptor = 'Nivel[m]' AND hl.etiempo <= ?
+    WHERE hl.sitio_id = ? AND tv.descriptor = ? AND hl.etiempo <= ?
     ORDER BY etiempo DESC
     LIMIT ? OFFSET ?
   ) sub
@@ -77,7 +78,7 @@ const sql_getHistoricoCount = `
   SELECT COUNT(*) as total
   FROM historico_lectura hl
   JOIN tipo_variable tv ON hl.tipo_id = tv.id
-  WHERE hl.sitio_id = ? AND tv.descriptor = 'Nivel[m]'
+  WHERE hl.sitio_id = ? AND tv.descriptor = ?
 `;
 const sql_delete = `DELETE FROM historico_lectura WHERE id = ?`;
 const sql_truncate = `DELETE FROM historico_lectura; DELETE FROM SQLITE_SEQUENCE WHERE name="historico_lectura"`;
@@ -147,7 +148,7 @@ class HistoricoLecturaDAO {
   async getHistorico(sitio_id) {
     logamarillo(1, `${ID_MOD} - getHistorico`);
     try {
-      return await all(sql_getHistorico, [sitio_id]);
+      return await all(sql_getHistorico, [sitio_id, DESCRIPTOR_NIVEL]);
     } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
       throw err;
@@ -157,7 +158,7 @@ class HistoricoLecturaDAO {
   async getHistoricoEtiempoCount() {
     logamarillo(1, `${ID_MOD} - getHistoricoEtiempoCount`);
     try {
-      const row = await get(sql_getHistoricoEtiempoCount, []);
+      const row = await get(sql_getHistoricoEtiempoCount, [DESCRIPTOR_NIVEL]);
       return row ? row.total : 0;
     } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
@@ -169,7 +170,7 @@ class HistoricoLecturaDAO {
     logamarillo(1, `${ID_MOD} - getHistoricoEtiempoPagDesc offset=${offset}`);
     const safeOffset = Number.isFinite(Number(offset)) ? Math.max(parseInt(offset, 10), 0) : 0;
     try {
-      const row = await get(sql_getHistoricoEtiempoPagDesc, [safeOffset]);
+      const row = await get(sql_getHistoricoEtiempoPagDesc, [DESCRIPTOR_NIVEL, safeOffset]);
       return row ? row.etiempo : null;
     } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
@@ -192,7 +193,7 @@ class HistoricoLecturaDAO {
     const l = Number.isFinite(Number(limit)) && Number(limit) > 0 ? parseInt(limit, 10) : 100;
     const o = Number.isFinite(Number(offset)) && Number(offset) >= 0 ? parseInt(offset, 10) : 0;
     try {
-      return await all(sql_getHistorico_pag_desc, [sitio_id, l, o]);
+      return await all(sql_getHistorico_pag_desc, [sitio_id, DESCRIPTOR_NIVEL, l, o]);
     } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
       throw err;
@@ -204,7 +205,7 @@ class HistoricoLecturaDAO {
     const l = Number.isFinite(Number(limit)) && Number(limit) > 0 ? parseInt(limit, 10) : 100;
     const o = Number.isFinite(Number(offset)) && Number(offset) >= 0 ? parseInt(offset, 10) : 0;
     try {
-      return await all(sql_getHistorico_pag_desc_hasta, [sitio_id, etiempo, l, o]);
+      return await all(sql_getHistorico_pag_desc_hasta, [sitio_id, DESCRIPTOR_NIVEL, etiempo, l, o]);
     } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
       throw err;
@@ -214,7 +215,7 @@ class HistoricoLecturaDAO {
   async getHistoricoCount(sitio_id) {
     logamarillo(1, `${ID_MOD} - getHistoricoCount sitio_id=${sitio_id}`);
     try {
-      const row = await get(sql_getHistoricoCount, [sitio_id]);
+      const row = await get(sql_getHistoricoCount, [sitio_id, DESCRIPTOR_NIVEL]);
       return row ? row.total : 0;
     } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);

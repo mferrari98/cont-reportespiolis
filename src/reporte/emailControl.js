@@ -4,6 +4,7 @@ const nodemailer = require("nodemailer");
 
 const config = require("../config/loader");
 const { logamarillo } = require("../control/controlLog");
+const { formatDateTime } = require("../core/tiempo");
 
 const ID_MOD = "CTRL-EMAIL";
 
@@ -13,6 +14,7 @@ const pass = config.email.credenciales.pass;
 const smtpHost = config.email.smtp.host;
 const smtpHostFallback = config.email.smtp.fallback;
 
+// Se inicializa una única vez para evitar reintentos DNS por cada envío.
 const transporterPromise = initTransporter();
 
 function createTransporter(host) {
@@ -44,7 +46,11 @@ async function initTransporter() {
 class EmailControl {
   async enviar() {
     const transporter = await transporterPromise;
-    const { date, time } = getCurrentDateTime();
+    const { date, time } = formatDateTime(new Date(), {
+      dateOrder: "DMY",
+      dateSeparator: "/",
+      year: "2-digit"
+    });
 
     let resumen = "";
     const htmlContent = fs.readFileSync(config.paths.reportTable, "utf8").trim();
@@ -130,24 +136,6 @@ class EmailControl {
       throw error;
     }
   }
-}
-
-function getCurrentDateTime() {
-  const now = new Date();
-  const options = {
-    year: "2-digit",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false
-  };
-  const formatter = new Intl.DateTimeFormat("es-ES", options);
-  const parts = formatter.formatToParts(now);
-  const date = `${parts[0].value}/${parts[2].value}/${parts[4].value}`;
-  const time = `${parts[6].value}:${parts[8].value}:${parts[10].value}`;
-  return { date, time };
 }
 
 module.exports = EmailControl;

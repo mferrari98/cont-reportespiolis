@@ -8,6 +8,7 @@ const sitiosMadryn = new Set(config.sitios.madryn || []);
 
 class Reporte {
   async declarar(sitios) {
+    // Se asume orden estable de descriptores (nivel, cloro, turbiedad, voldia).
     const descriptores = await tipoVariableDAO.getTodosDescriptores();
 
     return sitios.map((sitio, index) => ({
@@ -39,6 +40,7 @@ class Reporte {
   }
 
   definir(reporte, row, tipoVarRow, sitioRow, historicos) {
+    // `orden` define la posición del descriptor dentro del objeto variable.
     const indiceProp = tipoVarRow.orden;
     const variableKeys = Object.keys(reporte[sitioRow.orden].variable);
 

@@ -8,158 +8,167 @@ const { lanzarReporte, notificarFallo } = require("../control/controlReporte");
 
 const ID_MOD = "OBSERV";
 
-const DIR_WIZCON = config.direcciones.sca_wizcon;
-const DIR_CITEC = config.direcciones.cota45;
-const CHECK_INTERVAL = config.observador.tiempo_milis;
-const CANT_LINEAS_CITEC = config.observador.citec_lineas;
-
-let filePath = process.argv[2];
-let currentModifiedTime = null;
-let lastModifiedTime = null;
-let antesHuboError = false;
-let intervalId = null;
-
-async function iniciar() {
-  if (process.argv.length < 3) {
-    logamarillo(1, `${ID_MOD} - No hay direccion en linea de comandos, se utilizara config.json`);
-    filePath = DIR_WIZCON;
+class Observador {
+  constructor(options = {}) {
+    this.dirWizcon = options.dirWizcon || config.direcciones.sca_wizcon;
+    this.dirCitec = options.dirCitec || config.direcciones.cota45;
+    this.checkInterval = options.checkInterval || config.observador.tiempo_milis;
+    this.cantLineasCitec = options.cantLineasCitec || config.observador.citec_lineas;
+    // Precedencia: option > argv[2] (modo manual) > config.json.
+    this.filePath = options.filePath || process.argv[2] || null;
+    this.currentModifiedTime = null;
+    this.lastModifiedTime = null;
+    this.antesHuboError = false;
+    this.intervalId = null;
+    // Bind para reutilizar la misma función en setInterval.
+    this._tick = this.checkFileModification.bind(this);
   }
 
-  if (!filePath) {
-    logamarillo(1, `${ID_MOD} - Direccion de archivo no definida`);
-    return;
-  }
-
-  await checkFileModification();
-  if (!intervalId) {
-    intervalId = setInterval(checkFileModification, CHECK_INTERVAL);
-  }
-}
-
-async function verUltimoCambio(enviarEmail, options = {}) {
-  await lanzarReporte(enviarEmail, currentModifiedTime, options);
-}
-
-function parar() {
-  if (intervalId) {
-    clearInterval(intervalId);
-    intervalId = null;
-  }
-  logamarillo(1, `${ID_MOD} - deteniendo observador`);
-}
-
-async function readAndProcessFile() {
-  const lines = await datosWizcon();
-  const enriched = await datosCitec(lines);
-  await lanzarETL(enriched, currentModifiedTime);
-  await verUltimoCambio(true);
-}
-
-function datosWizcon() {
-  return new Promise((resolve, reject) => {
-    const lines = [];
-    const stream = fs.createReadStream(filePath);
-    const rl = readline.createInterface({
-      input: stream,
-      output: process.stdout,
-      terminal: false
-    });
-
-    rl.on("line", (line) => {
-      lines.push(line);
-    });
-
-    rl.on("close", () => {
-      logamarillo(2, `${ID_MOD} - se leyeron datos desde wizcon`);
-      resolve(lines);
-    });
-
-    rl.on("error", (error) => {
-      logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
-      reject(error);
-    });
-
-    stream.on("error", (error) => {
-      logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
-      reject(error);
-    });
-  });
-}
-
-async function datosCitec(lines) {
-  try {
-    const data = await fs.promises.readFile(DIR_CITEC, "utf8");
-    const lineas = data.trim().split("\r\n");
-
-    let posfila = 0;
-    let filaMasCercana = null;
-    let diferenciaMinima = currentModifiedTime;
-
-    for (let i = lineas.length - 1; i >= Math.max(0, lineas.length - CANT_LINEAS_CITEC); i -= 1) {
-      const linea = lineas[i];
-      const fecha = linea.split(" - ")[0].trim();
-
-      const fechaNormalizada = normalizarMes(fecha);
-      const fechaMs = new Date(fechaNormalizada);
-
-      const diferencia = Math.abs(currentModifiedTime - fechaMs);
-      if (diferencia < diferenciaMinima) {
-        diferenciaMinima = diferencia;
-        filaMasCercana = linea;
-        posfila = i;
-      }
+  async iniciar() {
+    if (!this.filePath) {
+      logamarillo(1, `${ID_MOD} - No hay direccion en linea de comandos, se utilizara config.json`);
+      this.filePath = this.dirWizcon;
     }
 
-    if (filaMasCercana) {
-      logamarillo(
-        2,
-        `${ID_MOD} - se leyeron datos desde citec. ${filaMasCercana} fila ${posfila}`
-      );
-      lines.push(`Cota45              ${filaMasCercana.split(" - ")[1].replace(",", ".")}`);
-    } else {
-      logamarillo(2, `${ID_MOD} - error leyendo citec: no se encontro fila`);
-    }
-  } catch (error) {
-    logamarillo(2, `${ID_MOD} - error leyendo citec: ${error.message}`);
-  }
-
-  return lines;
-}
-
-async function checkFileModification() {
-  try {
-    const stats = await fs.promises.stat(filePath);
-    currentModifiedTime = stats.mtime;
-  } catch (err) {
-    currentModifiedTime = new Date();
-    if (!antesHuboError) {
-      antesHuboError = true;
-      const fechaActual = formatoFecha(currentModifiedTime);
-      const fechaAnterior = formatoFecha(lastModifiedTime);
-      logamarillo(2, `${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
-      try {
-        await notificarFallo(err.message, currentModifiedTime);
-      } catch (notifyErr) {
-        logamarillo(2, `${ID_MOD} - error registrando fallo: ${notifyErr.message}`);
-      }
+    if (!this.filePath) {
+      logamarillo(1, `${ID_MOD} - Direccion de archivo no definida`);
       return;
     }
+
+    await this.checkFileModification();
+    if (!this.intervalId) {
+      this.intervalId = setInterval(this._tick, this.checkInterval);
+    }
   }
 
-  antesHuboError = false;
-  const fechaActual = formatoFecha(currentModifiedTime);
-  const fechaAnterior = formatoFecha(lastModifiedTime);
+  async verUltimoCambio(enviarEmail, options = {}) {
+    await lanzarReporte(enviarEmail, this.currentModifiedTime, options);
+  }
 
-  if (!lastModifiedTime || currentModifiedTime > lastModifiedTime) {
-    lastModifiedTime = currentModifiedTime;
-    logamarillo(2, `${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
-    try {
-      await readAndProcessFile();
-    } catch (err) {
-      logamarillo(2, `${ID_MOD} - error procesando archivo: ${err.message}`);
+  parar() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
     }
-  } else {
-    logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la ultima lectura`);
+    logamarillo(1, `${ID_MOD} - deteniendo observador`);
+  }
+
+  async readAndProcessFile() {
+    const lines = await this.datosWizcon();
+    const enriched = await this.datosCitec(lines);
+    await lanzarETL(enriched, this.currentModifiedTime);
+    await this.verUltimoCambio(true);
+  }
+
+  datosWizcon() {
+    return new Promise((resolve, reject) => {
+      const lines = [];
+      const stream = fs.createReadStream(this.filePath);
+      const rl = readline.createInterface({
+        input: stream,
+        output: process.stdout,
+        terminal: false
+      });
+
+      rl.on("line", (line) => {
+        lines.push(line);
+      });
+
+      rl.on("close", () => {
+        logamarillo(2, `${ID_MOD} - se leyeron datos desde wizcon`);
+        resolve(lines);
+      });
+
+      rl.on("error", (error) => {
+        logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
+        reject(error);
+      });
+
+      stream.on("error", (error) => {
+        logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
+        reject(error);
+      });
+    });
+  }
+
+  async datosCitec(lines) {
+    try {
+      const data = await fs.promises.readFile(this.dirCitec, "utf8");
+      const lineas = data.trim().split("\r\n");
+
+      let posfila = 0;
+      let filaMasCercana = null;
+      let diferenciaMinima = this.currentModifiedTime;
+
+      // Solo se inspeccionan las últimas N líneas para evitar leer el archivo completo.
+      for (let i = lineas.length - 1; i >= Math.max(0, lineas.length - this.cantLineasCitec); i -= 1) {
+        const linea = lineas[i];
+        const fecha = linea.split(" - ")[0].trim();
+
+        const fechaNormalizada = normalizarMes(fecha);
+        const fechaMs = new Date(fechaNormalizada);
+
+        const diferencia = Math.abs(this.currentModifiedTime - fechaMs);
+        if (diferencia < diferenciaMinima) {
+          diferenciaMinima = diferencia;
+          filaMasCercana = linea;
+          posfila = i;
+        }
+      }
+
+      if (filaMasCercana) {
+        logamarillo(
+          2,
+          `${ID_MOD} - se leyeron datos desde citec. ${filaMasCercana} fila ${posfila}`
+        );
+        // Agregamos la lectura de Cota45 desde Citec al lote principal de Wizcon.
+        lines.push(`Cota45              ${filaMasCercana.split(" - ")[1].replace(",", ".")}`);
+      } else {
+        logamarillo(2, `${ID_MOD} - error leyendo citec: no se encontro fila`);
+      }
+    } catch (error) {
+      logamarillo(2, `${ID_MOD} - error leyendo citec: ${error.message}`);
+    }
+
+    return lines;
+  }
+
+  async checkFileModification() {
+    try {
+      const stats = await fs.promises.stat(this.filePath);
+      this.currentModifiedTime = stats.mtime;
+    } catch (err) {
+      this.currentModifiedTime = new Date();
+      // Evita notificar repetidamente el mismo fallo si el archivo sigue inaccesible.
+      if (!this.antesHuboError) {
+        this.antesHuboError = true;
+        const fechaActual = formatoFecha(this.currentModifiedTime);
+        const fechaAnterior = formatoFecha(this.lastModifiedTime);
+        logamarillo(2, `${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+        try {
+          await notificarFallo(err.message, this.currentModifiedTime);
+        } catch (notifyErr) {
+          logamarillo(2, `${ID_MOD} - error registrando fallo: ${notifyErr.message}`);
+        }
+        return;
+      }
+    }
+
+    this.antesHuboError = false;
+    const fechaActual = formatoFecha(this.currentModifiedTime);
+    const fechaAnterior = formatoFecha(this.lastModifiedTime);
+
+    if (!this.lastModifiedTime || this.currentModifiedTime > this.lastModifiedTime) {
+      this.lastModifiedTime = this.currentModifiedTime;
+      logamarillo(2, `${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+      try {
+        await this.readAndProcessFile();
+      } catch (err) {
+        logamarillo(2, `${ID_MOD} - error procesando archivo: ${err.message}`);
+      }
+    } else {
+      logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la ultima lectura`);
+    }
   }
 }
 
@@ -190,6 +199,6 @@ function formatoFecha(fechaOriginal) {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
-module.exports = { iniciar, verUltimoCambio, parar };
+module.exports = { Observador };
 
 logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

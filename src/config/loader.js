@@ -55,7 +55,7 @@ const DEFAULTS = {
       defaultLimit: 48,
       maxLimit: 200000
     },
-    webUrl: "http://10.10.9.252/reporte"
+    webUrl: "http://10.10.2.250/reporte"
   },
   sitios: {
     defaults: [],

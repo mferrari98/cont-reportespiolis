@@ -1,6 +1,6 @@
 {
   "name": "reportespiolis",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "scripting que consume un reporte en texto plano y genera un html. el texto de entrada tiene un formato determinado, no se trata de algo adaptable basado en plantillas sino todo lo cantrario, solo es capaz de interpretar el formato impuesto por el servicio que genera esos textos",
   "main": "./index.js",
   "directories": {
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/poximan/reportespiolis.git"
+    "url": "git+https://github.com/mferrari98/cont-reportespiolis.git"
   },
   "keywords": [
     "scripting",
@@ -21,15 +21,15 @@
     "etl",
     "transpilador",
     "html",
-    "plotly",
+    "echats",
     "reporte"
   ],
   "author": "servicoop.comunicaciones",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/poximan/reportespiolis/issues"
+    "url": "https://github.com/mferrari98/cont-reportespiolis/issues"
   },
-  "homepage": "https://github.com/poximan/reportespiolis#readme",
+  "homepage": "https://github.com/cont-reportespiolis#readme",
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
     "echarts": "^5.5.1",

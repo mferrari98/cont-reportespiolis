@@ -1,8 +1,5 @@
 const { run } = require("./db");
-const { logamarillo } = require("../control/controlLog");
 const { SQLITE_TIMEZONE_OFFSET } = require("../core/tiempo");
-
-const ID_MOD = "DB-SCHEMA";
 
 async function crearTablas() {
   const errors = {};
@@ -23,37 +20,6 @@ async function crearTablas() {
     errors.err_sitio = err;
   }
 
-  try {
-    await run(`DROP INDEX IF EXISTS idx_sitio_descriptor`);
-  } catch (err) {
-    logamarillo(2, `${ID_MOD} - Error eliminando indice de sitio: ${err.message}`);
-  }
-
-  try {
-    await run(`ALTER TABLE sitio ADD COLUMN maxoperativo FLOAT`);
-  } catch (err) {
-    if (!err.message.includes("duplicate column name")) {
-      logamarillo(2, `${ID_MOD} - Error agregando columna maxoperativo: ${err.message}`);
-    }
-  }
-
-  try {
-    await run(
-      `UPDATE sitio SET maxoperativo = maximo_operativo WHERE maximo_operativo IS NOT NULL`
-    );
-  } catch (err) {
-    if (!err.message.includes("no such column")) {
-      logamarillo(2, `${ID_MOD} - Error migrando datos: ${err.message}`);
-    }
-  }
-
-  try {
-    await run(`ALTER TABLE sitio DROP COLUMN maximo_operativo`);
-  } catch (err) {
-    if (!err.message.includes("no such column")) {
-      logamarillo(2, `${ID_MOD} - Error eliminando columna maximo_operativo: ${err.message}`);
-    }
-  }
 
   try {
     await run(

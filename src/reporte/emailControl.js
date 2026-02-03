@@ -102,7 +102,17 @@ class EmailControl {
             </div>
 
             <img src="cid:grafBarras" alt="Grafico de Barras" style="display: block; width: 90%; height: auto; margin: 0 auto 14px;"/>
-            <img src="cid:grafPieMdy" alt="Grafico Pie Madryn" style="display: block; width: 39.9%; height: auto; margin: 0 auto 14px;"/>
+            <img src="cid:grafPieMdy" alt="Grafico Pie Madryn" style="display: block; width: 39.9%; height: auto; margin: 0 auto 6px;"/>
+            <div style="text-align: center; font-family: 'consolas'; font-size: 12px; color: #444; margin: 0 auto 8px;">
+              <span style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px;">
+                <i style="width: 12px; height: 12px; border-radius: 3px; background: #3498db; display: inline-block;"></i>
+                Agua
+              </span>
+              <span style="display: inline-flex; align-items: center; gap: 6px;">
+                <i style="width: 12px; height: 12px; border-radius: 3px; background: #f2e4c5; display: inline-block;"></i>
+                Disponible
+              </span>
+            </div>
             ${pieLeyenda}
             <img src="cid:grafLineas" alt="Grafico de Lineas" style="display: block; width: 90%; height: auto; margin: 0 auto 8px;"/>
           </div>

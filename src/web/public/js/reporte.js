@@ -325,7 +325,7 @@
 
     const colorNivel = getCssVar('--color-nivel', '#3498db')
     const colorRebalse = getCssVar('--color-rebalse', '#d3a53c')
-    const colorTexto = getCssVar('--color-texto', '#000')
+    const colorTexto = getCssVar('--color-texto', '#333')
     const barFontScale = 1
 
     const nivelSeries = sitios.map((sitio, index) => {
@@ -486,7 +486,7 @@
     const colorNivel = getCssVar('--color-nivel', '#3498db')
     const colorRebalse = getCssVar('--color-rebalse', '#d3a53c')
     const colorVacio = lightenColor(colorRebalse, 0.7)
-    const colorTexto = getCssVar('--color-texto', '#000')
+    const colorTexto = getCssVar('--color-texto', '#333')
     const sunburstFontDelta = -1
 
     const siteNodes = sites
@@ -502,7 +502,8 @@
           name: site.name,
           value,
           itemStyle: {
-            color: lightenColor(colorNivel, factor)
+            color: lightenColor(colorNivel, factor),
+            opacity: 0.8
           }
         }
         if (!showLabel) {
@@ -589,7 +590,7 @@
                 formatter: (params) => {
                   const value = toNumber(params.value)
                   const percent = totalGeneral > 0 ? (value / totalGeneral) * 100 : 0
-                  return `${params.name}\n${percent.toFixed(0)}%`
+                  return `${percent.toFixed(0)}%`
                 }
               }
             },

@@ -13,7 +13,8 @@
         :root {
             --color-nivel: #3498db;
             --color-rebalse: #d3a53c;
-            --color-texto: #000;
+            --color-texto: #333;
+            --color-vacio: #f2e4c5;
         }
 
         .lineas-controles {
@@ -68,6 +69,32 @@
             font-family: 'consolas';
             font-size: 17px;
             color: #444;
+        }
+
+        .pie-colors {
+            width: 60%;
+            max-width: 1200px;
+            min-width: 320px;
+            margin: 6px auto 0px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            font-family: 'consolas';
+            font-size: 14px;
+            color: var(--color-texto);
+        }
+
+        .pie-colors span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pie-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            display: inline-block;
         }
     </style>
 </head>
@@ -129,6 +156,10 @@
     <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap;">
         <div id="grafPieMdy" style="width: 60%; max-width: 1200px; min-width: 320px; height: 420px; margin: 25px auto;"></div>
         <!-- <div id="grafPieTw" style="margin: 25px 0px;"></div> -->
+    </div>
+    <div class="pie-colors">
+        <span><i class="pie-swatch" style="background: var(--color-nivel);"></i>Agua</span>
+        <span><i class="pie-swatch" style="background: var(--color-vacio);"></i>Disponible</span>
     </div>
     <div id="pieMdySitios" class="pie-leyenda"></div>
     

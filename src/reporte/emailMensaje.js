@@ -67,7 +67,7 @@ class EmailMensaje {
 
     try {
       const page = await browser.newPage();
-      await page.setViewport({ width: 1600, height: 900, deviceScaleFactor: 2 });
+      await page.setViewport({ width: 1600, height: 900, deviceScaleFactor: 3 });
       const reportUrl = `http://127.0.0.1:${config.server.port}/reporte.html`;
       await page.goto(reportUrl, { waitUntil: "networkidle0" });
       await page.waitForFunction("window.reportReady === true", { timeout: 20000 });
@@ -91,6 +91,29 @@ async function plotBarras(page) {
   }
 
   try {
+    await page.evaluate(() => {
+      const container = document.getElementById("grafBarras");
+      if (!container) {
+        return;
+      }
+      const width = container.offsetWidth || 1200;
+      const height = container.offsetHeight || 420;
+      const scale = 1;
+      const scaledWidth = Math.round(width * scale);
+      const scaledHeight = Math.round(height * scale);
+      container.style.width = `${scaledWidth}px`;
+      container.style.maxWidth = `${scaledWidth}px`;
+      container.style.minWidth = `${scaledWidth}px`;
+      container.style.height = `${scaledHeight}px`;
+
+      if (window.echarts) {
+        const chart = window.echarts.getInstanceByDom(container);
+        if (chart) {
+          chart.resize();
+        }
+      }
+    });
+    await sleep(100);
     const boundingBox = await element.boundingBox();
     if (!boundingBox || boundingBox.height === 0) {
       logamarillo(2, `${ID_MOD} - Elemento #grafBarras sin altura, omitiendo captura`);
@@ -116,10 +139,11 @@ async function plotPieMdy(page) {
         return;
       }
       const size = container.offsetHeight || 360;
-      container.style.width = `${size}px`;
-      container.style.maxWidth = `${size}px`;
-      container.style.minWidth = `${size}px`;
-      container.style.height = `${size}px`;
+      const scaledSize = Math.round(size * 0.8);
+      container.style.width = `${scaledSize}px`;
+      container.style.maxWidth = `${scaledSize}px`;
+      container.style.minWidth = `${scaledSize}px`;
+      container.style.height = `${scaledSize}px`;
 
       if (window.echarts) {
         const chart = window.echarts.getInstanceByDom(container);

@@ -2,11 +2,11 @@
   const charts = []
   const REBALSE_OPACITY = 0.35
   const FONT_SIZES = {
-    title: 18,
-    legend: 15,
-    label: 16,
-    axis: 14,
-    barLabel: 14
+    title: 19,
+    legend: 16,
+    label: 17,
+    axis: 15,
+    barLabel: 15
   }
   const LINE_RANGE_DEFAULT = '1d'
   const LINE_PRELOAD_RANGE = ''
@@ -325,6 +325,8 @@
 
     const colorNivel = getCssVar('--color-nivel', '#3498db')
     const colorRebalse = getCssVar('--color-rebalse', '#d3a53c')
+    const colorTexto = getCssVar('--color-texto', '#000')
+    const barFontScale = 1
 
     const nivelSeries = sitios.map((sitio, index) => {
       const nivel = toNumber(niveles[index])
@@ -353,7 +355,8 @@
       const restante = maxOp > 0 ? Math.max(100 - porcentaje, 0) : 0
 
       return {
-        value: restante
+        value: restante,
+        max: maxOp
       }
     })
 
@@ -365,7 +368,8 @@
         left: 'center',
         textStyle: {
           fontFamily: 'consolas',
-          fontSize: FONT_SIZES.title
+          fontSize: FONT_SIZES.title + barFontScale,
+          color: colorTexto
         }
       },
       tooltip: {
@@ -387,12 +391,13 @@
         data: ['Nivel Actual', 'Espacio Disponible'],
         textStyle: {
           fontFamily: 'consolas',
-          fontSize: FONT_SIZES.legend
+          fontSize: FONT_SIZES.legend + barFontScale,
+          color: colorTexto
         }
       },
       grid: {
-        left: 50,
-        right: 20,
+        left: 30,
+        right: 15,
         bottom: 50,
         top: 60,
         containLabel: true
@@ -403,7 +408,8 @@
         axisLabel: {
           rotate: 35,
           fontFamily: 'consolas',
-          fontSize: FONT_SIZES.axis
+          fontSize: FONT_SIZES.axis + barFontScale,
+          color: colorTexto
         }
       },
       yAxis: {
@@ -411,7 +417,8 @@
         max: 100,
         axisLabel: {
           formatter: '{value}%',
-          fontSize: FONT_SIZES.axis
+          fontSize: FONT_SIZES.axis + barFontScale,
+          color: colorTexto
         }
       },
       series: [
@@ -428,7 +435,8 @@
               return Number.isFinite(nivel) ? nivel.toFixed(2) : ''
             },
             fontFamily: 'consolas',
-            fontSize: FONT_SIZES.barLabel
+            fontSize: FONT_SIZES.barLabel + barFontScale,
+            color: colorTexto
           }
         },
         {
@@ -436,6 +444,17 @@
           type: 'bar',
           stack: 'total',
           data: restanteSeries,
+          label: {
+            show: true,
+            position: 'top',
+            formatter: (params) => {
+              const maxOp = params.data?.max
+              return Number.isFinite(maxOp) ? maxOp.toFixed(2) : ''
+            },
+            fontFamily: 'consolas',
+            fontSize: FONT_SIZES.barLabel + barFontScale,
+            color: colorTexto
+          },
           itemStyle: {
             color: colorRebalse,
             opacity: REBALSE_OPACITY
@@ -454,73 +473,175 @@
     const totals = data?.pieMdy?.totals || {}
     const aguaTotal = toNumber(totals.Agua)
     const vacioTotal = toNumber(totals.Vacio)
+    const sites = Array.isArray(data?.pieMdy?.sites) ? data.pieMdy.sites : []
     const sitiosConsiderados = Array.isArray(data?.pieMdy?.sitiosConsiderados)
       ? data.pieMdy.sitiosConsiderados
       : []
 
-    if (!aguaTotal && !vacioTotal) {
+    const totalGeneral = aguaTotal + vacioTotal
+    if (!totalGeneral) {
       return
     }
 
     const colorNivel = getCssVar('--color-nivel', '#3498db')
     const colorRebalse = getCssVar('--color-rebalse', '#d3a53c')
+    const colorVacio = lightenColor(colorRebalse, 0.7)
+    const colorTexto = getCssVar('--color-texto', '#000')
+    const sunburstFontDelta = -1
 
-    const pieData = [
-      { name: 'Agua', value: aguaTotal, itemStyle: { color: colorNivel } },
-      { name: 'Vacio', value: vacioTotal, itemStyle: { color: colorRebalse, opacity: REBALSE_OPACITY } }
+    const siteNodes = sites
+      .map((site, index) => {
+        const value = toNumber(site?.value)
+        if (!value) {
+          return null
+        }
+        const percentAgua = aguaTotal > 0 ? (value / aguaTotal) * 100 : 0
+        const showLabel = percentAgua > 5
+        const factor = sites.length > 1 ? 0.18 + (index / (sites.length - 1)) * 0.5 : 0.35
+        const node = {
+          name: site.name,
+          value,
+          itemStyle: {
+            color: lightenColor(colorNivel, factor)
+          }
+        }
+        if (!showLabel) {
+          node.label = { show: false }
+          node.emphasis = { label: { show: false } }
+        }
+        return node
+      })
+      .filter(Boolean)
+
+    const sunburstData = [
+      {
+        name: 'AGUA',
+        value: aguaTotal,
+        itemStyle: { color: colorNivel },
+        children: siteNodes
+      },
+      {
+        name: 'VACIO',
+        value: vacioTotal,
+        itemStyle: { color: colorVacio }
+      }
     ].filter((item) => item.value > 0)
-
 
     const chart = registerChart(window.echarts.init(container))
 
     chart.setOption({
       title: {
-        text: 'Puerto Madryn',
-        left: 'center',
-        textStyle: {
-          fontFamily: 'consolas',
-          fontSize: FONT_SIZES.title
-        }
+        show: false
       },
       tooltip: {
         trigger: 'item',
         formatter: (params) => {
           const value = toNumber(params.value)
-          return `${params.name}: ${formatNumber(value)} m3 (${params.percent}%)`
+          const percent = totalGeneral > 0 ? (value / totalGeneral) * 100 : 0
+          const pathInfo = Array.isArray(params.treePathInfo) ? params.treePathInfo : []
+          const pathNames = pathInfo.map((node) => node.name).filter(Boolean)
+          const name = pathNames.length > 1 ? pathNames.slice(1).join(' / ') : params.name
+          return `${name}: ${formatNumber(value)} m3 (${percent.toFixed(0)}%)`
         }
       },
       legend: {
-        show: true,
-        bottom: 0,
-        data: ['Agua', 'Vacio'],
-        textStyle: {
-          fontFamily: 'consolas',
-          fontSize: FONT_SIZES.legend
-        },
-        itemGap: 12
+        show: false
       },
       series: [
         {
           name: 'Totales',
+          type: 'sunburst',
+          radius: ['0%', '80%'],
+          center: ['50%', '50%'],
+          sort: null,
+          nodeClick: false,
+          data: sunburstData,
+          emphasis: {
+            focus: 'ancestor'
+          },
+          label: {
+            fontFamily: 'consolas',
+            color: colorTexto
+          },
+          itemStyle: {
+            borderColor: '#fff',
+            borderWidth: 1
+          },
+          levels: [
+            {
+              r0: '0%',
+              r: '0%',
+              itemStyle: {
+                borderWidth: 0
+              },
+              label: {
+                show: false
+              }
+            },
+            {
+              r0: '28%',
+              r: '64%',
+              label: {
+                rotate: 0,
+                fontSize: FONT_SIZES.label + sunburstFontDelta,
+                lineHeight: FONT_SIZES.label + sunburstFontDelta + 4,
+                color: colorTexto,
+                formatter: (params) => {
+                  const value = toNumber(params.value)
+                  const percent = totalGeneral > 0 ? (value / totalGeneral) * 100 : 0
+                  return `${params.name}\n${percent.toFixed(0)}%`
+                }
+              }
+            },
+            {
+              r0: '64%',
+              r: '100%',
+              label: {
+                rotate: 0,
+                fontSize: FONT_SIZES.axis + sunburstFontDelta,
+                lineHeight: FONT_SIZES.axis + sunburstFontDelta + 4,
+                color: colorTexto,
+                overflow: 'truncate',
+                formatter: (params) => {
+                  const value = toNumber(params.value)
+                  const percentAgua = aguaTotal > 0 ? (value / aguaTotal) * 100 : 0
+                  if (percentAgua <= 5) {
+                    return ''
+                  }
+                  return `${params.name}\n${percentAgua.toFixed(0)}%`
+                }
+              }
+            }
+          ]
+        },
+        {
+          name: 'Total',
           type: 'pie',
-          radius: '80%',
-          center: ['50%', '45%'],
-          avoidLabelOverlap: true,
-          data: pieData,
+          radius: ['0%', '22.5%'],
+          center: ['50%', '50%'],
+          silent: false,
+          data: [
+            {
+              name: 'TOTAL',
+              value: totalGeneral
+            }
+          ],
           label: {
             show: true,
-            position: 'inside',
-            formatter: '{b}\n{d}%',
+            position: 'center',
             fontFamily: 'consolas',
-            fontSize: FONT_SIZES.label,
-            lineHeight: 22,
-            opacity: 1
+            fontSize: FONT_SIZES.label + sunburstFontDelta,
+            fontWeight: 'bold',
+            color: colorTexto,
+            formatter: 'TOTAL'
           },
-          labelLayout: {
-            hideOverlap: true
+          itemStyle: {
+            color: '#fff',
+            borderColor: '#fff',
+            borderWidth: 1
           },
-          labelLine: {
-            show: false
+          tooltip: {
+            formatter: () => `TOTAL: ${formatNumber(totalGeneral)} m3`
           }
         }
       ]

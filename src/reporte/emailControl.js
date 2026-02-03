@@ -62,11 +62,11 @@ class EmailControl {
       const sitios = Array.isArray(parsed?.pieMdy?.sitiosConsiderados)
         ? parsed.pieMdy.sitiosConsiderados
         : [];
-      if (sitios.length) {
-        pieLeyenda =
-          `<div style="text-align: center; font-family: 'consolas'; font-size: 12px; color: #444; margin: 2px auto 12px;">` +
+        if (sitios.length) {
+          pieLeyenda =
+          `<div style="text-align: center; font-family: 'consolas'; font-size: 17px; color: #444; margin: 2px auto 12px;">` +
           `Sitios: ${sitios.join(", ")}</div>`;
-      }
+        }
     } catch (err) {
       pieLeyenda = "";
     }
@@ -101,8 +101,8 @@ class EmailControl {
               Volúmenes y Porcentajes de agua en m3
             </div>
 
-            <img src="cid:grafBarras" alt="Grafico de Barras" style="display: block; width: 103.5%; height: auto; margin: 0 auto 14px;"/>
-            <img src="cid:grafPieMdy" alt="Grafico Pie Madryn" style="display: block; width: 46.96%; height: auto; margin: 0 auto 14px;"/>
+            <img src="cid:grafBarras" alt="Grafico de Barras" style="display: block; width: 90%; height: auto; margin: 0 auto 14px;"/>
+            <img src="cid:grafPieMdy" alt="Grafico Pie Madryn" style="display: block; width: 39.9%; height: auto; margin: 0 auto 14px;"/>
             ${pieLeyenda}
             <img src="cid:grafLineas" alt="Grafico de Lineas" style="display: block; width: 90%; height: auto; margin: 0 auto 8px;"/>
           </div>

@@ -35,6 +35,17 @@
     })
   }
 
+  function formatPercent(value, digits = 1) {
+    const numberValue = toNumber(value, null)
+    if (numberValue === null) {
+      return ''
+    }
+    return numberValue.toLocaleString('es-AR', {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits
+    })
+  }
+
   function lightenColor(hex, factor) {
     const normalized = hex.replace('#', '')
     if (normalized.length !== 6) {
@@ -429,7 +440,8 @@
           data: nivelSeries,
           label: {
             show: true,
-            position: 'inside',
+            position: 'insideTop',
+            offset: [0, 4],
             formatter: (params) => {
               const nivel = params.data?.nivel
               return Number.isFinite(nivel) ? nivel.toFixed(2) : ''
@@ -453,7 +465,8 @@
             },
             fontFamily: 'consolas',
             fontSize: FONT_SIZES.barLabel + barFontScale,
-            color: colorTexto
+            color: colorTexto,
+            opacity: 1
           },
           itemStyle: {
             color: colorRebalse,
@@ -534,17 +547,19 @@
       title: {
         show: false
       },
-      tooltip: {
-        trigger: 'item',
-        formatter: (params) => {
-          const value = toNumber(params.value)
-          const percent = totalGeneral > 0 ? (value / totalGeneral) * 100 : 0
-          const pathInfo = Array.isArray(params.treePathInfo) ? params.treePathInfo : []
-          const pathNames = pathInfo.map((node) => node.name).filter(Boolean)
-          const name = pathNames.length > 1 ? pathNames.slice(1).join(' / ') : params.name
-          return `${name}: ${formatNumber(value)} m3 (${percent.toFixed(0)}%)`
-        }
-      },
+          tooltip: {
+            trigger: 'item',
+            formatter: (params) => {
+              const value = toNumber(params.value)
+              const percent = totalGeneral > 0 ? (value / totalGeneral) * 100 : 0
+              const pathInfo = Array.isArray(params.treePathInfo) ? params.treePathInfo : []
+              const pathNames = pathInfo.map((node) => node.name).filter(Boolean)
+              const name = pathNames.length > 1 ? pathNames.slice(1).join(' / ') : params.name
+              const isTotales = params.name === 'AGUA' || params.name === 'VACIO'
+              const percentLabel = isTotales ? formatPercent(percent) : percent.toFixed(0)
+              return `${name}: ${formatNumber(value)} m3 (${percentLabel}%)`
+            }
+          },
       legend: {
         show: false
       },
@@ -590,7 +605,7 @@
                 formatter: (params) => {
                   const value = toNumber(params.value)
                   const percent = totalGeneral > 0 ? (value / totalGeneral) * 100 : 0
-                  return `${percent.toFixed(0)}%`
+                  return `${formatPercent(percent)}%`
                 }
               }
             },

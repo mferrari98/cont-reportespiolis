@@ -182,11 +182,71 @@
       name: serie.name,
       type: 'line',
       data: serie.data,
+      triggerLineEvent: true,
       showSymbol: false,
       lineStyle: {
         width: 1.5
       }
     }))
+  }
+
+  function normalizeFocusedLineSeries(seriesData, focusedSeriesName) {
+    if (!focusedSeriesName) {
+      return null
+    }
+
+    const exists = seriesData.some((serie) => serie.name === focusedSeriesName)
+    return exists ? focusedSeriesName : null
+  }
+
+  function buildLineLegendSelection(seriesData, focusedSeriesName = null) {
+    const effectiveFocus = normalizeFocusedLineSeries(seriesData, focusedSeriesName)
+    const selected = {}
+
+    seriesData.forEach((serie) => {
+      selected[serie.name] = !effectiveFocus || serie.name === effectiveFocus
+    })
+
+    return {
+      selected,
+      focusedSeriesName: effectiveFocus
+    }
+  }
+
+  function applyLineFocus(lineState, focusedSeriesName) {
+    const isSameFocus = lineState.focusedSeriesName === focusedSeriesName
+    const nextFocus = isSameFocus ? null : focusedSeriesName
+    const legendSelection = buildLineLegendSelection(lineState.seriesData, nextFocus)
+
+    lineState.focusedSeriesName = legendSelection.focusedSeriesName
+    lineState.chart.setOption({
+      legend: {
+        selected: legendSelection.selected
+      }
+    })
+  }
+
+  function setupLineFocusInteraction(lineState) {
+    lineState.chart.on('dblclick', (params) => {
+      if (params?.componentType !== 'series' || params.seriesType !== 'line') {
+        return
+      }
+
+      const selectedSeriesName = params.seriesName
+      if (!selectedSeriesName) {
+        return
+      }
+
+      applyLineFocus(lineState, selectedSeriesName)
+    })
+
+    lineState.chart.getZr().on('dblclick', (event) => {
+      if (event?.target) {
+        return
+      }
+
+      applyLineFocus(lineState, null)
+    })
   }
 
   async function fetchLineData(limitValue, pageValue) {
@@ -238,9 +298,14 @@
         lineState.bounds = getSeriesBounds(lineState.seriesData)
         if (lineState.bounds) {
           const currentRangeMs = LINE_RANGE_MS[lineState.rangeKey] || LINE_RANGE_MS[LINE_RANGE_DEFAULT]
+          const legendSelection = buildLineLegendSelection(lineState.seriesData, lineState.focusedSeriesName)
+          lineState.focusedSeriesName = legendSelection.focusedSeriesName
           lineState.chart.setOption({
             series: buildLineSeriesConfig(lineState.seriesData),
-            dataZoom: buildLineZoom(lineState.bounds, currentRangeMs)
+            dataZoom: buildLineZoom(lineState.bounds, currentRangeMs),
+            legend: {
+              selected: legendSelection.selected
+            }
           })
         }
       }
@@ -711,6 +776,7 @@
     }
 
     const chart = registerChart(window.echarts.init(container))
+    const legendSelection = buildLineLegendSelection(seriesData)
 
     chart.setOption({
       title: {
@@ -730,7 +796,8 @@
         textStyle: {
           fontFamily: 'consolas',
           fontSize: FONT_SIZES.legend
-        }
+        },
+        selected: legendSelection.selected
       },
       grid: {
         left: 50,
@@ -770,9 +837,11 @@
       bounds,
       pagination,
       loading: false,
-      rangeKey: rangeKey
+      rangeKey: rangeKey,
+      focusedSeriesName: legendSelection.focusedSeriesName
     }
 
+    setupLineFocusInteraction(lineState)
     setupLineRangeControls(lineState)
   }
 

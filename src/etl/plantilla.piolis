@@ -44,6 +44,17 @@
             color: #fff;
         }
 
+        .lineas-ayuda {
+            width: 60%;
+            max-width: 1200px;
+            min-width: 320px;
+            margin: 8px auto 0;
+            text-align: center;
+            font-family: 'consolas';
+            font-size: 12px;
+            color: #666;
+        }
+
         .barra-link {
             color: #ffffff;
             text-decoration: none;
@@ -172,6 +183,7 @@
         <button type="button" data-range="1y">1 año</button>
         <button type="button" data-range="all">Inicio</button>
     </div>
+    <div class="lineas-ayuda">Doble clic en una línea para aislarla. Doble clic en la misma línea o en el fondo para restaurar todas.</div>
     <div style="height: 120px;"></div>
 
     <script src="./js/echarts.min.js"></script>

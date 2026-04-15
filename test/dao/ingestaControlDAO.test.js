@@ -19,13 +19,13 @@ function clearRequireCache() {
 test("createIfNotExists returns inserted false for duplicate loteHash", async (t) => {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "ingesta-control-"));
   const tempDbPath = path.join(tempDir, "db.sqlite");
+  let closeDatabase;
 
   t.after(async () => {
     try {
-      clearRequireCache();
-      process.env.DB_PATH = tempDbPath;
-      const { closeDatabase } = require("../../src/basedatos/db");
-      await closeDatabase();
+      if (closeDatabase) {
+        await closeDatabase();
+      }
     } finally {
       clearRequireCache();
       delete process.env.DB_PATH;
@@ -35,6 +35,8 @@ test("createIfNotExists returns inserted false for duplicate loteHash", async (t
 
   clearRequireCache();
   process.env.DB_PATH = tempDbPath;
+
+  ({ closeDatabase } = require("../../src/basedatos/db"));
 
   const { crearTablas } = require("../../src/basedatos/crear_tablas");
   const IngestaControlDAO = require("../../src/dao/ingestaControlDAO");

@@ -73,6 +73,44 @@ test('downloadWithRetries throws after exhausting retries', async () => {
   );
 });
 
+test('downloadWithRetries rejects empty retryDelaysMs array', async () => {
+  await assert.rejects(
+    downloadWithRetries({
+      name: 'citec',
+      url: 'https://files.example.com/citec.csv',
+      outputPath: '/tmp/citec.csv',
+      username: 'operador',
+      password: 'super-secreto',
+      retryDelaysMs: [],
+      execFileFn: async () => ({ stdout: 'ok', stderr: '' }),
+      sleepFn: async () => {},
+      logFn: () => {},
+    }),
+    {
+      message: 'retryDelaysMs debe ser un arreglo no vacio de numeros finitos >= 0',
+    }
+  );
+});
+
+test('downloadWithRetries rejects retryDelaysMs with invalid values', async () => {
+  await assert.rejects(
+    downloadWithRetries({
+      name: 'citec',
+      url: 'https://files.example.com/citec.csv',
+      outputPath: '/tmp/citec.csv',
+      username: 'operador',
+      password: 'super-secreto',
+      retryDelaysMs: [0, -1],
+      execFileFn: async () => ({ stdout: 'ok', stderr: '' }),
+      sleepFn: async () => {},
+      logFn: () => {},
+    }),
+    {
+      message: 'retryDelaysMs debe ser un arreglo no vacio de numeros finitos >= 0',
+    }
+  );
+});
+
 test('runCurlDownload throws when credentials are missing', async () => {
   await assert.rejects(
     runCurlDownload({

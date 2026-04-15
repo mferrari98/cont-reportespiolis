@@ -2,6 +2,7 @@ const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 
 const execFileAsync = promisify(execFile);
+const INVALID_RETRY_DELAYS_MSG = 'retryDelaysMs debe ser un arreglo no vacio de numeros finitos >= 0';
 
 function sleep(ms) {
   return new Promise((resolve) => {
@@ -43,6 +44,15 @@ async function downloadWithRetries({
   sleepFn = sleep,
   logFn = () => {},
 }) {
+  const hasValidRetryDelays =
+    Array.isArray(retryDelaysMs) &&
+    retryDelaysMs.length > 0 &&
+    retryDelaysMs.every((delayMs) => Number.isFinite(delayMs) && delayMs >= 0);
+
+  if (!hasValidRetryDelays) {
+    throw new Error(INVALID_RETRY_DELAYS_MSG);
+  }
+
   let lastError;
 
   for (let attemptIndex = 0; attemptIndex < retryDelaysMs.length; attemptIndex += 1) {

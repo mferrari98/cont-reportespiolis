@@ -9,7 +9,6 @@ const ID_MOD = "SUPERINDEX";
 async function bootstrap() {
   try {
     const observador = new Observador();
-    const serverHandle = createServer(observador);
     const resumenErrores = await crearTablas();
 
     const resultado = Object.keys(resumenErrores)
@@ -17,7 +16,17 @@ async function bootstrap() {
       .join(", ");
 
     logamarillo(2, `ESQUEMA - resumen errores -> ${resultado}`);
+
+    const bootstrapErrors = Object.entries(resumenErrores)
+      .filter(([, value]) => value !== null && typeof value !== "undefined")
+      .map(([key, value]) => `${key}: ${value && value.message ? value.message : value}`);
+
+    if (bootstrapErrors.length) {
+      throw new Error(`Errores al inicializar esquema: ${bootstrapErrors.join(" | ")}`);
+    }
+
     await observador.iniciar();
+    const serverHandle = createServer(observador);
 
     const shutdown = async () => {
       observador.parar();

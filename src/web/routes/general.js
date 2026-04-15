@@ -71,7 +71,8 @@ router.get(
  <!-- FIN_CONTROLES_PAGINACION -->
  `;
 
-    const inlineData = `<script>window.__REPORT_DATA__ = ${serializeForInlineScript(renderedReport.payload)};</script>`;
+    const scriptNonce = res.locals?.scriptNonce || "";
+    const inlineData = `<script nonce="${scriptNonce}">window.__REPORT_DATA__ = ${serializeForInlineScript(renderedReport.payload)};</script>`;
 
     const newData = renderedReport.html.replace(/<\/body>/i, `${inlineData}\n${navHtml}\n</body>`);
     res.send(newData);

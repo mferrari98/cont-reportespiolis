@@ -53,14 +53,14 @@ class EmailControl {
     });
 
     let resumen = "";
-    const htmlContent = fs.readFileSync(config.paths.reportTable, "utf8").trim();
+    const htmlContent = (await fs.promises.readFile(config.paths.reportTable, "utf8")).trim();
     let pieLeyenda = "";
     const hasBars = chartResults.barras === true;
     const hasPieMdy = chartResults.pieMdy === true;
     const hasLineas = chartResults.lineas === true;
 
     try {
-      const rawData = fs.readFileSync(config.paths.reportData, "utf8");
+      const rawData = await fs.promises.readFile(config.paths.reportData, "utf8");
       const parsed = JSON.parse(rawData);
       const sitios = Array.isArray(parsed?.pieMdy?.sitiosConsiderados)
         ? parsed.pieMdy.sitiosConsiderados

@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const http = require("http");
+const crypto = require("crypto");
 
 const config = require("../config/loader");
 const { logamarillo } = require("../control/controlLog");
@@ -13,21 +14,24 @@ app.set("trust proxy", config.server.trustProxy);
 
 const PORT = config.server.port;
 
-const CSP_POLICY = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
-  "font-src 'self' data:",
-  "connect-src 'self'",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "frame-ancestors 'self'",
-  "form-action 'self'"
-].join("; ");
-
 app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", CSP_POLICY);
+  const scriptNonce = crypto.randomBytes(16).toString("base64");
+  res.locals.scriptNonce = scriptNonce;
+
+  const cspPolicy = [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${scriptNonce}'`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self' data:",
+    "connect-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "frame-ancestors 'self'",
+    "form-action 'self'"
+  ].join("; ");
+
+  res.setHeader("Content-Security-Policy", cspPolicy);
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "no-referrer");

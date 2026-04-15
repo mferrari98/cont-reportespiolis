@@ -20,6 +20,7 @@ class Observador {
     this.lastModifiedTime = null;
     this.antesHuboError = false;
     this.intervalId = null;
+    this.isChecking = false;
     // Bind para reutilizar la misma función en setInterval.
     this._tick = this.checkFileModification.bind(this);
   }
@@ -94,24 +95,36 @@ class Observador {
   async datosCitec(lines) {
     try {
       const data = await fs.promises.readFile(this.dirCitec, "utf8");
-      const lineas = data.trim().split("\r\n");
+      const lineas = data.split(/\r?\n/).map((linea) => linea.trim()).filter(Boolean);
+
+      const currentMs = new Date(this.currentModifiedTime).getTime();
+      if (!Number.isFinite(currentMs)) {
+        return lines;
+      }
 
       let posfila = 0;
       let filaMasCercana = null;
-      let diferenciaMinima = this.currentModifiedTime;
+      let valorFilaMasCercana = null;
+      let diferenciaMinima = Number.POSITIVE_INFINITY;
 
       // Solo se inspeccionan las últimas N líneas para evitar leer el archivo completo.
       for (let i = lineas.length - 1; i >= Math.max(0, lineas.length - this.cantLineasCitec); i -= 1) {
         const linea = lineas[i];
-        const fecha = linea.split(" - ")[0].trim();
+        const parsedLine = parseCitecLinea(linea);
+        if (!parsedLine) {
+          continue;
+        }
 
-        const fechaNormalizada = normalizarMes(fecha);
-        const fechaMs = new Date(fechaNormalizada);
+        const fechaMs = parseCitecDate(parsedLine.fecha);
+        if (fechaMs === null) {
+          continue;
+        }
 
-        const diferencia = Math.abs(this.currentModifiedTime - fechaMs);
+        const diferencia = Math.abs(currentMs - fechaMs);
         if (diferencia < diferenciaMinima) {
           diferenciaMinima = diferencia;
           filaMasCercana = linea;
+          valorFilaMasCercana = parsedLine.valor;
           posfila = i;
         }
       }
@@ -122,7 +135,7 @@ class Observador {
           `${ID_MOD} - se leyeron datos desde citec. ${filaMasCercana} fila ${posfila}`
         );
         // Agregamos la lectura de Cota45 desde Citec al lote principal de Wizcon.
-        lines.push(`Cota45              ${filaMasCercana.split(" - ")[1].replace(",", ".")}`);
+        lines.push(`Cota45              ${String(valorFilaMasCercana).replace(",", ".")}`);
       } else {
         logamarillo(2, `${ID_MOD} - error leyendo citec: no se encontro fila`);
       }
@@ -134,49 +147,88 @@ class Observador {
   }
 
   async checkFileModification() {
-    try {
-      const stats = await fs.promises.stat(this.filePath);
-      this.currentModifiedTime = stats.mtime;
-    } catch (err) {
-      this.currentModifiedTime = new Date();
-      // Evita notificar repetidamente el mismo fallo si el archivo sigue inaccesible.
-      if (!this.antesHuboError) {
-        this.antesHuboError = true;
-        const fechaActual = formatoFecha(this.currentModifiedTime);
-        const fechaAnterior = formatoFecha(this.lastModifiedTime);
-        logamarillo(2, `${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
-        try {
-          await notificarFallo(err.message, this.currentModifiedTime);
-        } catch (notifyErr) {
-          logamarillo(2, `${ID_MOD} - error registrando fallo: ${notifyErr.message}`);
-        }
-        return;
-      }
+    if (this.isChecking) {
+      logamarillo(1, `${ID_MOD} - chequeo en curso, se omite ciclo superpuesto`);
+      return;
     }
 
-    this.antesHuboError = false;
-    const fechaActual = formatoFecha(this.currentModifiedTime);
-    const fechaAnterior = formatoFecha(this.lastModifiedTime);
-
-    if (!this.lastModifiedTime || this.currentModifiedTime > this.lastModifiedTime) {
-      this.lastModifiedTime = this.currentModifiedTime;
-      logamarillo(2, `${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+    this.isChecking = true;
+    try {
       try {
-        await this.readAndProcessFile();
+        const stats = await fs.promises.stat(this.filePath);
+        this.currentModifiedTime = stats.mtime;
       } catch (err) {
-        logamarillo(2, `${ID_MOD} - error procesando archivo: ${err.message}`);
+        this.currentModifiedTime = new Date();
+        // Evita notificar repetidamente el mismo fallo si el archivo sigue inaccesible.
+        if (!this.antesHuboError) {
+          this.antesHuboError = true;
+          const fechaActual = formatoFecha(this.currentModifiedTime);
+          const fechaAnterior = formatoFecha(this.lastModifiedTime);
+          logamarillo(2, `${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+          try {
+            await notificarFallo(err.message, this.currentModifiedTime);
+          } catch (notifyErr) {
+            logamarillo(2, `${ID_MOD} - error registrando fallo: ${notifyErr.message}`);
+          }
+          return;
+        }
       }
-    } else {
-      logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la ultima lectura`);
+
+      this.antesHuboError = false;
+      const fechaActual = formatoFecha(this.currentModifiedTime);
+      const fechaAnterior = formatoFecha(this.lastModifiedTime);
+
+      if (!this.lastModifiedTime || this.currentModifiedTime > this.lastModifiedTime) {
+        this.lastModifiedTime = this.currentModifiedTime;
+        logamarillo(2, `${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
+        try {
+          await this.readAndProcessFile();
+        } catch (err) {
+          logamarillo(2, `${ID_MOD} - error procesando archivo: ${err.message}`);
+        }
+      } else {
+        logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la ultima lectura`);
+      }
+    } finally {
+      this.isChecking = false;
     }
   }
+}
+
+function parseCitecLinea(linea) {
+  const separatorIndex = linea.lastIndexOf(" - ");
+  if (separatorIndex === -1) {
+    return null;
+  }
+
+  const fecha = linea.slice(0, separatorIndex).trim();
+  const valor = linea.slice(separatorIndex + 3).trim();
+  if (!fecha || !valor) {
+    return null;
+  }
+
+  return { fecha, valor };
+}
+
+function parseCitecDate(fechaStr) {
+  const fechaNormalizada = normalizarMes(fechaStr.replace(/\./g, ""));
+  const parsed = Date.parse(fechaNormalizada);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 function normalizarMes(fechaStr) {
   const reemplazos = {
     Ene: "Jan",
+    Feb: "Feb",
+    Mar: "Mar",
     Abr: "Apr",
+    May: "May",
+    Jun: "Jun",
+    Jul: "Jul",
     Ago: "Aug",
+    Sep: "Sep",
+    Oct: "Oct",
+    Nov: "Nov",
     Dic: "Dec"
   };
 

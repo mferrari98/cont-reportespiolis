@@ -2,7 +2,6 @@ const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 
 const execFileAsync = promisify(execFile);
-const DEFAULT_RETRY_DELAYS_MS = [0, 5000, 10000, 20000, 40000];
 
 function sleep(ms) {
   return new Promise((resolve) => {
@@ -10,45 +9,75 @@ function sleep(ms) {
   });
 }
 
-async function downloadFromSmb({
-  fileName,
-  remotePath,
-  localPath,
-  retryDelaysMs = DEFAULT_RETRY_DELAYS_MS,
+async function runCurlDownload({
+  url,
+  outputPath,
+  username,
+  password,
   execFileFn = execFileAsync,
-  sleepFn = sleep,
-  logFn = () => {},
-  env = process.env,
 }) {
-  if (!env.SMB_USER || !env.SMB_PASS) {
+  if (!username || !password) {
     throw new Error('SMB_USER/SMB_PASS no definidos');
   }
 
-  const attempts = retryDelaysMs.length;
+  await execFileFn('curl', [
+    '--fail',
+    '--silent',
+    '--show-error',
+    '--user',
+    `${username}:${password}`,
+    url,
+    '-o',
+    outputPath,
+  ]);
+}
 
-  for (let attemptIndex = 0; attemptIndex < attempts; attemptIndex += 1) {
+async function downloadWithRetries({
+  name,
+  url,
+  outputPath,
+  username,
+  password,
+  retryDelaysMs,
+  execFileFn = execFileAsync,
+  sleepFn = sleep,
+  logFn = () => {},
+}) {
+  let lastError;
+
+  for (let attemptIndex = 0; attemptIndex < retryDelaysMs.length; attemptIndex += 1) {
+    const attempt = attemptIndex + 1;
+    const totalAttempts = retryDelaysMs.length;
+    const delayMs = retryDelaysMs[attemptIndex];
+
+    if (delayMs > 0) {
+      await sleepFn(delayMs);
+    }
+
+    logFn(`Descargando ${name} intento ${attempt}/${totalAttempts}`);
+
     try {
-      await execFileFn('smbclient', [
-        remotePath,
-        '-U',
-        `${env.SMB_USER}%${env.SMB_PASS}`,
-        '-c',
-        `get "${fileName}" "${localPath}"`,
-      ]);
+      await runCurlDownload({
+        url,
+        outputPath,
+        username,
+        password,
+        execFileFn,
+      });
 
       return;
-    } catch (_error) {
-      if (attemptIndex === attempts - 1) {
-        throw new Error(`No se pudo descargar ${fileName} tras ${attempts} intentos`);
-      }
-
-      const nextAttempt = attemptIndex + 2;
-      logFn(`Reintentando descarga ${nextAttempt}/${attempts} de ${fileName}`);
-      await sleepFn(retryDelaysMs[attemptIndex + 1]);
+    } catch (error) {
+      lastError = error;
+      logFn(`Fallo descarga ${name} intento ${attempt}/${totalAttempts}: ${error.message}`);
     }
   }
+
+  throw new Error(
+    `No se pudo descargar ${name} tras ${retryDelaysMs.length} intentos: ${lastError.message}`
+  );
 }
 
 module.exports = {
-  downloadFromSmb,
+  runCurlDownload,
+  downloadWithRetries,
 };

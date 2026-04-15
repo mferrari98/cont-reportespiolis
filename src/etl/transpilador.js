@@ -6,6 +6,7 @@ const config = require("../config/loader");
 const { logamarillo } = require("../control/controlLog");
 const { formatDateTime } = require("../core/tiempo");
 const { sindet } = require("./etl");
+const { buildChartThemePayload } = require("../reporte/chartTheme");
 
 const ID_MOD = "TRANS";
 
@@ -289,6 +290,7 @@ function buildReportData(reporte) {
     niveles,
     maxOperativos,
     cubicajes,
+    chartTheme: buildChartThemePayload(),
     pieMdy: buildPieMdyData(reporte),
     lineSeries: buildLineSeries(reporte),
     pagination: reporte.paginacion || null

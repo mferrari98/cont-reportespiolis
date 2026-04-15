@@ -123,7 +123,11 @@ async function insertar(lineasModif, columna, timestamp) {
       return;
     }
 
-    await historicoLecturaDAO.create(sitio.id, tipoVariable.id, valor, timestamp);
+    const inserted = await historicoLecturaDAO.create(sitio.id, tipoVariable.id, valor, timestamp);
+    if (inserted.ignored) {
+      return;
+    }
+
     logamarillo(
       1,
       `${ID_MOD} - Insertando historico_lectura {${sitio.descriptor}:${tipoVariable.descriptor}:${valor}}`

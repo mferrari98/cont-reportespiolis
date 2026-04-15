@@ -4,21 +4,14 @@ const echarts = require("echarts");
 const fs = require("fs");
 const config = require("../config/loader");
 const { logamarillo } = require("../control/controlLog");
+const { CHART_THEME } = require("./chartTheme");
 
 const ID_MOD = "GRAFICOS";
 
 // Register node-canvas for ECharts SSR (modern API).
 echarts.setPlatformAPI({ createCanvas });
 
-const REBALSE_OPACITY = 0.35;
 const DEVICE_PIXEL_RATIO = 3;
-const FONT_SIZES = {
-  title: 19,
-  legend: 16,
-  label: 17,
-  axis: 15,
-  barLabel: 15
-};
 
 function toNumber(value, fallback = 0) {
   const numberValue = Number(value);
@@ -74,14 +67,14 @@ function renderBars(data, width = 1600, height = 500, fontScale = 1) {
   const maxOperativos = Array.isArray(data.maxOperativos) ? data.maxOperativos : [];
   const cubicajes = Array.isArray(data.cubicajes) ? data.cubicajes : [];
 
-  const colorNivel = "#3498db";
-  const colorRebalse = "#d3a53c";
-  const colorTexto = "#333";
+  const colorNivel = CHART_THEME.colors.nivel;
+  const colorRebalse = CHART_THEME.colors.rebalse;
+  const colorTexto = CHART_THEME.colors.texto;
 
-  const fsTitle = Math.round(FONT_SIZES.title * fontScale);
-  const fsLegend = Math.round(FONT_SIZES.legend * fontScale);
-  const fsAxis = Math.round(FONT_SIZES.axis * fontScale);
-  const fsBarLabel = Math.round(FONT_SIZES.barLabel * fontScale);
+  const fsTitle = Math.round(CHART_THEME.fontSizes.title * fontScale);
+  const fsLegend = Math.round(CHART_THEME.fontSizes.legend * fontScale);
+  const fsAxis = Math.round(CHART_THEME.fontSizes.axis * fontScale);
+  const fsBarLabel = Math.round(CHART_THEME.fontSizes.barLabel * fontScale);
   const gridTop = Math.max(95, fsTitle + fsBarLabel + 45);
 
   const nivelSeries = sitios.map((sitio, index) => {
@@ -216,7 +209,7 @@ function renderBars(data, width = 1600, height = 500, fontScale = 1) {
         },
         itemStyle: {
           color: colorRebalse,
-          opacity: REBALSE_OPACITY
+          opacity: CHART_THEME.rebalseOpacity
         }
       }
     ]
@@ -234,10 +227,10 @@ function renderPie(data, width = 500, height = 500) {
   const totalGeneral = aguaTotal + vacioTotal;
   if (!totalGeneral) return null;
 
-  const colorNivel = "#3498db";
-  const colorRebalse = "#d3a53c";
-  const colorVacio = lightenColor(colorRebalse, 0.7);
-  const colorTexto = "#333";
+  const colorNivel = CHART_THEME.colors.nivel;
+  const colorRebalse = CHART_THEME.colors.rebalse;
+  const colorVacio = CHART_THEME.colors.vacio || lightenColor(colorRebalse, 0.7);
+  const colorTexto = CHART_THEME.colors.texto;
   const sunburstFontDelta = -1;
 
   const siteNodes = sites
@@ -327,8 +320,8 @@ function renderPie(data, width = 500, height = 500) {
             r: "64%",
             label: {
               rotate: 0,
-              fontSize: FONT_SIZES.label + sunburstFontDelta,
-              lineHeight: FONT_SIZES.label + sunburstFontDelta + 4,
+              fontSize: CHART_THEME.fontSizes.label + sunburstFontDelta,
+              lineHeight: CHART_THEME.fontSizes.label + sunburstFontDelta + 4,
               color: colorTexto,
               formatter: (params) => {
                 const value = toNumber(params.value);
@@ -342,8 +335,8 @@ function renderPie(data, width = 500, height = 500) {
             r: "100%",
             label: {
               rotate: 0,
-              fontSize: FONT_SIZES.axis + sunburstFontDelta,
-              lineHeight: FONT_SIZES.axis + sunburstFontDelta + 4,
+              fontSize: CHART_THEME.fontSizes.axis + sunburstFontDelta,
+              lineHeight: CHART_THEME.fontSizes.axis + sunburstFontDelta + 4,
               color: colorTexto,
               overflow: "truncate",
               formatter: (params) => {
@@ -372,7 +365,7 @@ function renderPie(data, width = 500, height = 500) {
           show: true,
           position: "center",
           fontFamily: "consolas",
-          fontSize: FONT_SIZES.label + sunburstFontDelta,
+          fontSize: CHART_THEME.fontSizes.label + sunburstFontDelta,
           fontWeight: "bold",
           color: colorTexto,
           formatter: "TOTAL"
@@ -412,7 +405,7 @@ function renderLines(data, width = 1200, height = 480) {
 
   if (min === null || max === null) return null;
 
-  const colorTexto = "#333";
+  const colorTexto = CHART_THEME.colors.texto;
 
   const canvas = createCanvas(width, height);
   const chart = echarts.init(canvas, null, { devicePixelRatio: DEVICE_PIXEL_RATIO });
@@ -422,11 +415,11 @@ function renderLines(data, width = 1200, height = 480) {
     title: {
       text: "Niveles Historicos",
       left: "center",
-      textStyle: {
-        fontFamily: "consolas",
-        fontSize: FONT_SIZES.title
-      }
-    },
+        textStyle: {
+          fontFamily: "consolas",
+          fontSize: CHART_THEME.fontSizes.title
+        }
+      },
     tooltip: {
       trigger: "axis"
     },
@@ -435,7 +428,7 @@ function renderLines(data, width = 1200, height = 480) {
       type: "scroll",
       textStyle: {
         fontFamily: "consolas",
-        fontSize: FONT_SIZES.legend
+        fontSize: CHART_THEME.fontSizes.legend
       }
     },
     grid: {
@@ -449,7 +442,7 @@ function renderLines(data, width = 1200, height = 480) {
       type: "time",
       axisLabel: {
         fontFamily: "consolas",
-        fontSize: FONT_SIZES.axis
+        fontSize: CHART_THEME.fontSizes.axis
       }
     },
     yAxis: {
@@ -459,11 +452,11 @@ function renderLines(data, width = 1200, height = 480) {
       nameGap: 40,
       nameTextStyle: {
         fontFamily: "consolas",
-        fontSize: FONT_SIZES.axis
+        fontSize: CHART_THEME.fontSizes.axis
       },
       axisLabel: {
         fontFamily: "consolas",
-        fontSize: FONT_SIZES.axis
+        fontSize: CHART_THEME.fontSizes.axis
       }
     },
     dataZoom: [

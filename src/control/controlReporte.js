@@ -119,25 +119,19 @@ async function getNuevosDatos(options = {}) {
   const tipoVarById = new Map(tipoVariables.map((row) => [row.id, row]));
   const sitioById = new Map(sitiosAll.map((row) => [row.id, row]));
 
-  const historicoBySitioId = new Map();
   const uniqueSitios = Array.from(new Set(rows.map((row) => row.sitio_id)));
-
-  await Promise.all(
-    uniqueSitios.map(async (sitioId) => {
-      const sitioRow = sitioById.get(sitioId);
-      if (!sitioRow) {
-        historicoBySitioId.set(sitioId, []);
-        return;
-      }
-      const historico = await historicoLecturaDAO.getHistoricoPagDescHasta(
-        sitioRow.id,
-        historicoLimit,
-        0,
-        targetEtiempo
-      );
-      historicoBySitioId.set(sitioId, historico || []);
-    })
+  const historicoRows = await historicoLecturaDAO.getHistoricoPagDescHastaPorSitios(
+    uniqueSitios,
+    historicoLimit,
+    targetEtiempo
   );
+  const historicoBySitioId = new Map(uniqueSitios.map((sitioId) => [sitioId, []]));
+  historicoRows.forEach((row) => {
+    if (!historicoBySitioId.has(row.sitio_id)) {
+      historicoBySitioId.set(row.sitio_id, []);
+    }
+    historicoBySitioId.get(row.sitio_id).push(row);
+  });
 
   rows.forEach((row) => {
     const tipoVarRow = tipoVarById.get(row.tipo_id);

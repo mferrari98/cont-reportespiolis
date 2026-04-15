@@ -1,70 +1,188 @@
 const fs = require("fs");
+const os = require("node:os");
+const path = require("node:path");
 const readline = require("readline");
 
 const config = require("../config/loader");
+const IngestaControlDAO = require("../dao/ingestaControlDAO");
 const { logamarillo } = require("../control/controlLog");
 const { lanzarETL } = require("./etl");
 const { lanzarReporte, notificarFallo } = require("../control/controlReporte");
+const { downloadWithRetries } = require("./smbFetch");
+const { buildLoteHashes } = require("./loteHash");
+const { msUntilNextTopOfHour, buildRetryDelaysMs } = require("./schedulerHora");
 
 const ID_MOD = "OBSERV";
 
 class Observador {
   constructor(options = {}) {
-    this.dirWizcon = options.dirWizcon || config.direcciones.sca_wizcon;
-    this.dirCitec = options.dirCitec || config.direcciones.cota45;
-    this.checkInterval = options.checkInterval || config.observador.tiempo_milis;
-    this.cantLineasCitec = options.cantLineasCitec || config.observador.citec_lineas;
-    // Precedencia: option > argv[2] (modo manual) > config.json.
-    this.filePath = options.filePath || process.argv[2] || null;
+    const observadorCfg = config.observador || {};
+    const ingestaCfg = config.ingesta || {};
+    const smbCfg = options.smb || ingestaCfg.smb || {};
+
+    this.dirWizcon = options.dirWizcon || config.direcciones.sca_wizcon || "";
+    this.dirCitec = options.dirCitec || config.direcciones.cota45 || "";
+    this.cantLineasCitec = options.cantLineasCitec || observadorCfg.citec_lineas || 100;
     this.currentModifiedTime = null;
-    this.lastModifiedTime = null;
-    this.antesHuboError = false;
-    this.intervalId = null;
+    this.timeoutId = null;
     this.isChecking = false;
-    // Bind para reutilizar la misma función en setInterval.
-    this._tick = this.checkFileModification.bind(this);
+
+    const cfgRetryDelaysMs = Array.isArray(ingestaCfg.retryDelaysMs)
+      ? ingestaCfg.retryDelaysMs
+      : Array.isArray(ingestaCfg.retryDelaysSeconds)
+        ? buildRetryDelaysMs(ingestaCfg.retryDelaysSeconds, ingestaCfg.firstAttemptDelaySeconds)
+        : [0, 5000, 10000, 20000, 40000];
+
+    this.retryDelaysMs = Array.isArray(options.retryDelaysMs) ? options.retryDelaysMs : cfgRetryDelaysMs;
+    this.schedulerEnabled =
+      typeof options.schedulerEnabled === "boolean"
+        ? options.schedulerEnabled
+        : typeof ingestaCfg.schedulerEnabled === "boolean"
+          ? ingestaCfg.schedulerEnabled
+          : true;
+
+    this.tempDir = options.tempDir || ingestaCfg.tempDir || path.join(os.tmpdir(), "reportespiolis-ingesta");
+
+    this.smb = {
+      wizcon: {
+        url: smbCfg?.wizcon?.url || this.dirWizcon,
+      },
+      citec: {
+        url: smbCfg?.citec?.url || this.dirCitec,
+      },
+      username: smbCfg.username || process.env.SMB_USER || "",
+      password: smbCfg.password || process.env.SMB_PASS || "",
+    };
+
+    const deps = options.deps || {};
+    this.fsPromises = deps.fsPromises || fs.promises;
+    this.path = deps.path || path;
+    this.downloadWithRetries = deps.downloadWithRetries || downloadWithRetries;
+    this.buildLoteHashes = deps.buildLoteHashes || buildLoteHashes;
+    this.ingestaControlDAO = deps.ingestaControlDAO || new IngestaControlDAO();
+    this.lanzarETL = deps.lanzarETL || lanzarETL;
+    this.lanzarReporte = deps.lanzarReporte || lanzarReporte;
+    this.notificarFallo = deps.notificarFallo || notificarFallo;
+    this.logamarillo = deps.logamarillo || logamarillo;
+    this.msUntilNextTopOfHour = deps.msUntilNextTopOfHour || msUntilNextTopOfHour;
+    this.setTimeoutFn = deps.setTimeout || setTimeout;
+    this.clearTimeoutFn = deps.clearTimeout || clearTimeout;
   }
 
   async iniciar() {
-    if (!this.filePath) {
-      logamarillo(1, `${ID_MOD} - No hay direccion en linea de comandos, se utilizara config.json`);
-      this.filePath = this.dirWizcon;
-    }
-
-    if (!this.filePath) {
-      logamarillo(1, `${ID_MOD} - Direccion de archivo no definida`);
-      return;
-    }
-
-    await this.checkFileModification();
-    if (!this.intervalId) {
-      this.intervalId = setInterval(this._tick, this.checkInterval);
+    await this.runIngestionCycle("startup");
+    if (this.schedulerEnabled) {
+      this.programarSiguienteCiclo();
     }
   }
 
   async verUltimoCambio(enviarEmail, options = {}) {
-    await lanzarReporte(enviarEmail, this.currentModifiedTime, options);
+    await this.lanzarReporte(enviarEmail, this.currentModifiedTime, options);
   }
 
   parar() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
+    if (this.timeoutId) {
+      this.clearTimeoutFn(this.timeoutId);
+      this.timeoutId = null;
     }
-    logamarillo(1, `${ID_MOD} - deteniendo observador`);
+    this.logamarillo(1, `${ID_MOD} - deteniendo observador`);
   }
 
-  async readAndProcessFile() {
-    const lines = await this.datosWizcon();
-    const enriched = await this.datosCitec(lines);
-    await lanzarETL(enriched, this.currentModifiedTime);
-    await this.verUltimoCambio(true);
+  programarSiguienteCiclo() {
+    if (!this.schedulerEnabled) {
+      return;
+    }
+
+    const delayMs = this.msUntilNextTopOfHour(new Date());
+    this.timeoutId = this.setTimeoutFn(async () => {
+      this.timeoutId = null;
+      await this.runIngestionCycle("hourly");
+      this.programarSiguienteCiclo();
+    }, delayMs);
+
+    this.logamarillo(1, `${ID_MOD} - proximo ciclo en ${delayMs} ms`);
   }
 
-  datosWizcon() {
+  async runIngestionCycle(reason = "manual") {
+    if (this.isChecking) {
+      this.logamarillo(1, `${ID_MOD} - chequeo en curso, se omite ciclo superpuesto`);
+      return;
+    }
+
+    this.isChecking = true;
+    let runDir = null;
+
+    try {
+      await this.fsPromises.mkdir(this.tempDir, { recursive: true });
+      runDir = await this.fsPromises.mkdtemp(this.path.join(this.tempDir, "run-"));
+
+      const wizconPath = this.path.join(runDir, "wizcon.dat");
+      const citecPath = this.path.join(runDir, "citec.txt");
+
+      await this.downloadWithRetries({
+        name: "wizcon",
+        url: this.smb.wizcon.url,
+        outputPath: wizconPath,
+        username: this.smb.username,
+        password: this.smb.password,
+        retryDelaysMs: this.retryDelaysMs,
+        logFn: (message) => this.logamarillo(1, `${ID_MOD} - ${message}`),
+      });
+
+      await this.downloadWithRetries({
+        name: "citec",
+        url: this.smb.citec.url,
+        outputPath: citecPath,
+        username: this.smb.username,
+        password: this.smb.password,
+        retryDelaysMs: this.retryDelaysMs,
+        logFn: (message) => this.logamarillo(1, `${ID_MOD} - ${message}`),
+      });
+
+      const hashes = await this.buildLoteHashes(wizconPath, citecPath);
+      const isDuplicate = await this.ingestaControlDAO.existsByLoteHash(hashes.loteHash);
+
+      if (isDuplicate) {
+        this.logamarillo(1, `${ID_MOD} - lote duplicado, se omite ETL (${reason})`);
+        return;
+      }
+
+      this.currentModifiedTime = new Date();
+
+      await this.ingestaControlDAO.createIfNotExists({
+        fuenteWizconHash: hashes.wizconHash,
+        fuenteCitecHash: hashes.citecHash,
+        loteHash: hashes.loteHash,
+        etiempoOrigen: this.currentModifiedTime.getTime(),
+      });
+
+      const lines = await this.datosWizcon(wizconPath);
+      const enriched = await this.datosCitec(lines, citecPath);
+      await this.lanzarETL(enriched, this.currentModifiedTime);
+      await this.verUltimoCambio(true);
+    } catch (err) {
+      this.logamarillo(2, `${ID_MOD} - error en ciclo ${reason}: ${err.message}`);
+      try {
+        await this.notificarFallo(err.message, new Date());
+      } catch (notifyErr) {
+        this.logamarillo(2, `${ID_MOD} - error registrando fallo: ${notifyErr.message}`);
+      }
+    } finally {
+      if (runDir) {
+        try {
+          await this.fsPromises.rm(runDir, { recursive: true, force: true });
+        } catch (cleanupErr) {
+          this.logamarillo(2, `${ID_MOD} - error limpiando temporal: ${cleanupErr.message}`);
+        }
+      }
+      this.isChecking = false;
+    }
+  }
+
+  datosWizcon(filePath) {
     return new Promise((resolve, reject) => {
       const lines = [];
-      const stream = fs.createReadStream(this.filePath);
+      const stream = fs.createReadStream(filePath);
       const rl = readline.createInterface({
         input: stream,
         output: process.stdout,
@@ -76,25 +194,25 @@ class Observador {
       });
 
       rl.on("close", () => {
-        logamarillo(2, `${ID_MOD} - se leyeron datos desde wizcon`);
+        this.logamarillo(2, `${ID_MOD} - se leyeron datos desde wizcon`);
         resolve(lines);
       });
 
       rl.on("error", (error) => {
-        logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
+        this.logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
         reject(error);
       });
 
       stream.on("error", (error) => {
-        logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
+        this.logamarillo(2, `${ID_MOD} - error leyendo wizcon: ${error.message}`);
         reject(error);
       });
     });
   }
 
-  async datosCitec(lines) {
+  async datosCitec(lines, citecPath) {
     try {
-      const data = await fs.promises.readFile(this.dirCitec, "utf8");
+      const data = await this.fsPromises.readFile(citecPath, "utf8");
       const lineas = data.split(/\r?\n/).map((linea) => linea.trim()).filter(Boolean);
 
       const currentMs = new Date(this.currentModifiedTime).getTime();
@@ -130,68 +248,20 @@ class Observador {
       }
 
       if (filaMasCercana) {
-        logamarillo(
+        this.logamarillo(
           2,
           `${ID_MOD} - se leyeron datos desde citec. ${filaMasCercana} fila ${posfila}`
         );
         // Agregamos la lectura de Cota45 desde Citec al lote principal de Wizcon.
         lines.push(`Cota45              ${String(valorFilaMasCercana).replace(",", ".")}`);
       } else {
-        logamarillo(2, `${ID_MOD} - error leyendo citec: no se encontro fila`);
+        this.logamarillo(2, `${ID_MOD} - error leyendo citec: no se encontro fila`);
       }
     } catch (error) {
-      logamarillo(2, `${ID_MOD} - error leyendo citec: ${error.message}`);
+      this.logamarillo(2, `${ID_MOD} - error leyendo citec: ${error.message}`);
     }
 
     return lines;
-  }
-
-  async checkFileModification() {
-    if (this.isChecking) {
-      logamarillo(1, `${ID_MOD} - chequeo en curso, se omite ciclo superpuesto`);
-      return;
-    }
-
-    this.isChecking = true;
-    try {
-      try {
-        const stats = await fs.promises.stat(this.filePath);
-        this.currentModifiedTime = stats.mtime;
-      } catch (err) {
-        this.currentModifiedTime = new Date();
-        // Evita notificar repetidamente el mismo fallo si el archivo sigue inaccesible.
-        if (!this.antesHuboError) {
-          this.antesHuboError = true;
-          const fechaActual = formatoFecha(this.currentModifiedTime);
-          const fechaAnterior = formatoFecha(this.lastModifiedTime);
-          logamarillo(2, `${ID_MOD} - FALLO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
-          try {
-            await notificarFallo(err.message, this.currentModifiedTime);
-          } catch (notifyErr) {
-            logamarillo(2, `${ID_MOD} - error registrando fallo: ${notifyErr.message}`);
-          }
-          return;
-        }
-      }
-
-      this.antesHuboError = false;
-      const fechaActual = formatoFecha(this.currentModifiedTime);
-      const fechaAnterior = formatoFecha(this.lastModifiedTime);
-
-      if (!this.lastModifiedTime || this.currentModifiedTime > this.lastModifiedTime) {
-        this.lastModifiedTime = this.currentModifiedTime;
-        logamarillo(2, `${ID_MOD} - EXITO: Actual ${fechaActual} ==> Anterior ${fechaAnterior}`);
-        try {
-          await this.readAndProcessFile();
-        } catch (err) {
-          logamarillo(2, `${ID_MOD} - error procesando archivo: ${err.message}`);
-        }
-      } else {
-        logamarillo(1, `${ID_MOD} - El archivo no ha sido modificado desde la ultima lectura`);
-      }
-    } finally {
-      this.isChecking = false;
-    }
   }
 }
 
@@ -237,18 +307,6 @@ function normalizarMes(fechaStr) {
     partes[1] = reemplazos[partes[1]];
   }
   return partes.join(" ");
-}
-
-function formatoFecha(fechaOriginal) {
-  const fecha = new Date(fechaOriginal);
-  const year = fecha.getFullYear();
-  const month = String(fecha.getMonth() + 1).padStart(2, "0");
-  const day = String(fecha.getDate()).padStart(2, "0");
-  const hours = String(fecha.getHours()).padStart(2, "0");
-  const minutes = String(fecha.getMinutes()).padStart(2, "0");
-  const seconds = String(fecha.getSeconds()).padStart(2, "0");
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
 module.exports = { Observador };

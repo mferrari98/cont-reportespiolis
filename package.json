@@ -31,11 +31,12 @@
   },
   "homepage": "https://github.com/cont-reportespiolis#readme",
   "dependencies": {
+    "canvas": "^3.2.3",
     "cheerio": "^1.0.0-rc.12",
     "echarts": "^5.5.1",
     "express": "^4.19.2",
     "nodemailer": "^6.9.14",
-    "puppeteer": "^22.13.1",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "superpowers": "github:obra/superpowers"
   }
 }

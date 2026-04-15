@@ -44,7 +44,7 @@ async function initTransporter() {
 }
 
 class EmailControl {
-  async enviar() {
+  async enviar(chartResults = {}) {
     const transporter = await transporterPromise;
     const { date, time } = formatDateTime(new Date(), {
       dateOrder: "DMY",
@@ -55,6 +55,9 @@ class EmailControl {
     let resumen = "";
     const htmlContent = fs.readFileSync(config.paths.reportTable, "utf8").trim();
     let pieLeyenda = "";
+    const hasBars = chartResults.barras === true;
+    const hasPieMdy = chartResults.pieMdy === true;
+    const hasLineas = chartResults.lineas === true;
 
     try {
       const rawData = fs.readFileSync(config.paths.reportData, "utf8");
@@ -69,6 +72,38 @@ class EmailControl {
         }
     } catch (err) {
       pieLeyenda = "";
+    }
+
+    const chartSections = [];
+    if (hasBars) {
+      chartSections.push(
+        '<img src="cid:grafBarras" alt="Grafico de Barras" style="display: block; width: 90%; height: auto; margin: 0 auto 14px;"/>'
+      );
+    }
+    if (hasPieMdy) {
+      chartSections.push(
+        '<img src="cid:grafPieMdy" alt="Grafico Pie Madryn" style="display: block; width: 39.9%; height: auto; margin: 0 auto 6px;"/>'
+      );
+      chartSections.push(
+        '<div style="text-align: center; font-family: \'consolas\'; font-size: 12px; color: #444; margin: 0 auto 8px;">' +
+        '  <span style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px;">' +
+        '    <i style="width: 12px; height: 12px; border-radius: 3px; background: #3498db; display: inline-block;"></i>' +
+        '    Agua' +
+        '  </span>' +
+        '  <span style="display: inline-flex; align-items: center; gap: 6px;">' +
+        '    <i style="width: 12px; height: 12px; border-radius: 3px; background: #f2e4c5; display: inline-block;"></i>' +
+        '    Disponible' +
+        '  </span>' +
+        '</div>'
+      );
+      if (pieLeyenda) {
+        chartSections.push(pieLeyenda);
+      }
+    }
+    if (hasLineas) {
+      chartSections.push(
+        '<img src="cid:grafLineas" alt="Grafico de Lineas" style="display: block; width: 90%; height: auto; margin: 0 auto 8px;"/>'
+      );
     }
 
     const mailOptions = {
@@ -100,41 +135,11 @@ class EmailControl {
             <div style="text-align: center; font-family: 'consolas'; margin: 10px 0 8px; font-size: 16px;">
               Volúmenes y Porcentajes de agua en m3
             </div>
-
-            <img src="cid:grafBarras" alt="Grafico de Barras" style="display: block; width: 90%; height: auto; margin: 0 auto 14px;"/>
-            <img src="cid:grafPieMdy" alt="Grafico Pie Madryn" style="display: block; width: 39.9%; height: auto; margin: 0 auto 6px;"/>
-            <div style="text-align: center; font-family: 'consolas'; font-size: 12px; color: #444; margin: 0 auto 8px;">
-              <span style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px;">
-                <i style="width: 12px; height: 12px; border-radius: 3px; background: #3498db; display: inline-block;"></i>
-                Agua
-              </span>
-              <span style="display: inline-flex; align-items: center; gap: 6px;">
-                <i style="width: 12px; height: 12px; border-radius: 3px; background: #f2e4c5; display: inline-block;"></i>
-                Disponible
-              </span>
-            </div>
-            ${pieLeyenda}
-            <img src="cid:grafLineas" alt="Grafico de Lineas" style="display: block; width: 90%; height: auto; margin: 0 auto 8px;"/>
+            ${chartSections.join("\n")}
           </div>
         </div>
       `,
-      attachments: [
-        {
-          filename: "grafBarras.png",
-          path: config.paths.reportImages.barras,
-          cid: "grafBarras"
-        },
-        {
-          filename: "grafPieMdy.png",
-          path: config.paths.reportImages.pieMdy,
-          cid: "grafPieMdy"
-        },
-        {
-          filename: "grafLineas.png",
-          path: config.paths.reportImages.lineas,
-          cid: "grafLineas"
-        }
-      ]
+      attachments: buildAttachments({ hasBars, hasPieMdy, hasLineas })
     };
 
     try {
@@ -146,6 +151,36 @@ class EmailControl {
       throw error;
     }
   }
+}
+
+function buildAttachments({ hasBars, hasPieMdy, hasLineas }) {
+  const attachments = [];
+
+  if (hasBars) {
+    attachments.push({
+      filename: "grafBarras.png",
+      path: config.paths.reportImages.barras,
+      cid: "grafBarras"
+    });
+  }
+
+  if (hasPieMdy) {
+    attachments.push({
+      filename: "grafPieMdy.png",
+      path: config.paths.reportImages.pieMdy,
+      cid: "grafPieMdy"
+    });
+  }
+
+  if (hasLineas) {
+    attachments.push({
+      filename: "grafLineas.png",
+      path: config.paths.reportImages.lineas,
+      cid: "grafLineas"
+    });
+  }
+
+  return attachments;
 }
 
 module.exports = EmailControl;

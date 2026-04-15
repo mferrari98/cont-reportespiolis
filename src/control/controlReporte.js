@@ -8,7 +8,7 @@ const LogDAO = require("../dao/logDAO");
 
 const EmailMensaje = require("../reporte/emailMensaje");
 const Reporte = require("../modelo/reporte");
-const { transpilar, buildLineSeries } = require("../etl/transpilador");
+const { transpilar, buildLineSeries, renderReport } = require("../etl/transpilador");
 
 const tipoVariableDAO = new TipoVariableDAO();
 const sitioDAO = new SitioDAO();
@@ -20,7 +20,7 @@ const reporteModel = new Reporte();
 
 const ID_MOD = "REPORTE";
 const DEFAULT_HISTORICO_LIMIT = config.report.historico.defaultLimit;
-// Tope de páginas para evitar consultas muy pesadas si la BD crece demasiado.
+// Tope de páginas para evitar navegar demasiadas estampas si la BD crece demasiado.
 const MAX_PAGINAS = 48;
 
 async function lanzarReporte(enviarEmail, estampatiempo, options = {}) {
@@ -48,6 +48,22 @@ async function obtenerLineas(options = {}) {
   };
 }
 
+async function obtenerReporteRenderizado(estampatiempo, options = {}) {
+  const { reporte, estampaReporte } = await getNuevosDatos(options);
+
+  let estampaFinal = estampatiempo;
+  if (estampaReporte !== null && typeof estampaReporte !== "undefined") {
+    const estampaNumero = Number(estampaReporte);
+    estampaFinal = Number.isFinite(estampaNumero) ? estampaNumero : estampaReporte;
+  }
+
+  if (estampaFinal === null || typeof estampaFinal === "undefined") {
+    estampaFinal = Date.now();
+  }
+
+  return renderReport(reporte, estampaFinal);
+}
+
 async function notificarFallo(mensaje, currentModifiedTime) {
   await logDAO.create(mensaje, currentModifiedTime);
 }
@@ -65,9 +81,10 @@ async function getNuevosDatos(options = {}) {
   const totalCount = await historicoLecturaDAO.getHistoricoEtiempoCount();
   const parsedTotal = Number(totalCount);
   const safeTotal = Number.isFinite(parsedTotal) ? parsedTotal : 0;
-  // El conteo devuelve cantidad de estampas de tiempo distintas, por eso se pagina por "etiempo".
+  // Cada página representa una estampa de tiempo distinta; historicoLimit solo controla
+  // cuántos puntos históricos se incluyen por serie dentro de esa página.
   const totalPages = safeTotal > 0
-    ? Math.min(Math.ceil(safeTotal / historicoLimit), MAX_PAGINAS)
+    ? Math.min(safeTotal, MAX_PAGINAS)
     : 1;
   const safePage = Math.min(safeRequestedPage, totalPages);
 
@@ -135,6 +152,6 @@ async function getNuevosDatos(options = {}) {
   return { reporte, estampaReporte: targetEtiempo };
 }
 
-module.exports = { lanzarReporte, notificarFallo, obtenerLineas };
+module.exports = { lanzarReporte, notificarFallo, obtenerLineas, obtenerReporteRenderizado };
 
 logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

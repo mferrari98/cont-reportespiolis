@@ -372,6 +372,12 @@
   }
 
   async function loadReportData() {
+    if (window.__REPORT_DATA__) {
+      const inlineData = window.__REPORT_DATA__
+      window.__REPORT_DATA__ = null
+      return inlineData
+    }
+
     try {
       const response = await fetch('./report-data.json', { cache: 'no-store' })
       if (!response.ok) {

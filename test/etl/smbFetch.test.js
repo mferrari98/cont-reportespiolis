@@ -1,15 +1,16 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { downloadFromSmb } = require('../../src/etl/smbFetch');
+const { runCurlDownload, downloadWithRetries } = require('../../src/etl/smbFetch');
 
-test('downloadFromSmb retries and succeeds on third attempt', async () => {
+test('downloadWithRetries retries then succeeds on third attempt', async () => {
   const execCalls = [];
   const sleepCalls = [];
   const logCalls = [];
 
   const execFileFn = async (...args) => {
     execCalls.push(args);
+
     if (execCalls.length < 3) {
       throw new Error('fallo temporal');
     }
@@ -17,11 +18,13 @@ test('downloadFromSmb retries and succeeds on third attempt', async () => {
     return { stdout: 'ok', stderr: '' };
   };
 
-  await downloadFromSmb({
-    fileName: 'ventas.csv',
-    remotePath: '//srv/reportes',
-    localPath: '/tmp/ventas.csv',
-    retryDelaysMs: [0, 100, 200, 400, 800],
+  await downloadWithRetries({
+    name: 'citec',
+    url: 'https://files.example.com/citec.csv',
+    outputPath: '/tmp/citec.csv',
+    username: 'operador',
+    password: 'super-secreto',
+    retryDelaysMs: [0, 5000, 10000, 20000, 40000],
     execFileFn,
     sleepFn: async (ms) => {
       sleepCalls.push(ms);
@@ -29,57 +32,55 @@ test('downloadFromSmb retries and succeeds on third attempt', async () => {
     logFn: (message) => {
       logCalls.push(message);
     },
-    env: {
-      SMB_USER: 'operador',
-      SMB_PASS: 'super-secreto',
-    },
   });
 
   assert.equal(execCalls.length, 3);
-  assert.deepEqual(sleepCalls, [100, 200]);
-  assert.equal(logCalls.length, 2);
-  assert.equal(logCalls.every((entry) => !entry.includes('super-secreto')), true);
+  assert.deepEqual(execCalls[0], [
+    'curl',
+    [
+      '--fail',
+      '--silent',
+      '--show-error',
+      '--user',
+      'operador:super-secreto',
+      'https://files.example.com/citec.csv',
+      '-o',
+      '/tmp/citec.csv',
+    ],
+  ]);
+  assert.deepEqual(sleepCalls, [5000, 10000]);
+  assert.equal(logCalls.some((message) => message.includes('citec') && message.includes('1/5')), true);
+  assert.equal(logCalls.some((message) => message.includes('citec') && message.includes('2/5')), true);
+  assert.equal(logCalls.some((message) => message.includes('citec') && message.includes('3/5')), true);
 });
 
-test('downloadFromSmb throws after exhausting retries', async () => {
-  const sleepCalls = [];
-
+test('downloadWithRetries throws after exhausting retries', async () => {
   await assert.rejects(
-    downloadFromSmb({
-      fileName: 'ventas.csv',
-      remotePath: '//srv/reportes',
-      localPath: '/tmp/ventas.csv',
-      retryDelaysMs: [0, 100, 200, 400, 800],
+    downloadWithRetries({
+      name: 'citec',
+      url: 'https://files.example.com/citec.csv',
+      outputPath: '/tmp/citec.csv',
+      username: 'operador',
+      password: 'super-secreto',
+      retryDelaysMs: [0, 1000, 2000],
       execFileFn: async () => {
         throw new Error('fallo persistente');
       },
-      sleepFn: async (ms) => {
-        sleepCalls.push(ms);
-      },
-      logFn: () => {},
-      env: {
-        SMB_USER: 'operador',
-        SMB_PASS: 'super-secreto',
-      },
-    }),
-    {
-      message: 'No se pudo descargar ventas.csv tras 5 intentos',
-    }
-  );
-
-  assert.deepEqual(sleepCalls, [100, 200, 400, 800]);
-});
-
-test('downloadFromSmb validates SMB credentials presence', async () => {
-  await assert.rejects(
-    downloadFromSmb({
-      fileName: 'ventas.csv',
-      remotePath: '//srv/reportes',
-      localPath: '/tmp/ventas.csv',
-      env: { SMB_USER: '', SMB_PASS: '' },
-      execFileFn: async () => ({ stdout: '', stderr: '' }),
       sleepFn: async () => {},
       logFn: () => {},
+    }),
+    /No se pudo descargar citec tras 3 intentos/
+  );
+});
+
+test('runCurlDownload throws when credentials are missing', async () => {
+  await assert.rejects(
+    runCurlDownload({
+      url: 'https://files.example.com/citec.csv',
+      outputPath: '/tmp/citec.csv',
+      username: '',
+      password: '',
+      execFileFn: async () => ({ stdout: '', stderr: '' }),
     }),
     {
       message: 'SMB_USER/SMB_PASS no definidos',

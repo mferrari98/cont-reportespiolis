@@ -1,4 +1,4 @@
-const { run } = require("./db");
+const { run, exec } = require("./db");
 const { SQLITE_TIMEZONE_OFFSET } = require("../core/tiempo");
 
 async function crearTablas() {
@@ -67,6 +67,30 @@ async function crearTablas() {
     );
   } catch (err) {
     errors.err_idx_etiempo = err;
+  }
+
+  try {
+    await exec(
+      `DELETE FROM historico_lectura
+       WHERE id NOT IN (
+         SELECT MIN(id)
+         FROM historico_lectura
+         GROUP BY sitio_id, tipo_id, etiempo
+       )`
+    );
+    errors.err_histlect_dedupe = null;
+  } catch (err) {
+    errors.err_histlect_dedupe = err;
+  }
+
+  try {
+    await run(
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_historico_medicion_unica
+       ON historico_lectura(sitio_id, tipo_id, etiempo)`
+    );
+    errors.err_idx_histlect_unique = null;
+  } catch (err) {
+    errors.err_idx_histlect_unique = err;
   }
 
   try {

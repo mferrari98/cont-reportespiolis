@@ -4,7 +4,7 @@ const { DESCRIPTOR_NIVEL } = require("../core/constantes");
 
 const ID_MOD = "DAO-HISTORICO-LECTURA";
 
-const sql_create = `INSERT INTO historico_lectura (sitio_id, tipo_id, valor, etiempo) VALUES (?, ?, ?, ?)`;
+const sql_create = `INSERT OR IGNORE INTO historico_lectura (sitio_id, tipo_id, valor, etiempo) VALUES (?, ?, ?, ?)`;
 const sql_getById = `SELECT * FROM historico_lectura WHERE id = ?`;
 const sql_existe = `
   SELECT EXISTS (
@@ -97,7 +97,15 @@ class HistoricoLecturaDAO {
     logamarillo(1, `${ID_MOD} - create`);
     try {
       const result = await run(sql_create, [sitio_id, tipo_id, valor, etiempo]);
-      return { id: result.lastID, sitio_id, tipo_id, valor, etiempo };
+      const ignored = result.changes === 0;
+      return {
+        id: ignored ? null : result.lastID,
+        sitio_id,
+        tipo_id,
+        valor,
+        etiempo,
+        ignored
+      };
     } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
       throw err;
@@ -206,6 +214,46 @@ class HistoricoLecturaDAO {
     const o = Number.isFinite(Number(offset)) && Number(offset) >= 0 ? parseInt(offset, 10) : 0;
     try {
       return await all(sql_getHistorico_pag_desc_hasta, [sitio_id, DESCRIPTOR_NIVEL, etiempo, l, o]);
+    } catch (err) {
+      logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
+      throw err;
+    }
+  }
+
+  async getHistoricoPagDescHastaPorSitios(sitioIds, limit, etiempo) {
+    const ids = Array.isArray(sitioIds)
+      ? sitioIds
+          .map((id) => parseInt(id, 10))
+          .filter((id) => Number.isFinite(id) && id > 0)
+      : [];
+
+    if (!ids.length) {
+      return [];
+    }
+
+    const l = Number.isFinite(Number(limit)) && Number(limit) > 0 ? parseInt(limit, 10) : 100;
+    const placeholders = ids.map(() => "?").join(",");
+    const sql = `
+      SELECT id, sitio_id, tipo_id, valor, etiempo
+      FROM (
+        SELECT
+          hl.*,
+          ROW_NUMBER() OVER (
+            PARTITION BY hl.sitio_id
+            ORDER BY hl.etiempo DESC
+          ) AS rn
+        FROM historico_lectura hl
+        JOIN tipo_variable tv ON hl.tipo_id = tv.id
+        WHERE hl.sitio_id IN (${placeholders})
+          AND tv.descriptor = ?
+          AND hl.etiempo <= ?
+      ) ranked
+      WHERE rn <= ?
+      ORDER BY sitio_id ASC, etiempo ASC
+    `;
+
+    try {
+      return await all(sql, [...ids, DESCRIPTOR_NIVEL, etiempo, l]);
     } catch (err) {
       logamarillo(2, `${ID_MOD} - Error DB: ${err.message}`);
       throw err;

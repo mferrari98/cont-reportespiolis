@@ -17,13 +17,8 @@ function msUntilNextTopOfHour(now = new Date()) {
   return getNextTopOfHour(now).getTime() - now.getTime();
 }
 
-function buildRetryDelaysMs(retryDelaysSeconds, firstAttemptDelaySeconds) {
+function buildRetryDelaysMs(retryDelaysSeconds, _firstAttemptDelaySeconds) {
   const delaysMs = retryDelaysSeconds.map((delaySeconds) => delaySeconds * 1000);
-
-  if (typeof firstAttemptDelaySeconds === 'number' && firstAttemptDelaySeconds >= 0) {
-    return [0, ...delaysMs];
-  }
-
   return [0, ...delaysMs];
 }
 

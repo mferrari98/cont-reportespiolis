@@ -97,6 +97,32 @@ async function crearTablas() {
 
   try {
     await run(
+      `CREATE TABLE IF NOT EXISTS ingesta_control (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        fuente_wizcon_hash TEXT NOT NULL,
+        fuente_citec_hash TEXT NOT NULL,
+        lote_hash TEXT NOT NULL UNIQUE,
+        etiempo_origen BIGINT NOT NULL,
+        creado_el DATETIME DEFAULT (DATETIME('now', '${SQLITE_TIMEZONE_OFFSET}'))
+      )`
+    );
+    errors.err_ingesta_control = null;
+  } catch (err) {
+    errors.err_ingesta_control = err;
+  }
+
+  try {
+    await run(
+      `CREATE INDEX IF NOT EXISTS idx_ingesta_control_etiempo
+       ON ingesta_control(etiempo_origen DESC)`
+    );
+    errors.err_idx_ingesta_control_etiempo = null;
+  } catch (err) {
+    errors.err_idx_ingesta_control_etiempo = err;
+  }
+
+  try {
+    await run(
       `CREATE TABLE IF NOT EXISTS log (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         descriptor TEXT NOT NULL,

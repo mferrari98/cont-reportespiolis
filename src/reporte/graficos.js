@@ -492,24 +492,28 @@ async function generarGraficos(reporteData) {
   const paths = config.paths.reportImages;
   const results = {};
 
+  let bars = null;
   try {
     logamarillo(2, `${ID_MOD} - Generando grafico de barras`);
-    const bars = renderBars(reporteData, 1600, 500, 1.4);
+    bars = renderBars(reporteData, 1600, 500, 1.4);
     await saveChartPNG(bars.canvas, paths.barras);
-    bars.chart.dispose();
     results.barras = true;
   } catch (err) {
     logamarillo(2, `${ID_MOD} - Error generando grafico de barras: ${err.message}`);
     await removeChartPNG(paths.barras);
     results.barras = false;
+  } finally {
+    if (bars && bars.chart) {
+      bars.chart.dispose();
+    }
   }
 
+  let pie = null;
   try {
     logamarillo(2, `${ID_MOD} - Generando grafico pie madryn`);
-    const pie = renderPie(reporteData);
+    pie = renderPie(reporteData);
     if (pie) {
       await saveChartPNG(pie.canvas, paths.pieMdy);
-      pie.chart.dispose();
       results.pieMdy = true;
     } else {
       logamarillo(2, `${ID_MOD} - Sin datos para grafico pie`);
@@ -520,14 +524,18 @@ async function generarGraficos(reporteData) {
     logamarillo(2, `${ID_MOD} - Error generando grafico pie: ${err.message}`);
     await removeChartPNG(paths.pieMdy);
     results.pieMdy = false;
+  } finally {
+    if (pie && pie.chart) {
+      pie.chart.dispose();
+    }
   }
 
+  let lines = null;
   try {
     logamarillo(2, `${ID_MOD} - Generando grafico de lineas`);
-    const lines = renderLines(reporteData);
+    lines = renderLines(reporteData);
     if (lines) {
       await saveChartPNG(lines.canvas, paths.lineas);
-      lines.chart.dispose();
       results.lineas = true;
     } else {
       logamarillo(2, `${ID_MOD} - Sin datos para grafico de lineas`);
@@ -538,6 +546,10 @@ async function generarGraficos(reporteData) {
     logamarillo(2, `${ID_MOD} - Error generando grafico de lineas: ${err.message}`);
     await removeChartPNG(paths.lineas);
     results.lineas = false;
+  } finally {
+    if (lines && lines.chart) {
+      lines.chart.dispose();
+    }
   }
 
   return results;

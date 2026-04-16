@@ -156,7 +156,11 @@ src/web/public/js/plotly-latest.min.js
 # herramientas de desarrollo
 .claude/
 .serena/
+.agents/
 .worktrees/
+docs/
+opencode.json
+skills-lock.json
 openspec/
 AGENTS.md
 CLAUDE.md

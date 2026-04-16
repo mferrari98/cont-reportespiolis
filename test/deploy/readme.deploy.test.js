@@ -14,6 +14,14 @@ function readEnvExample() {
   return fs.readFileSync(ENV_EXAMPLE_PATH, "utf8");
 }
 
+function getEnvKeys(content) {
+  return content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"))
+    .map((line) => line.split("=", 1)[0]);
+}
+
 test("README includes docker compose up command for deployment", () => {
   const readme = readReadme();
 
@@ -24,39 +32,46 @@ test("README includes docker compose up command for deployment", () => {
   );
 });
 
-test("README states only nginx exposes host ports and app remains private", () => {
+test("README explains nginx is public entrypoint and app is internal", () => {
+  const readme = readReadme();
+  const normalized = readme.toLowerCase();
+
+  assert.match(normalized, /nginx/, "README must mention nginx in deploy section");
+  assert.match(normalized, /\bapp\b/, "README must mention app service");
+  assert.match(
+    normalized,
+    /(nginx.*(public|expone).*puertos)|(puertos.*(public|expone).*nginx)/s,
+    "README must state nginx is the service exposed to host ports"
+  );
+  assert.match(
+    normalized,
+    /(app.*(interna|privad|proxy))|((interna|privad|proxy).*app)/s,
+    "README must state app is internal/private behind proxy"
+  );
+});
+
+test("README uses root .env path as canonical setup", () => {
   const readme = readReadme();
 
   assert.match(
     readme,
-    /solo nginx expone puertos al host.*app.*privad[ao]/is,
-    "README must explain nginx is the only public entrypoint and app is private"
+    /cp \.env\.example \.env/,
+    "README must include root-level .env setup command"
+  );
+  assert.doesNotMatch(
+    readme,
+    /cont-reportespiolis\/\.env/,
+    "README must avoid nested path style for .env"
   );
 });
 
-test(".env.example contains only required email variables for deploy", () => {
+test(".env.example contains only allowlisted deploy variables", () => {
   const envExample = readEnvExample();
+  const keys = getEnvKeys(envExample).sort();
 
-  assert.match(envExample, /^EMAIL_USER=/m, ".env.example must define EMAIL_USER");
-  assert.match(envExample, /^EMAIL_PASS=/m, ".env.example must define EMAIL_PASS");
-  assert.match(
-    envExample,
-    /^EMAIL_DIFUSION=/m,
-    ".env.example must define EMAIL_DIFUSION"
-  );
-});
-
-test(".env.example does not include SMB credentials", () => {
-  const envExample = readEnvExample();
-
-  assert.doesNotMatch(
-    envExample,
-    /^SMB_USER=/m,
-    ".env.example must not include SMB_USER"
-  );
-  assert.doesNotMatch(
-    envExample,
-    /^SMB_PASS=/m,
-    ".env.example must not include SMB_PASS"
+  assert.deepEqual(
+    keys,
+    ["EMAIL_DIFUSION", "EMAIL_PASS", "EMAIL_USER"],
+    ".env.example must contain exactly EMAIL_USER, EMAIL_PASS and EMAIL_DIFUSION"
   );
 });

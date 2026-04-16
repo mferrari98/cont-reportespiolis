@@ -140,6 +140,56 @@ test("runIngestionCycle no propaga error si notificarFallo falla", async () => {
   assert.equal(observador.isChecking, false);
 });
 
+test("runIngestionCycle omite ETL si createIfNotExists devuelve inserted false", async () => {
+  let etlCalled = false;
+  const logs = [];
+
+  const observador = new Observador({
+    schedulerEnabled: false,
+    tempDir: "/tmp/ingesta-observador-",
+    retryDelaysMs: [0],
+    smb: {
+      wizcon: { url: "https://files.example.com/wizcon.csv" },
+      citec: { url: "https://files.example.com/citec.csv" },
+      username: "operador",
+      password: "fixture-pass",
+    },
+    deps: {
+      fsPromises: {
+        mkdir: async () => {},
+        mkdtemp: async () => "/tmp/ingesta-observador-run-123",
+        rm: async () => {},
+        readFile: async () => "",
+      },
+      path: {
+        join: (...parts) => parts.join("/"),
+      },
+      downloadWithRetries: async () => {},
+      buildLoteHashes: async () => ({
+        wizconHash: "wizcon-hash",
+        citecHash: "citec-hash",
+        loteHash: "lote-hash",
+      }),
+      ingestaControlDAO: {
+        existsByLoteHash: async () => false,
+        createIfNotExists: async () => ({ inserted: false }),
+      },
+      lanzarETL: async () => {
+        etlCalled = true;
+      },
+      lanzarReporte: async () => {},
+      logamarillo: (_level, message) => {
+        logs.push(message);
+      },
+    },
+  });
+
+  await observador.runIngestionCycle("hourly");
+
+  assert.equal(etlCalled, false);
+  assert.equal(logs.some((message) => message.includes("insercion concurrente duplicada")), true);
+});
+
 test("runIngestionCycle intenta cleanup aun si falla descarga", async () => {
   const { observador, rmCalls } = buildObservadorWithDownloadFailure();
 

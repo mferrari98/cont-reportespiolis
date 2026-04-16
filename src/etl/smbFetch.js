@@ -3,6 +3,23 @@ const { promisify } = require('node:util');
 
 const execFileAsync = promisify(execFile);
 const INVALID_RETRY_DELAYS_MSG = 'retryDelaysMs debe ser un arreglo no vacio de numeros finitos >= 0';
+const REDACTED = '[REDACTED]';
+
+function sanitizeSmbErrorMessage(message, { password }) {
+  let sanitized = String(message || '');
+
+  if (!sanitized) {
+    return 'error SMB sin detalle';
+  }
+
+  if (password) {
+    sanitized = sanitized.split(password).join(REDACTED);
+  }
+
+  sanitized = sanitized.replace(/(\/\/[^\s/:@]+:)([^@\s/]+)(@)/g, `$1${REDACTED}$3`);
+
+  return sanitized;
+}
 
 function sleep(ms) {
   return new Promise((resolve) => {
@@ -53,7 +70,7 @@ async function downloadWithRetries({
     throw new Error(INVALID_RETRY_DELAYS_MSG);
   }
 
-  let lastError;
+  let lastErrorMessage = '';
 
   for (let attemptIndex = 0; attemptIndex < retryDelaysMs.length; attemptIndex += 1) {
     const attempt = attemptIndex + 1;
@@ -77,13 +94,13 @@ async function downloadWithRetries({
 
       return;
     } catch (error) {
-      lastError = error;
-      logFn(`Fallo descarga ${name} intento ${attempt}/${totalAttempts}: ${error.message}`);
+      lastErrorMessage = sanitizeSmbErrorMessage(error.message, { username, password });
+      logFn(`Fallo descarga ${name} intento ${attempt}/${totalAttempts}: ${lastErrorMessage}`);
     }
   }
 
   throw new Error(
-    `No se pudo descargar ${name} tras ${retryDelaysMs.length} intentos: ${lastError.message}`
+    `No se pudo descargar ${name} tras ${retryDelaysMs.length} intentos: ${lastErrorMessage}`
   );
 }
 

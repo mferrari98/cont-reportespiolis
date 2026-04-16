@@ -13,25 +13,50 @@ const { buildLoteHashes } = require("./loteHash");
 const { msUntilNextTopOfHour, buildRetryDelaysMs } = require("./schedulerHora");
 
 const ID_MOD = "OBSERV";
+const DEFAULT_RETRY_DELAYS_MS = [0, 5000, 10000, 20000, 40000];
+
+function buildRetryDelaysFromConfig(observadorCfg = {}) {
+  const reintentosCfg = observadorCfg.reintentos || {};
+  const backoffSegundos = Array.isArray(reintentosCfg.backoff_segundos)
+    ? reintentosCfg.backoff_segundos
+        .map((delaySeconds) => Number(delaySeconds))
+        .filter((delaySeconds) => Number.isFinite(delaySeconds) && delaySeconds >= 0)
+    : [];
+  const configRetryDelaysMs = buildRetryDelaysMs(backoffSegundos, 0);
+
+  const maxAttempts = Number(reintentosCfg.max);
+  if (Number.isInteger(maxAttempts) && maxAttempts > 0) {
+    const limitedDelaysMs = configRetryDelaysMs.slice(0, maxAttempts);
+    if (limitedDelaysMs.length > 0) {
+      return limitedDelaysMs;
+    }
+  }
+
+  return configRetryDelaysMs.length > 0 ? configRetryDelaysMs : DEFAULT_RETRY_DELAYS_MS;
+}
 
 class Observador {
   constructor(options = {}) {
     const observadorCfg = config.observador || {};
     const ingestaCfg = config.ingesta || {};
-    const smbCfg = options.smb || ingestaCfg.smb || {};
+    const smbCfg = options.smb || {};
 
-    this.dirWizcon = options.dirWizcon || config.direcciones.sca_wizcon || "";
-    this.dirCitec = options.dirCitec || config.direcciones.cota45 || "";
+    this.dirWizcon =
+      options.dirWizcon ||
+      ingestaCfg?.smb?.wizcon_url ||
+      config.direcciones.sca_wizcon ||
+      "";
+    this.dirCitec =
+      options.dirCitec ||
+      ingestaCfg?.smb?.citec_url ||
+      config.direcciones.cota45 ||
+      "";
     this.cantLineasCitec = options.cantLineasCitec || observadorCfg.citec_lineas || 100;
     this.currentModifiedTime = null;
     this.timeoutId = null;
     this.isChecking = false;
 
-    const cfgRetryDelaysMs = Array.isArray(ingestaCfg.retryDelaysMs)
-      ? ingestaCfg.retryDelaysMs
-      : Array.isArray(ingestaCfg.retryDelaysSeconds)
-        ? buildRetryDelaysMs(ingestaCfg.retryDelaysSeconds, ingestaCfg.firstAttemptDelaySeconds)
-        : [0, 5000, 10000, 20000, 40000];
+    const cfgRetryDelaysMs = buildRetryDelaysFromConfig(observadorCfg);
 
     this.retryDelaysMs = Array.isArray(options.retryDelaysMs) ? options.retryDelaysMs : cfgRetryDelaysMs;
     this.schedulerEnabled =
@@ -41,7 +66,11 @@ class Observador {
           ? ingestaCfg.schedulerEnabled
           : true;
 
-    this.tempDir = options.tempDir || ingestaCfg.tempDir || path.join(os.tmpdir(), "reportespiolis-ingesta");
+    this.tempDir =
+      options.tempDir ||
+      ingestaCfg.temp_dir ||
+      ingestaCfg.tempDir ||
+      path.join(os.tmpdir(), "reportespiolis-ingesta");
 
     this.smb = {
       wizcon: {
@@ -151,12 +180,17 @@ class Observador {
 
       this.currentModifiedTime = new Date();
 
-      await this.ingestaControlDAO.createIfNotExists({
+      const createResult = await this.ingestaControlDAO.createIfNotExists({
         fuenteWizconHash: hashes.wizconHash,
         fuenteCitecHash: hashes.citecHash,
         loteHash: hashes.loteHash,
         etiempoOrigen: this.currentModifiedTime.getTime(),
       });
+
+      if (!createResult?.inserted) {
+        this.logamarillo(1, `${ID_MOD} - insercion concurrente duplicada, se omite ETL (${reason})`);
+        return;
+      }
 
       const lines = await this.datosWizcon(wizconPath);
       const enriched = await this.datosCitec(lines, citecPath);

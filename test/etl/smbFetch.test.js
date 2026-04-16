@@ -163,3 +163,35 @@ test('runCurlDownload throws when credentials are missing', async () => {
     }
   );
 });
+
+test('downloadWithRetries sanitizes SMB credentials in logs and thrown error', async () => {
+  const password = 'super-secreto';
+  const logs = [];
+
+  await assert.rejects(
+    downloadWithRetries({
+      name: 'wizcon',
+      url: 'smb://10.10.3.2/SERVICOOP/RPT006.DAT',
+      outputPath: '/tmp/wizcon.dat',
+      username: 'operador',
+      password,
+      retryDelaysMs: [0],
+      execFileFn: async () => {
+        throw new Error(`curl: (67) login failed for operador:${password} and smb://operador:${password}@10.10.3.2`);
+      },
+      sleepFn: async () => {},
+      logFn: (message) => {
+        logs.push(message);
+      },
+    }),
+    (error) => {
+      assert.equal(error.message.includes(password), false);
+      assert.equal(error.message.includes('[REDACTED]'), true);
+      return true;
+    }
+  );
+
+  assert.equal(logs.length > 0, true);
+  assert.equal(logs.some((message) => message.includes(password)), false);
+  assert.equal(logs.some((message) => message.includes('[REDACTED]')), true);
+});

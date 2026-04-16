@@ -14,17 +14,20 @@ function loadFreshObservadorAndConfig() {
   return { config, Observador };
 }
 
-test("Observador wires tempDir SMB urls and retry delays from config keys", () => {
-  const { config, Observador } = loadFreshObservadorAndConfig();
-  const observador = new Observador();
+test("Observador wires mounted-file defaults from config", () => {
+  const originalArgv = process.argv;
+  process.argv = process.argv.slice(0, 2);
 
-  const expectedRetryDelaysMs = [
-    0,
-    ...config.observador.reintentos.backoff_segundos.map((delaySeconds) => delaySeconds * 1000),
-  ].slice(0, config.observador.reintentos.max);
+  try {
+    const { config, Observador } = loadFreshObservadorAndConfig();
+    const observador = new Observador();
 
-  assert.equal(observador.tempDir, config.ingesta.temp_dir);
-  assert.equal(observador.smb.wizcon.url, config.ingesta.smb.wizcon_url);
-  assert.equal(observador.smb.citec.url, config.ingesta.smb.citec_url);
-  assert.deepEqual(observador.retryDelaysMs, expectedRetryDelaysMs);
+    assert.equal(observador.dirWizcon, config.direcciones.sca_wizcon);
+    assert.equal(observador.dirCitec, config.direcciones.cota45);
+    assert.equal(observador.checkInterval, config.observador.tiempo_milis);
+    assert.equal(observador.cantLineasCitec, config.observador.citec_lineas);
+    assert.equal(observador.filePath, null);
+  } finally {
+    process.argv = originalArgv;
+  }
 });

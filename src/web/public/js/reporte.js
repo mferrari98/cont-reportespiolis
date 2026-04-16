@@ -1,13 +1,22 @@
 (function () {
   const charts = []
-  const REBALSE_OPACITY = 0.35
-  const FONT_SIZES = {
+  const DEFAULT_REBALSE_OPACITY = 0.35
+  const DEFAULT_FONT_SIZES = {
     title: 19,
     legend: 16,
     label: 17,
     axis: 15,
     barLabel: 15
   }
+  const DEFAULT_COLORS = {
+    nivel: '#3498db',
+    rebalse: '#d3a53c',
+    texto: '#333',
+    vacio: '#f2e4c5'
+  }
+  let rebalseOpacity = DEFAULT_REBALSE_OPACITY
+  let fontSizes = { ...DEFAULT_FONT_SIZES }
+  let colorDefaults = { ...DEFAULT_COLORS }
   const LINE_RANGE_DEFAULT = '1d'
   const LINE_PRELOAD_RANGE = ''
   const MAX_LINE_LIMIT = 200000
@@ -60,6 +69,22 @@
     const mix = (channel) => Math.round(channel + (255 - channel) * factor)
 
     return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`
+  }
+
+  function applyChartTheme(data) {
+    const theme = data?.chartTheme || {}
+    const parsedOpacity = Number(theme.rebalseOpacity)
+    rebalseOpacity = Number.isFinite(parsedOpacity) ? parsedOpacity : DEFAULT_REBALSE_OPACITY
+
+    fontSizes = {
+      ...DEFAULT_FONT_SIZES,
+      ...(theme.fontSizes || {})
+    }
+
+    colorDefaults = {
+      ...DEFAULT_COLORS,
+      ...(theme.colors || {})
+    }
   }
 
   function registerChart(chart) {
@@ -372,6 +397,12 @@
   }
 
   async function loadReportData() {
+    if (window.__REPORT_DATA__) {
+      const inlineData = window.__REPORT_DATA__
+      window.__REPORT_DATA__ = null
+      return inlineData
+    }
+
     try {
       const response = await fetch('./report-data.json', { cache: 'no-store' })
       if (!response.ok) {
@@ -399,9 +430,9 @@
     const maxOperativos = Array.isArray(data.maxOperativos) ? data.maxOperativos : []
     const cubicajes = Array.isArray(data.cubicajes) ? data.cubicajes : []
 
-    const colorNivel = getCssVar('--color-nivel', '#3498db')
-    const colorRebalse = getCssVar('--color-rebalse', '#d3a53c')
-    const colorTexto = getCssVar('--color-texto', '#333')
+    const colorNivel = getCssVar('--color-nivel', colorDefaults.nivel)
+    const colorRebalse = getCssVar('--color-rebalse', colorDefaults.rebalse)
+    const colorTexto = getCssVar('--color-texto', colorDefaults.texto)
     const barFontScale = 1
 
     const nivelSeries = sitios.map((sitio, index) => {
@@ -444,7 +475,7 @@
         left: 'center',
         textStyle: {
           fontFamily: 'consolas',
-          fontSize: FONT_SIZES.title + barFontScale,
+          fontSize: fontSizes.title + barFontScale,
           color: colorTexto
         }
       },
@@ -467,7 +498,7 @@
         data: ['Nivel Actual', 'Espacio Disponible'],
         textStyle: {
           fontFamily: 'consolas',
-          fontSize: FONT_SIZES.legend + barFontScale,
+          fontSize: fontSizes.legend + barFontScale,
           color: colorTexto
         }
       },
@@ -484,7 +515,7 @@
         axisLabel: {
           rotate: 35,
           fontFamily: 'consolas',
-          fontSize: FONT_SIZES.axis + barFontScale,
+          fontSize: fontSizes.axis + barFontScale,
           color: colorTexto
         }
       },
@@ -493,7 +524,7 @@
         max: 100,
         axisLabel: {
           formatter: '{value}%',
-          fontSize: FONT_SIZES.axis + barFontScale,
+          fontSize: fontSizes.axis + barFontScale,
           color: colorTexto
         }
       },
@@ -512,7 +543,7 @@
               return Number.isFinite(nivel) ? nivel.toFixed(2) : ''
             },
             fontFamily: 'consolas',
-            fontSize: FONT_SIZES.barLabel + barFontScale,
+            fontSize: fontSizes.barLabel + barFontScale,
             color: colorTexto
           }
         },
@@ -529,13 +560,13 @@
               return Number.isFinite(maxOp) ? maxOp.toFixed(2) : ''
             },
             fontFamily: 'consolas',
-            fontSize: FONT_SIZES.barLabel + barFontScale,
+            fontSize: fontSizes.barLabel + barFontScale,
             color: colorTexto,
             opacity: 1
           },
           itemStyle: {
             color: colorRebalse,
-            opacity: REBALSE_OPACITY
+            opacity: rebalseOpacity
           }
         }
       ]
@@ -561,10 +592,10 @@
       return
     }
 
-    const colorNivel = getCssVar('--color-nivel', '#3498db')
-    const colorRebalse = getCssVar('--color-rebalse', '#d3a53c')
-    const colorVacio = lightenColor(colorRebalse, 0.7)
-    const colorTexto = getCssVar('--color-texto', '#333')
+    const colorNivel = getCssVar('--color-nivel', colorDefaults.nivel)
+    const colorRebalse = getCssVar('--color-rebalse', colorDefaults.rebalse)
+    const colorVacio = getCssVar('--color-vacio', colorDefaults.vacio || lightenColor(colorRebalse, 0.7))
+    const colorTexto = getCssVar('--color-texto', colorDefaults.texto)
     const sunburstFontDelta = -1
 
     const siteNodes = sites
@@ -664,8 +695,8 @@
               r: '64%',
               label: {
                 rotate: 0,
-                fontSize: FONT_SIZES.label + sunburstFontDelta,
-                lineHeight: FONT_SIZES.label + sunburstFontDelta + 4,
+                fontSize: fontSizes.label + sunburstFontDelta,
+                lineHeight: fontSizes.label + sunburstFontDelta + 4,
                 color: colorTexto,
                 formatter: (params) => {
                   const value = toNumber(params.value)
@@ -679,8 +710,8 @@
               r: '100%',
               label: {
                 rotate: 0,
-                fontSize: FONT_SIZES.axis + sunburstFontDelta,
-                lineHeight: FONT_SIZES.axis + sunburstFontDelta + 4,
+                fontSize: fontSizes.axis + sunburstFontDelta,
+                lineHeight: fontSizes.axis + sunburstFontDelta + 4,
                 color: colorTexto,
                 overflow: 'truncate',
                 formatter: (params) => {
@@ -711,7 +742,7 @@
             show: true,
             position: 'center',
             fontFamily: 'consolas',
-            fontSize: FONT_SIZES.label + sunburstFontDelta,
+            fontSize: fontSizes.label + sunburstFontDelta,
             fontWeight: 'bold',
             color: colorTexto,
             formatter: 'TOTAL'
@@ -784,7 +815,7 @@
         left: 'center',
         textStyle: {
           fontFamily: 'consolas',
-          fontSize: FONT_SIZES.title
+          fontSize: fontSizes.title
         }
       },
       tooltip: {
@@ -795,7 +826,7 @@
         type: 'scroll',
         textStyle: {
           fontFamily: 'consolas',
-          fontSize: FONT_SIZES.legend
+          fontSize: fontSizes.legend
         },
         selected: legendSelection.selected
       },
@@ -810,7 +841,7 @@
         type: 'time',
         axisLabel: {
           fontFamily: 'consolas',
-          fontSize: FONT_SIZES.axis
+          fontSize: fontSizes.axis
         }
       },
       yAxis: {
@@ -820,11 +851,11 @@
         nameGap: 40,
         nameTextStyle: {
           fontFamily: 'consolas',
-          fontSize: FONT_SIZES.axis
+          fontSize: fontSizes.axis
         },
         axisLabel: {
           fontFamily: 'consolas',
-          fontSize: FONT_SIZES.axis
+          fontSize: fontSizes.axis
         }
       },
       dataZoom: buildLineZoom(bounds, rangeMs),
@@ -910,6 +941,7 @@
     setupCopy()
     const data = await loadReportData()
     if (data) {
+      applyChartTheme(data)
       renderBars(data)
       renderPie(data)
       await renderLines(data)

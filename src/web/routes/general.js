@@ -4,7 +4,7 @@ const express = require("express");
 
 const config = require("../../config/loader");
 const { logamarillo } = require("../../control/controlLog");
-const { obtenerLineas } = require("../../control/controlReporte");
+const { obtenerLineas, obtenerReporteRenderizado } = require("../../control/controlReporte");
 const { AppError, ValidationError } = require("../../core/errors");
 const { asyncHandler } = require("../../core/http");
 
@@ -19,27 +19,20 @@ router.get(
   "/",
   asyncHandler(async (req, res) => {
     const { historicoLimit, historicoPage } = parseHistoricoParams(req);
-    await observador.verUltimoCambio(false, { historicoLimit, historicoPage });
+    const reportBaseTime = observador?.currentModifiedTime || Date.now();
 
-    const filePath = config.paths.reportHtml;
-    const dataPath = config.paths.reportData;
-
-    let data;
+    let renderedReport;
     try {
-      data = await fs.promises.readFile(filePath, "utf8");
+      renderedReport = await obtenerReporteRenderizado(reportBaseTime, {
+        historicoLimit,
+        historicoPage
+      });
     } catch (err) {
       logamarillo(2, `${err}`);
       throw new AppError("Error leyendo reporte");
     }
 
-    let pagination = null;
-    try {
-      const rawData = await fs.promises.readFile(dataPath, "utf8");
-      const parsed = JSON.parse(rawData);
-      pagination = parsed && parsed.pagination ? parsed.pagination : null;
-    } catch (err) {
-      pagination = null;
-    }
+    const pagination = renderedReport?.payload?.pagination || null;
 
     const totalPagesValue = Number.isFinite(pagination?.totalPages) ? pagination.totalPages : null;
     const limitValue = Number.isFinite(pagination?.limit) ? pagination.limit : historicoLimit;
@@ -78,7 +71,10 @@ router.get(
  <!-- FIN_CONTROLES_PAGINACION -->
  `;
 
-    const newData = data.replace(/<\/body>/i, `${navHtml}\n</body>`);
+    const scriptNonce = res.locals?.scriptNonce || "";
+    const inlineData = `<script nonce="${scriptNonce}">window.__REPORT_DATA__ = ${serializeForInlineScript(renderedReport.payload)};</script>`;
+
+    const newData = renderedReport.html.replace(/<\/body>/i, `${inlineData}\n${navHtml}\n</body>`);
     res.send(newData);
   })
 );
@@ -133,6 +129,10 @@ function parseHistoricoParams(req) {
   }
 
   return { historicoLimit, historicoPage };
+}
+
+function serializeForInlineScript(value) {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
 module.exports = (parametro) => {

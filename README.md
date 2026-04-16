@@ -13,3 +13,10 @@ Backend Node.js/Express que genera reportes HTML con datos historicos
 
 ## Estructura
 - Diagrama HTML disponible en `/reporte/desa`.
+
+## Ingesta SMB horaria
+- El observador corre una vez al iniciar y luego cada hora en `HH:00`.
+- Variables obligatorias en `.env`: `SMB_USER` y `SMB_PASS`.
+- Los archivos temporales de cada corrida se guardan en `/tmp/reportespiolis/<runId>/`.
+- Si la descarga SMB falla, intenta 5 veces y aborta ese ciclo sin ejecutar ETL parcial.
+- Si el contenido descargado no cambia, el ciclo se omite por deduplicacion via hash.

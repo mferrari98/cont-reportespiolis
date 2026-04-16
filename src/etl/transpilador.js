@@ -6,12 +6,13 @@ const config = require("../config/loader");
 const { logamarillo } = require("../control/controlLog");
 const { formatDateTime } = require("../core/tiempo");
 const { sindet } = require("./etl");
+const { buildChartThemePayload } = require("../reporte/chartTheme");
 
 const ID_MOD = "TRANS";
 
 const { reportTemplate, reportHtml, reportData, echartsSrc, echartsDest } = config.paths;
 
-async function transpilar(reporte, estampatiempo) {
+async function renderReport(reporte, estampatiempo) {
   let data;
   try {
     data = await fs.promises.readFile(reportTemplate, "utf8");
@@ -25,8 +26,17 @@ async function transpilar(reporte, estampatiempo) {
 
   const reportPayload = buildReportData(reporte);
 
-  await writeReportHtml(contenido);
-  await writeReportData(reportPayload);
+  return {
+    html: contenido,
+    payload: reportPayload
+  };
+}
+
+async function transpilar(reporte, estampatiempo) {
+  const { html, payload } = await renderReport(reporte, estampatiempo);
+
+  await writeReportHtml(html);
+  await writeReportData(payload);
 }
 
 // Expande la plantilla HTML duplicando la fila base según la cantidad de sitios.
@@ -280,6 +290,7 @@ function buildReportData(reporte) {
     niveles,
     maxOperativos,
     cubicajes,
+    chartTheme: buildChartThemePayload(),
     pieMdy: buildPieMdyData(reporte),
     lineSeries: buildLineSeries(reporte),
     pagination: reporte.paginacion || null
@@ -297,5 +308,6 @@ function fechaLegible(estampatiempo) {
 
 module.exports = {
   transpilar,
-  buildLineSeries
+  buildLineSeries,
+  renderReport
 };

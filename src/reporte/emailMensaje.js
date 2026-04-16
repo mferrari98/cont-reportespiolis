@@ -1,9 +1,9 @@
 const fs = require("fs");
 const cheerio = require("cheerio");
-const puppeteer = require("puppeteer");
 
 const config = require("../config/loader");
 const { logamarillo } = require("../control/controlLog");
+const { generarGraficos } = require("./graficos");
 
 const EmailControl = require("./emailControl");
 const emailControl = new EmailControl();
@@ -17,10 +17,6 @@ function stripStyleProp(styleValue, propName) {
 
   const regex = new RegExp(`${propName}\\s*:[^;]+;?`, "gi");
   return styleValue.replace(regex, "").trim();
-}
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 class EmailMensaje {
@@ -61,119 +57,19 @@ class EmailMensaje {
   }
 
   async renderizar() {
-    const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
-
     try {
-      const page = await browser.newPage();
-      await page.setViewport({ width: 1600, height: 900, deviceScaleFactor: 3 });
-      const reportUrl = `http://127.0.0.1:${config.server.port}/reporte.html`;
-      await page.goto(reportUrl, { waitUntil: "networkidle0" });
-      await page.waitForFunction("window.reportReady === true", { timeout: 20000 });
+      const reportDataPath = config.paths.reportData;
+      const rawData = await fs.promises.readFile(reportDataPath, "utf8");
+      const reporteData = JSON.parse(rawData);
 
-      await plotBarras(page);
-      await plotPieMdy(page);
-      await plotLineas(page);
+      logamarillo(2, `${ID_MOD} - Generando graficos server-side (sin Puppeteer)`);
+      const chartResults = await generarGraficos(reporteData);
 
-      await emailControl.enviar();
-    } finally {
-      await browser.close();
+      await emailControl.enviar(chartResults);
+    } catch (err) {
+      logamarillo(2, `${ID_MOD} - Error generando graficos: ${err.message}`);
+      throw err;
     }
-  }
-}
-
-async function plotBarras(page) {
-  const element = await page.$("#grafBarras");
-  if (!element) {
-    logamarillo(2, `${ID_MOD} - Elemento #grafBarras no encontrado, omitiendo captura`);
-    return;
-  }
-
-  try {
-    await page.evaluate(() => {
-      const container = document.getElementById("grafBarras");
-      if (!container) {
-        return;
-      }
-      const width = container.offsetWidth || 1200;
-      const height = container.offsetHeight || 420;
-      const scale = 1;
-      const scaledWidth = Math.round(width * scale);
-      const scaledHeight = Math.round(height * scale);
-      container.style.width = `${scaledWidth}px`;
-      container.style.maxWidth = `${scaledWidth}px`;
-      container.style.minWidth = `${scaledWidth}px`;
-      container.style.height = `${scaledHeight}px`;
-
-      if (window.echarts) {
-        const chart = window.echarts.getInstanceByDom(container);
-        if (chart) {
-          chart.resize();
-        }
-      }
-    });
-    await sleep(100);
-    const boundingBox = await element.boundingBox();
-    if (!boundingBox || boundingBox.height === 0) {
-      logamarillo(2, `${ID_MOD} - Elemento #grafBarras sin altura, omitiendo captura`);
-      return;
-    }
-    await element.screenshot({ path: config.paths.reportImages.barras });
-  } catch (error) {
-    logamarillo(2, `${ID_MOD} - No se pudo capturar #grafBarras: ${error.message}`);
-  }
-}
-
-async function plotPieMdy(page) {
-  const element = await page.$("#grafPieMdy");
-  if (!element) {
-    logamarillo(2, `${ID_MOD} - Elemento #grafPieMdy no encontrado, omitiendo captura`);
-    return;
-  }
-
-  try {
-    await page.evaluate(() => {
-      const container = document.getElementById("grafPieMdy");
-      if (!container) {
-        return;
-      }
-      const size = container.offsetHeight || 360;
-      const scaledSize = Math.round(size * 0.8);
-      container.style.width = `${scaledSize}px`;
-      container.style.maxWidth = `${scaledSize}px`;
-      container.style.minWidth = `${scaledSize}px`;
-      container.style.height = `${scaledSize}px`;
-
-      if (window.echarts) {
-        const chart = window.echarts.getInstanceByDom(container);
-        if (chart) {
-          chart.resize();
-        }
-      }
-    });
-    await sleep(100);
-    const boundingBox = await element.boundingBox();
-    if (!boundingBox || boundingBox.height === 0) {
-      logamarillo(2, `${ID_MOD} - Elemento #grafPieMdy sin altura, omitiendo captura`);
-      return;
-    }
-    await element.screenshot({ path: config.paths.reportImages.pieMdy });
-  } catch (error) {
-    logamarillo(2, `${ID_MOD} - No se pudo capturar #grafPieMdy: ${error.message}`);
-  }
-}
-
-async function plotLineas(page) {
-  const element = await page.$("#grafLineas");
-  if (!element) {
-    return;
-  }
-
-  try {
-    await element.screenshot({ path: config.paths.reportImages.lineas });
-  } catch (error) {
-    logamarillo(1, `${ID_MOD} - error capturando serie de tiempo`);
   }
 }
 

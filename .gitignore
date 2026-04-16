@@ -139,6 +139,12 @@ data/
 src/etl/plantilla.expand.html
 src/web/public/reporte.html
 src/reporte/salida/*
+src/web/public/grafBarras.png
+src/web/public/grafPieMdy.png
+src/web/public/grafPieTw.png
+src/web/public/grafLineas.png
+src/web/public/report-data.json
+src/web/public/js/echarts.min.js
 
 # archivos que dependen de la instancia
 historico.txt
@@ -150,6 +156,7 @@ src/web/public/js/plotly-latest.min.js
 # herramientas de desarrollo
 .claude/
 .serena/
+.worktrees/
 openspec/
 AGENTS.md
 CLAUDE.md

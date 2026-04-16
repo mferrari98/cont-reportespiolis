@@ -15,8 +15,8 @@ Backend Node.js/Express que genera reportes HTML con datos historicos
 - Diagrama HTML disponible en `/reporte/desa`.
 
 ## Ingesta SMB horaria
-- Configurar `SMB_USER` y `SMB_PASS` en `.env` para autenticar contra los recursos SMB.
-- `config.json` define `ingesta.temp_dir` para staging local de archivos antes del procesamiento.
-- `config.json` define `ingesta.smb.wizcon_url` y `ingesta.smb.citec_url` como fuentes horarias.
-- `observador.reintentos.max` y `observador.reintentos.backoff_segundos` controlan los reintentos con backoff.
-- En contenedor, el paquete `curl` queda disponible para chequeos operativos y troubleshooting.
+- El observador corre una vez al iniciar y luego cada hora en `HH:00`.
+- Variables obligatorias en `.env`: `SMB_USER` y `SMB_PASS`.
+- Los archivos temporales de cada corrida se guardan en `/tmp/reportespiolis/<runId>/`.
+- Si la descarga SMB falla, intenta 5 veces y aborta ese ciclo sin ejecutar ETL parcial.
+- Si el contenido descargado no cambia, el ciclo se omite por deduplicacion via hash.

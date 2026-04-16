@@ -12,14 +12,14 @@ function readComposeText() {
 function readServiceBlock(serviceName) {
   const composeText = readComposeText();
   const servicesMatch = composeText.match(
-    /(?:^|\n)services:\n([\s\S]*?)(?:\n[a-zA-Z_][\w-]*:\n|$)/m
+    /(?:^|\n)services:\n([\s\S]*?)(?:\n[a-zA-Z_][\w-]*:\n|$)/
   );
 
   assert.ok(servicesMatch, "docker-compose.yml must declare services");
 
   const servicesBlock = servicesMatch[1];
   const servicePattern = new RegExp(
-    `^  ${serviceName}:\\n([\\s\\S]*?)(?=^  [a-zA-Z0-9_-]+:\\n|$)`,
+    `^  ${serviceName}:\\n([\\s\\S]*?)(?=^  [a-zA-Z0-9_-]+:\\n|(?![\\s\\S]))`,
     "m"
   );
   const serviceMatch = servicesBlock.match(servicePattern);
@@ -156,7 +156,8 @@ test("app mounts /mnt/compartido:ro and reportes_db volume path /app/src/basedat
   const appVolumeItems = readKeyScalarItems(appVolumesBlock);
 
   assert.ok(
-    appVolumeItems.includes("/mnt/compartido:ro"),
+    appVolumeItems.includes("/mnt/compartido:ro") ||
+      appVolumeItems.includes("/mnt/compartido:/mnt/compartido:ro"),
     "app service must mount /mnt/compartido as read-only"
   );
 

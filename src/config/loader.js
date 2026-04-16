@@ -30,7 +30,18 @@ const DEFAULTS = {
   observador: {
     umbral_parser_columnas: 20,
     tiempo_milis: 40000,
-    citec_lineas: 100
+    citec_lineas: 100,
+    reintentos: {
+      max: 5,
+      backoff_segundos: [5, 10, 20, 40]
+    }
+  },
+  ingesta: {
+    temp_dir: "/tmp/reportespiolis",
+    smb: {
+      wizcon_url: "smb://10.10.3.2/SERVICOOP/RPT006.DAT",
+      citec_url: "smb://10.10.3.6/compartido/NivelCisSur.txt"
+    }
   },
   etl: {
     tipo_variables: [

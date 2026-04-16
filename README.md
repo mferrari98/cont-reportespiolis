@@ -14,9 +14,12 @@ Backend Node.js/Express que genera reportes HTML con datos historicos
 ## Estructura
 - Diagrama HTML disponible en `/reporte/desa`.
 
-## Ingesta SMB horaria
-- El observador corre una vez al iniciar y luego cada hora en `HH:00`.
-- Variables obligatorias en `.env`: `SMB_USER` y `SMB_PASS`.
-- Los archivos temporales de cada corrida se guardan en `/tmp/reportespiolis/<runId>/`.
-- Si la descarga SMB falla, intenta 5 veces y aborta ese ciclo sin ejecutar ETL parcial.
-- Si el contenido descargado no cambia, el ciclo se omite por deduplicacion via hash.
+## Deploy con Docker Compose (nginx + app separados)
+- `docker-compose.yml` levanta dos servicios: `nginx` como entrada publica y `app` en red interna.
+- solo nginx expone puertos al host; app queda privada y se accede solo por proxy interno.
+- Pasos rapidos:
+  1. Copiar variables: `cp .env.example .env`
+  2. Construir e iniciar: `docker compose up -d --build`
+  3. Ver estado: `docker compose ps`
+  4. Ver logs: `docker compose logs -f app nginx`
+  5. Detener: `docker compose down`

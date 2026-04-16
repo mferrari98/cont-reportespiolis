@@ -147,7 +147,7 @@ test("nginx service has 80:80 and depends_on app", () => {
   );
 });
 
-test("app mounts /mnt/compartido:ro and reportes_db volume path /app/src/basedatos", () => {
+test("app mounts /mnt/compartido with explicit readonly target and reportes_db volume path /app/src/basedatos", () => {
   const appBlock = readServiceBlock("app");
   const appVolumesBlock = readServiceKeyBlock(appBlock, "volumes");
 
@@ -156,9 +156,8 @@ test("app mounts /mnt/compartido:ro and reportes_db volume path /app/src/basedat
   const appVolumeItems = readKeyScalarItems(appVolumesBlock);
 
   assert.ok(
-    appVolumeItems.includes("/mnt/compartido:ro") ||
-      appVolumeItems.includes("/mnt/compartido:/mnt/compartido:ro"),
-    "app service must mount /mnt/compartido as read-only"
+    appVolumeItems.includes("/mnt/compartido:/mnt/compartido:ro"),
+    "app service must mount /mnt/compartido as read-only with explicit target"
   );
 
   assert.ok(

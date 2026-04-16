@@ -67,6 +67,8 @@ class Observador {
     this.msUntilNextTopOfHour = deps.msUntilNextTopOfHour || msUntilNextTopOfHour;
     this.setTimeoutFn = deps.setTimeout || setTimeout;
     this.clearTimeoutFn = deps.clearTimeout || clearTimeout;
+    this.createReadStream = deps.createReadStream || fs.createReadStream;
+    this.createReadline = deps.createReadline || readline.createInterface;
   }
 
   async iniciar() {
@@ -182,10 +184,9 @@ class Observador {
   datosWizcon(filePath) {
     return new Promise((resolve, reject) => {
       const lines = [];
-      const stream = fs.createReadStream(filePath);
-      const rl = readline.createInterface({
+      const stream = this.createReadStream(filePath);
+      const rl = this.createReadline({
         input: stream,
-        output: process.stdout,
         terminal: false
       });
 
@@ -310,5 +311,3 @@ function normalizarMes(fechaStr) {
 }
 
 module.exports = { Observador };
-
-logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);

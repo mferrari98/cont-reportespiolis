@@ -62,7 +62,7 @@ class EmailMensaje {
       const rawData = await fs.promises.readFile(reportDataPath, "utf8");
       const reporteData = JSON.parse(rawData);
 
-      logamarillo(2, `${ID_MOD} - Generando graficos server-side (sin Puppeteer)`);
+      logamarillo(2, `${ID_MOD} - Generando graficos server-side`);
       const chartResults = await generarGraficos(reporteData);
 
       await emailControl.enviar(chartResults);

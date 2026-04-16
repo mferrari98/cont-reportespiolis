@@ -13,3 +13,10 @@ Backend Node.js/Express que genera reportes HTML con datos historicos
 
 ## Estructura
 - Diagrama HTML disponible en `/reporte/desa`.
+
+## Ingesta SMB horaria
+- Configurar `SMB_USER` y `SMB_PASS` en `.env` para autenticar contra los recursos SMB.
+- `config.json` define `ingesta.temp_dir` para staging local de archivos antes del procesamiento.
+- `config.json` define `ingesta.smb.wizcon_url` y `ingesta.smb.citec_url` como fuentes horarias.
+- `observador.reintentos.max` y `observador.reintentos.backoff_segundos` controlan los reintentos con backoff.
+- En contenedor, el paquete `curl` queda disponible para chequeos operativos y troubleshooting.

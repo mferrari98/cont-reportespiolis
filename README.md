@@ -4,7 +4,7 @@ Backend Node.js/Express que genera reportes HTML con datos historicos
 (SQLite). Se publica en `/reporte/` via Nginx.
 
 ## Configuracion necesaria
-- Crear `cont-reportespiolis/.env` a partir de `example-env`.
+- Crear `cont-reportespiolis/.env` a partir de `.env.example`.
 - Revisar `config.json` si cambian rutas de entrada/salida.
 - `sitios.json` es la fuente de verdad de rebalses/cubicajes y lista de sitios Madryn.
 - El orden de visualización se basa en `sitios.json` y en el campo `tipo_variable.orden`.

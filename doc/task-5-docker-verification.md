@@ -1,9 +1,9 @@
 # Task 5 Docker Verification Report
 
 ## Context
-- Branch: `feat/docker-compose-nginx-app-separados`
-- Worktree: `/home/mferrari/code/cont-reportespiolis/.worktrees/feat-docker-compose-nginx-app-separados`
-- Timestamp: `2026-04-16T13:11:18-03:00`
+- Branch: `feat/multi-repo-gateway-landing-reporte`
+- Worktree: `/home/mferrari/code/cont-reportespiolis/.worktrees/feat-multi-repo-gateway-landing-reporte`
+- Topology: app-only private service in this repo, published through an external gateway maintained in another repo.
 
 ## Docker availability evidence
 - Command: `docker version`
@@ -12,15 +12,15 @@
 
 ## Non-Docker checks executed
 - Command: `node --test test/deploy/compose.config.test.js test/deploy/nginx.proxy.test.js test/deploy/readme.deploy.test.js`
-- Result: **PASS** (`9` tests, `0` failures)
+- Result: **PASS** (`12` tests, `0` failures)
 
 ## Acceptance mapping (Task 5)
-- `app` internal (no published ports) and `nginx` as public entrypoint (`80:80`, `depends_on: app`) -> verified by `test/deploy/compose.config.test.js`.
+- `docker-compose.yml` defines only `app`; no published ports; service attached to external `edge_net` -> verified by `test/deploy/compose.config.test.js`.
 - `app` mounts `/mnt/compartido:/mnt/compartido:ro` and `reportes_db:/app/src/basedatos` -> verified by `test/deploy/compose.config.test.js`.
-- `deploy/nginx/nginx.conf` defines `upstream app_backend` to `app:3000` and proxies with required headers/timeouts -> verified by `test/deploy/nginx.proxy.test.js`.
-- `README.md` documents compose deploy flow (`docker compose up -d --build`), `nginx` public + `app` internal, and root `.env` setup -> verified by `test/deploy/readme.deploy.test.js`.
+- Local nginx artifacts are removed from this repo (`deploy/nginx/nginx.conf` absent; no `nginx` service references in compose) -> verified by `test/deploy/nginx.proxy.test.js`.
+- `README.md` documents external gateway routing to `/reporte`, app-private deploy flow (`docker compose up -d --build`), and root `.env` setup -> verified by `test/deploy/readme.deploy.test.js`.
 - `.env.example` keeps only allowlisted deploy variables (`EMAIL_USER`, `EMAIL_PASS`, `EMAIL_DIFUSION`) -> verified by `test/deploy/readme.deploy.test.js`.
-- Pending: container runtime validation (`docker compose up/ps/logs/down`) cannot be executed until Docker is available.
+- Pending by environment: runtime container checks (`docker compose up/ps/logs/down`) remain blocked until Docker is available.
 
 ## Follow-up commands when Docker is available
 ```bash

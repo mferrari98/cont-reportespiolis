@@ -28,6 +28,17 @@ function readServiceBlock(serviceName) {
   return serviceMatch[1];
 }
 
+function readTopLevelKeyBlock(keyName) {
+  const composeText = readComposeText();
+  const keyPattern = new RegExp(
+    `(?:^|\\n)${keyName}:\\n([\\s\\S]*?)(?=\\n[a-zA-Z_][\\w-]*:\\n|$)`
+  );
+  const keyMatch = composeText.match(keyPattern);
+
+  assert.ok(keyMatch, `docker-compose.yml must declare top-level key '${keyName}'`);
+  return keyMatch[1];
+}
+
 function getServiceKeyBlocks(serviceBlock) {
   const lines = serviceBlock.split(/\r?\n/);
   const nonEmptyLines = lines.filter((line) => line.trim() !== "");
@@ -118,33 +129,56 @@ function readKeyScalarItems(keyBlock) {
   return items;
 }
 
-test("app service has no ports block", () => {
+test("compose declares only app service", () => {
+  const composeText = readComposeText();
+  const servicesMatch = composeText.match(
+    /(?:^|\n)services:\n([\s\S]*?)(?:\n[a-zA-Z_][\w-]*:\n|$)/
+  );
+
+  assert.ok(servicesMatch, "docker-compose.yml must declare services");
+
+  const serviceNames = [...servicesMatch[1].matchAll(/^  ([a-zA-Z0-9_-]+):$/gm)].map(
+    (match) => match[1]
+  );
+
+  assert.deepEqual(serviceNames, ["app"], "services must include only app");
+});
+
+test("app service is private and wired to external edge network", () => {
   const appBlock = readServiceBlock("app");
+  const appNetworksBlock = readServiceKeyBlock(appBlock, "networks");
 
   assert.equal(
     readServiceKeyBlock(appBlock, "ports"),
     undefined,
     "app service must not expose ports"
   );
+
+  assert.ok(appNetworksBlock, "app service must declare networks");
+  assert.ok(
+    readKeyScalarItems(appNetworksBlock).includes("edge_net"),
+    "app service must attach to edge_net"
+  );
 });
 
-test("nginx service has 80:80 and depends_on app", () => {
-  const nginxBlock = readServiceBlock("nginx");
-  const nginxPortsBlock = readServiceKeyBlock(nginxBlock, "ports");
-  const nginxDependsOnBlock = readServiceKeyBlock(nginxBlock, "depends_on");
+test("app service uses expected runtime configuration", () => {
+  const appBlock = readServiceBlock("app");
+  const appBuildBlock = readServiceKeyBlock(appBlock, "build");
+  const appEnvFileBlock = readServiceKeyBlock(appBlock, "env_file");
 
-  assert.ok(nginxPortsBlock, "nginx service must declare ports");
-  assert.ok(nginxDependsOnBlock, "nginx service must declare depends_on");
+  assert.ok(appBuildBlock, "app service must declare build");
+  assert.match(appBuildBlock, /^\s*dockerfile:\s*Dockerfile\s*$/m);
 
-  assert.ok(
-    readKeyScalarItems(nginxPortsBlock).includes("80:80"),
-    "nginx service must publish 80:80"
+  const appContainerName = readServiceKeyBlock(appBlock, "container_name");
+  assert.ok(appContainerName, "app service must declare container_name");
+  assert.equal(
+    readKeyInlineValue(appContainerName),
+    "cont-reportespiolis",
+    "app service must use expected container_name"
   );
-  assert.match(
-    nginxDependsOnBlock,
-    /^\s*(?:-\s*app|app:)\s*$/m,
-    "nginx service must depend on app"
-  );
+
+  assert.ok(appEnvFileBlock, "app service must declare env_file");
+  assert.deepEqual(readKeyScalarItems(appEnvFileBlock), [".env"]);
 });
 
 test("app mounts /mnt/compartido with explicit readonly target and reportes_db volume path /app/src/basedatos", () => {
@@ -163,5 +197,19 @@ test("app mounts /mnt/compartido with explicit readonly target and reportes_db v
   assert.ok(
     appVolumeItems.some((item) => item.startsWith("reportes_db:/app/src/basedatos")),
     "app service must mount reportes_db at /app/src/basedatos"
+  );
+});
+
+test("edge_net is declared as external network", () => {
+  const networksBlock = readTopLevelKeyBlock("networks");
+  const edgeNetMatch = networksBlock.match(
+    /(?:^|\n)\s{2}edge_net:\n([\s\S]*?)(?=\n\s{2}[a-zA-Z0-9_-]+:\n|$)/
+  );
+
+  assert.ok(edgeNetMatch, "networks must declare edge_net");
+  assert.match(
+    edgeNetMatch[1],
+    /^\s*external:\s*true\s*$/m,
+    "edge_net must be an external network"
   );
 });

@@ -32,21 +32,25 @@ test("README includes docker compose up command for deployment", () => {
   );
 });
 
-test("README explains nginx is public entrypoint and app is internal", () => {
+test("README explains external gateway and private app service", () => {
   const readme = readReadme();
   const normalized = readme.toLowerCase();
 
-  assert.match(normalized, /nginx/, "README must mention nginx in deploy section");
+  assert.match(
+    normalized,
+    /(gateway externo)|(gateway.*extern)/,
+    "README must mention external gateway architecture"
+  );
   assert.match(normalized, /\bapp\b/, "README must mention app service");
   assert.match(
     normalized,
-    /(nginx.*(public|expone).*puertos)|(puertos.*(public|expone).*nginx)/s,
-    "README must state nginx is the service exposed to host ports"
+    /\/reporte\/?/,
+    "README must mention /reporte routing path"
   );
   assert.match(
     normalized,
-    /(app.*(interna|privad|proxy))|((interna|privad|proxy).*app)/s,
-    "README must state app is internal/private behind proxy"
+    /(app.*(interna|privad))|((interna|privad).*app)/s,
+    "README must state app is internal/private"
   );
 });
 

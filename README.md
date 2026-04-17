@@ -1,7 +1,7 @@
 # Reportespiolis
 
 Backend Node.js/Express que genera reportes HTML con datos historicos
-(SQLite). Se publica en `/reporte/` via Nginx.
+(SQLite). Se publica en `/reporte/` via gateway externo.
 
 ## Configuracion necesaria
 - Crear `.env` en la raiz del repo a partir de `.env.example`.
@@ -14,12 +14,17 @@ Backend Node.js/Express que genera reportes HTML con datos historicos
 ## Estructura
 - Diagrama HTML disponible en `/reporte/desa`.
 
-## Deploy con Docker Compose (nginx + app separados)
-- `docker-compose.yml` levanta dos servicios: `nginx` como entrada publica y `app` en red interna.
-- solo nginx expone puertos al host; app queda privada y se accede solo por proxy interno.
+## Arquitectura multi-repo
+- Este repo solo contiene el servicio `app` (Node.js/Express) y su almacenamiento (`reportes_db`).
+- La exposicion publica y el enrutamiento HTTP viven en un gateway externo de otro repo.
+- El gateway debe resolver `/reporte` hacia este servicio por la red Docker `edge_net`.
+
+## Deploy con Docker Compose (servicio app privado)
+- `docker-compose.yml` levanta un unico servicio: `app`.
+- `app` no publica puertos al host; queda privado en la red externa `edge_net`.
 - Pasos rapidos:
   1. Copiar variables: `cp .env.example .env`
   2. Construir e iniciar: `docker compose up -d --build`
   3. Ver estado: `docker compose ps`
-  4. Ver logs: `docker compose logs -f app nginx`
+  4. Ver logs: `docker compose logs -f app`
   5. Detener: `docker compose down`

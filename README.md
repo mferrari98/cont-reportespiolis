@@ -22,9 +22,11 @@ Backend Node.js/Express que genera reportes HTML con datos historicos
 ## Deploy con Docker Compose (servicio app privado)
 - `docker-compose.yml` levanta un unico servicio: `app`.
 - `app` no publica puertos al host; queda privado en la red externa `edge_net`.
+- Requisito previo: la red Docker externa `edge_net` debe existir (`docker network create edge_net`).
 - Pasos rapidos:
   1. Copiar variables: `cp .env.example .env`
-  2. Construir e iniciar: `docker compose up -d --build`
-  3. Ver estado: `docker compose ps`
-  4. Ver logs: `docker compose logs -f app`
-  5. Detener: `docker compose down`
+  2. Crear red externa (si no existe): `docker network create edge_net`
+  3. Construir e iniciar: `docker compose up -d --build`
+  4. Ver estado: `docker compose ps`
+  5. Ver logs: `docker compose logs -f app`
+  6. Detener: `docker compose down`

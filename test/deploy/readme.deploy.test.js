@@ -32,6 +32,22 @@ test("README includes docker compose up command for deployment", () => {
   );
 });
 
+test("README documents edge_net external network prerequisite", () => {
+  const readme = readReadme();
+  const normalized = readme.toLowerCase();
+
+  assert.match(
+    normalized,
+    /edge_net/,
+    "README must mention edge_net external network"
+  );
+  assert.match(
+    readme,
+    /docker network create edge_net/,
+    "README must include 'docker network create edge_net' prerequisite command"
+  );
+});
+
 test("README explains external gateway and private app service", () => {
   const readme = readReadme();
   const normalized = readme.toLowerCase();

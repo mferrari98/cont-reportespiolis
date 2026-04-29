@@ -144,20 +144,21 @@ test("compose declares only app service", () => {
   assert.deepEqual(serviceNames, ["app"], "services must include only app");
 });
 
-test("app service is private and wired to external edge network", () => {
+test("app service is private to the host loopback", () => {
   const appBlock = readServiceBlock("app");
-  const appNetworksBlock = readServiceKeyBlock(appBlock, "networks");
+  const appPortsBlock = readServiceKeyBlock(appBlock, "ports");
 
-  assert.equal(
-    readServiceKeyBlock(appBlock, "ports"),
-    undefined,
-    "app service must not expose ports"
+  assert.ok(appPortsBlock, "app service must declare ports");
+  assert.deepEqual(
+    readKeyScalarItems(appPortsBlock),
+    ["127.0.0.1:3001:3000"],
+    "app service must publish only on host loopback port 3001"
   );
 
-  assert.ok(appNetworksBlock, "app service must declare networks");
-  assert.ok(
-    readKeyScalarItems(appNetworksBlock).includes("edge_net"),
-    "app service must attach to edge_net"
+  assert.equal(
+    readServiceKeyBlock(appBlock, "networks"),
+    undefined,
+    "app service must not require a shared Docker network"
   );
 });
 
@@ -173,8 +174,16 @@ test("app service uses expected runtime configuration", () => {
   assert.ok(appContainerName, "app service must declare container_name");
   assert.equal(
     readKeyInlineValue(appContainerName),
-    "cont-reportespiolis",
+    "reportespiolis",
     "app service must use expected container_name"
+  );
+
+  const appImage = readServiceKeyBlock(appBlock, "image");
+  assert.ok(appImage, "app service must declare image");
+  assert.equal(
+    readKeyInlineValue(appImage),
+    "cont-reportespiolis",
+    "app service must use expected image name"
   );
 
   assert.ok(appEnvFileBlock, "app service must declare env_file");
@@ -200,16 +209,11 @@ test("app mounts /mnt/compartido with explicit readonly target and reportes_db v
   );
 });
 
-test("edge_net is declared as external network", () => {
-  const networksBlock = readTopLevelKeyBlock("networks");
-  const edgeNetMatch = networksBlock.match(
-    /(?:^|\n)\s{2}edge_net:\n([\s\S]*?)(?=\n\s{2}[a-zA-Z0-9_-]+:\n|$)/
+test("reportes_db is declared as a named volume", () => {
+  const volumesBlock = readTopLevelKeyBlock("volumes");
+  const reportesDbMatch = volumesBlock.match(
+    /(?:^|\n)\s{2}reportes_db:\s*(?:\n|$)/
   );
 
-  assert.ok(edgeNetMatch, "networks must declare edge_net");
-  assert.match(
-    edgeNetMatch[1],
-    /^\s*external:\s*true\s*$/m,
-    "edge_net must be an external network"
-  );
+  assert.ok(reportesDbMatch, "volumes must declare reportes_db");
 });

@@ -1,21 +1,18 @@
 services:
   app:
+    image: cont-reportespiolis
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: cont-reportespiolis
+    container_name: reportespiolis
     restart: unless-stopped
     env_file:
       - .env
     volumes:
       - /mnt/compartido:/mnt/compartido:ro
       - reportes_db:/app/src/basedatos
-    networks:
-      - edge_net
+    ports:
+      - "127.0.0.1:3001:3000"
 
 volumes:
   reportes_db:
-
-networks:
-  edge_net:
-    external: true

@@ -155,8 +155,10 @@ src/web/public/js/plotly-latest.min.js
 
 # herramientas de desarrollo
 .claude/
+.codex
 .serena/
 .agents/
+.superpowers/
 .worktrees/
 docs/
 opencode.json
@@ -164,6 +166,7 @@ skills-lock.json
 openspec/
 AGENTS.md
 CLAUDE.md
+DESIGN.md
 README-DEPLOYMENT.md
 NGINX-CHANGES.md
 RESUMEN-FINAL.md

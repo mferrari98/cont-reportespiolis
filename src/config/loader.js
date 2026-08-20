@@ -16,6 +16,7 @@ const DEFAULTS = {
       user: "",
       pass: ""
     },
+    enabled: true,
     difusion: "",
     smtp: {
       host: "post.servicoop.com",
@@ -190,6 +191,24 @@ function parseNumber(value, fallback) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function parseBoolean(value, fallback) {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (typeof value !== "string") {
+    return fallback;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (["true", "1", "yes", "si", "on"].includes(normalized)) {
+    return true;
+  }
+  if (["false", "0", "no", "off"].includes(normalized)) {
+    return false;
+  }
+  return fallback;
+}
+
 function normalizeEmailDiffusion(value) {
   if (Array.isArray(value)) {
     return value.map((item) => item.trim()).filter(Boolean);
@@ -275,6 +294,9 @@ function applyEnvOverrides(config) {
   if (process.env.EMAIL_DIFUSION) {
     config.email.difusion = process.env.EMAIL_DIFUSION;
   }
+  if (process.env.EMAIL_ENABLED) {
+    config.email.enabled = parseBoolean(process.env.EMAIL_ENABLED, config.email.enabled);
+  }
 
   if (process.env.OBSERVADOR_UMBRAL_COLUMNAS) {
     config.observador.umbral_parser_columnas = parseNumber(
@@ -309,7 +331,7 @@ function applyEnvOverrides(config) {
     config.server.port = parseNumber(process.env.PORT, config.server.port);
   }
   if (process.env.TRUST_PROXY) {
-    config.server.trustProxy = process.env.TRUST_PROXY === "true";
+    config.server.trustProxy = parseBoolean(process.env.TRUST_PROXY, config.server.trustProxy);
   }
 
   if (process.env.ETL_TIPO_VARIABLES) {

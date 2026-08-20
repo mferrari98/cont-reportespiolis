@@ -8,7 +8,8 @@
       "user": "${EMAIL_USER}",
       "pass": "${EMAIL_PASS}"
     },
-    "difusion": "${EMAIL_DIFUSION}"
+    "difusion": "${EMAIL_DIFUSION}",
+    "enabled": true
   },
   "observador": {
     "umbral_parser_columnas": 20,

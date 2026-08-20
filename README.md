@@ -5,6 +5,7 @@ Backend Node.js/Express que genera reportes HTML con datos historicos
 
 ## Configuracion necesaria
 - Crear `.env` en la raiz del repo a partir de `.env.example`.
+- Para evaluar sin envios de correo, usar `EMAIL_ENABLED=false`.
 - Revisar `config.json` si cambian rutas de entrada/salida.
 - `sitios.json` es la fuente de verdad de rebalses/cubicajes y lista de sitios Madryn.
 - El orden de visualización se basa en `sitios.json` y en el campo `tipo_variable.orden`.

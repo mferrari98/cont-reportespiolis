@@ -34,9 +34,11 @@ async function lanzarReporte(enviarEmail, estampatiempo, options = {}) {
 
   await transpilar(reporte, estampaFinal);
 
-  if (enviarEmail) {
+  if (enviarEmail && config.email.enabled) {
     await emailMensaje.extraerTabla();
     await emailMensaje.renderizar();
+  } else if (enviarEmail && !config.email.enabled) {
+    logamarillo(2, `${ID_MOD} - Envio de email deshabilitado por configuracion`);
   }
 }
 

@@ -8,6 +8,26 @@ function loadConfigFresh() {
   return require("../../src/config/loader");
 }
 
+function withEnv(overrides, fn) {
+  const previous = {};
+  for (const key of Object.keys(overrides)) {
+    previous[key] = process.env[key];
+    process.env[key] = overrides[key];
+  }
+
+  try {
+    return fn();
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (typeof value === "undefined") {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+  }
+}
+
 test("loader provides ingesta SMB and retry defaults", () => {
   const config = loadConfigFresh();
 
@@ -22,4 +42,24 @@ test("loader provides ingesta SMB and retry defaults", () => {
     config.ingesta.smb.citec_url,
     "smb://10.10.3.6/compartido/NivelCisSur.txt"
   );
+});
+
+test("loader enables email delivery by default", () => {
+  const config = withEnv({ EMAIL_ENABLED: "" }, () => loadConfigFresh());
+
+  assert.equal(config.email.enabled, true);
+});
+
+test("loader disables email delivery with EMAIL_ENABLED=false", () => {
+  const config = withEnv({ EMAIL_ENABLED: "false" }, () => loadConfigFresh());
+
+  assert.equal(config.email.enabled, false);
+});
+
+test("loader accepts numeric and no-style false values for EMAIL_ENABLED", () => {
+  const zeroConfig = withEnv({ EMAIL_ENABLED: "0" }, () => loadConfigFresh());
+  const noConfig = withEnv({ EMAIL_ENABLED: "no" }, () => loadConfigFresh());
+
+  assert.equal(zeroConfig.email.enabled, false);
+  assert.equal(noConfig.email.enabled, false);
 });

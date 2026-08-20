@@ -91,7 +91,7 @@ test(".env.example contains only allowlisted deploy variables", () => {
 
   assert.deepEqual(
     keys,
-    ["EMAIL_DIFUSION", "EMAIL_PASS", "EMAIL_USER"],
-    ".env.example must contain exactly EMAIL_USER, EMAIL_PASS and EMAIL_DIFUSION"
+    ["EMAIL_DIFUSION", "EMAIL_ENABLED", "EMAIL_PASS", "EMAIL_USER"],
+    ".env.example must contain exactly EMAIL_USER, EMAIL_PASS, EMAIL_DIFUSION and EMAIL_ENABLED"
   );
 });

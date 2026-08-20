@@ -134,6 +134,8 @@ src/basedatos/database.sqlite
 src/basedatos/desarrollo.sqlite
 src/basedatos/_database.sqlite
 data/
+eval-data/
+eval-logs/
 
 # archivos que se autogeneran
 src/etl/plantilla.expand.html

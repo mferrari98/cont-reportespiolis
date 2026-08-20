@@ -8,11 +8,11 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - DB_PATH=/app/data/database.sqlite
     volumes:
       - /mnt/compartido:/mnt/compartido:ro
-      - reportes_db:/app/src/basedatos
+      - ./data:/app/data
+      - ./logs:/app/logs
     ports:
       - "127.0.0.1:3001:3000"
-
-volumes:
-  reportes_db:

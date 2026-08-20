@@ -1,0 +1,11 @@
+services:
+  reportespiolis:
+    networks:
+      servicios_telecom_proxy:
+        aliases:
+          - reportespiolis-standalone
+
+networks:
+  servicios_telecom_proxy:
+    name: servicios-telecom_proyectos_network
+    external: true

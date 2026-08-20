@@ -1,0 +1,67 @@
+diff --git a/docker-compose.yml b/docker-compose.yml
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -119,38 +119,6 @@ services:
+       retries: 3
+       start_period: 40s
+ 
+-  sistema-reportespiolis:
+-    build:
+-      context: ./cont-reportespiolis
+-      dockerfile: Dockerfile
+-    image: servicios-telecom-reportespiolis
+-    container_name: cont-reportespiolis
+-    expose:
+-      - "3000"
+-    volumes:
+-      - /mnt/compartido:/mnt/compartido:ro  # Montar directorio compartido como solo lectura
+-      - ./cont-reportespiolis/data:/app/data  # Base de datos SQLite persistente
+-      - ./cont-reportespiolis/logs:/app/logs                         # Logs persistentes (sin rotacion)
+-    environment:
+-      - DB_PATH=/app/data/database.sqlite
+-    env_file:
+-      - ./cont-reportespiolis/.env  # Usar el archivo .env existente en cont-reportespiolis
+-    command: ["sh", "-c", "npm start"]
+-    restart: unless-stopped
+-    logging:
+-      driver: "json-file"
+-      options:
+-        max-size: "10m"
+-        max-file: "3"
+-    networks:
+-      - proyectos_network
+-    healthcheck:
+-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000/ || exit 1"]
+-      interval: 30s
+-      timeout: 10s
+-      retries: 3
+-      start_period: 40s
+-
+   sistema-monitor-recursos:
+     build:
+       context: ./cont-monitor-recursos
+@@ -161,7 +129,6 @@ services:
+       - "80"
+     volumes:
+       - ./cont-nginx/logs:/logs/nginx:ro
+-      - ./cont-reportespiolis/logs:/logs/reportespiolis:ro
+     environment:
+       - MONITOR_API_TOKEN=${MONITOR_API_TOKEN:-}
+       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-}
+diff --git a/cont-nginx/conf.d/sistema-guardias.conf b/cont-nginx/conf.d/sistema-guardias.conf
+--- a/cont-nginx/conf.d/sistema-guardias.conf
++++ b/cont-nginx/conf.d/sistema-guardias.conf
+@@ -63,11 +63,11 @@ upstream sistema_empa_upstream {
+ }
+ 
+ upstream sistema_reportespiolis_upstream {
+-    server sistema-reportespiolis:3000 max_fails=3 fail_timeout=30s;
++    server reportespiolis-standalone:3000 max_fails=3 fail_timeout=30s;
+ }
+ 
+ upstream sistema_reporte_upstream {
+-    server sistema-reportespiolis:3000 max_fails=3 fail_timeout=30s;
++    server reportespiolis-standalone:3000 max_fails=3 fail_timeout=30s;
+ }
+ 
+ upstream sistema_monitor_recursos_upstream {

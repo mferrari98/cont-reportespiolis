@@ -6,6 +6,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
+        python3 \
         build-essential \
         libcairo2-dev \
         libjpeg-dev \
@@ -14,7 +15,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --build-from-source=sqlite3
 
 COPY config.json ./
 COPY sitios.json ./

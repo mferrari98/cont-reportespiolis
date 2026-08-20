@@ -190,11 +190,13 @@ test("app service uses expected runtime configuration", () => {
   assert.deepEqual(readKeyScalarItems(appEnvFileBlock), [".env"]);
 });
 
-test("app mounts /mnt/compartido with explicit readonly target and reportes_db volume path /app/src/basedatos", () => {
+test("app mounts /mnt/compartido, data, and logs without hiding source modules", () => {
   const appBlock = readServiceBlock("app");
   const appVolumesBlock = readServiceKeyBlock(appBlock, "volumes");
+  const appEnvironmentBlock = readServiceKeyBlock(appBlock, "environment");
 
   assert.ok(appVolumesBlock, "app service must declare volumes");
+  assert.ok(appEnvironmentBlock, "app service must declare environment");
 
   const appVolumeItems = readKeyScalarItems(appVolumesBlock);
 
@@ -204,16 +206,17 @@ test("app mounts /mnt/compartido with explicit readonly target and reportes_db v
   );
 
   assert.ok(
-    appVolumeItems.some((item) => item.startsWith("reportes_db:/app/src/basedatos")),
-    "app service must mount reportes_db at /app/src/basedatos"
-  );
-});
-
-test("reportes_db is declared as a named volume", () => {
-  const volumesBlock = readTopLevelKeyBlock("volumes");
-  const reportesDbMatch = volumesBlock.match(
-    /(?:^|\n)\s{2}reportes_db:\s*(?:\n|$)/
+    appVolumeItems.includes("./data:/app/data"),
+    "app service must mount local data directory at /app/data"
   );
 
-  assert.ok(reportesDbMatch, "volumes must declare reportes_db");
+  assert.ok(
+    appVolumeItems.includes("./logs:/app/logs"),
+    "app service must mount local logs directory at /app/logs"
+  );
+
+  assert.ok(
+    readKeyScalarItems(appEnvironmentBlock).includes("DB_PATH=/app/data/database.sqlite"),
+    "app service must set DB_PATH outside /app/src so source modules remain visible"
+  );
 });

@@ -32,19 +32,19 @@ test("README includes docker compose up command for deployment", () => {
   );
 });
 
-test("README documents edge_net external network prerequisite", () => {
+test("README documents loopback handoff to external gateway", () => {
   const readme = readReadme();
   const normalized = readme.toLowerCase();
 
   assert.match(
     normalized,
-    /edge_net/,
-    "README must mention edge_net external network"
+    /127\.0\.0\.1:3001/,
+    "README must mention local loopback handoff on 127.0.0.1:3001"
   );
   assert.match(
-    readme,
-    /docker network create edge_net/,
-    "README must include 'docker network create edge_net' prerequisite command"
+    normalized,
+    /gateway externo/,
+    "README must mention external gateway"
   );
 });
 
@@ -91,7 +91,7 @@ test(".env.example contains only allowlisted deploy variables", () => {
 
   assert.deepEqual(
     keys,
-    ["EMAIL_DIFUSION", "EMAIL_PASS", "EMAIL_USER"],
-    ".env.example must contain exactly EMAIL_USER, EMAIL_PASS and EMAIL_DIFUSION"
+    ["EMAIL_DIFUSION", "EMAIL_ENABLED", "EMAIL_PASS", "EMAIL_USER"],
+    ".env.example must contain exactly EMAIL_USER, EMAIL_PASS, EMAIL_DIFUSION and EMAIL_ENABLED"
   );
 });

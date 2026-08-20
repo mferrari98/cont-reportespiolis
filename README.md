@@ -5,17 +5,18 @@ Backend Node.js/Express que genera reportes HTML con datos historicos
 
 ## Configuracion necesaria
 - Crear `.env` en la raiz del repo a partir de `.env.example`.
+- Para evaluar sin envios de correo, usar `EMAIL_ENABLED=false`.
 - Revisar `config.json` si cambian rutas de entrada/salida.
 - `sitios.json` es la fuente de verdad de rebalses/cubicajes y lista de sitios Madryn.
 - El orden de visualización se basa en `sitios.json` y en el campo `tipo_variable.orden`.
 - `config.json` controla el nivel de log en `logging.level` (1 error, 2 info, 3 debug).
-- Los logs de la aplicación se guardan en `cont-reportespiolis/logs/app.log`.
+- Los logs de la aplicación se guardan en `logs/app.log`.
 
 ## Estructura
 - Diagrama HTML disponible en `/reporte/desa`.
 
 ## Arquitectura multi-repo
-- Este repo solo contiene el servicio `app` (Node.js/Express) y su almacenamiento (`reportes_db`).
+- Este repo solo contiene el servicio `app` (Node.js/Express) y su almacenamiento local en `data/`.
 - La exposicion publica y el enrutamiento HTTP viven en un gateway externo de otro repo.
 - El gateway resuelve `/reporte` hacia este servicio por `127.0.0.1:3001`.
 
@@ -25,10 +26,11 @@ Backend Node.js/Express que genera reportes HTML con datos historicos
 - Inicio de los tres stacks (`portal-comunicaciones` + `reportespiolis` + `nginx`): ejecutar los compose de cada repo.
 - Pasos rapidos:
   1. Copiar variables: `cp .env.example .env`
-  2. Construir e iniciar: `docker compose up -d --build`
-  3. Ver estado: `docker compose ps`
-  4. Ver logs: `docker compose logs -f app`
-  5. Detener: `docker compose down`
+  2. Crear directorios persistentes: `mkdir -p data logs`
+  3. Construir e iniciar: `docker compose up -d --build`
+  4. Ver estado: `docker compose ps`
+  5. Ver logs: `docker compose logs -f app`
+  6. Detener: `docker compose down`
 
 ## Ejecucion del proceso completo (3 contenedores)
 

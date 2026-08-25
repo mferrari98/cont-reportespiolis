@@ -385,6 +385,22 @@ function renderPie(data, width = 500, height = 500) {
   return { chart, canvas };
 }
 
+function buildLineChartLayout() {
+  const titleTop = 10;
+  const titleHeight = Math.ceil(CHART_THEME.fontSizes.title * 1.55);
+  const legendTop = titleTop + titleHeight + 16;
+  const legendHeight = Math.ceil(CHART_THEME.fontSizes.legend * 1.75);
+  const gridTop = legendTop + legendHeight + 28;
+
+  return {
+    titleTop,
+    titleHeight,
+    legendTop,
+    legendHeight,
+    gridTop
+  };
+}
+
 function renderLines(data, width = 1200, height = 480) {
   const seriesData = Array.isArray(data.lineSeries) ? data.lineSeries : [];
   if (!seriesData.length) return null;
@@ -406,6 +422,7 @@ function renderLines(data, width = 1200, height = 480) {
   if (min === null || max === null) return null;
 
   const colorTexto = CHART_THEME.colors.texto;
+  const layout = buildLineChartLayout(seriesData.length);
 
   const canvas = createCanvas(width, height);
   const chart = echarts.init(canvas, null, { devicePixelRatio: DEVICE_PIXEL_RATIO });
@@ -415,16 +432,17 @@ function renderLines(data, width = 1200, height = 480) {
     title: {
       text: "Niveles Historicos",
       left: "center",
-        textStyle: {
-          fontFamily: "consolas",
-          fontSize: CHART_THEME.fontSizes.title
-        }
-      },
+      top: layout.titleTop,
+      textStyle: {
+        fontFamily: "consolas",
+        fontSize: CHART_THEME.fontSizes.title
+      }
+    },
     tooltip: {
       trigger: "axis"
     },
     legend: {
-      top: 30,
+      top: layout.legendTop,
       type: "scroll",
       textStyle: {
         fontFamily: "consolas",
@@ -435,7 +453,7 @@ function renderLines(data, width = 1200, height = 480) {
       left: 50,
       right: 30,
       bottom: 60,
-      top: 80,
+      top: layout.gridTop,
       containLabel: true
     },
     xAxis: {
@@ -555,6 +573,6 @@ async function generarGraficos(reporteData) {
   return results;
 }
 
-module.exports = { generarGraficos };
+module.exports = { generarGraficos, buildLineChartLayout };
 
 logamarillo(1, `${ID_MOD} - Directorio del archivo:`, __dirname);
